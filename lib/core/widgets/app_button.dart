@@ -9,6 +9,9 @@ enum AppButtonVariant {
   /// Lime fill. Reward claims, milestones and other high-energy actions.
   secondary,
 
+  /// White with a border. Alternative actions next to a primary button.
+  outline,
+
   /// Transparent. Low-emphasis actions such as "Skip".
   ghost,
 }
@@ -52,6 +55,17 @@ class AppButton extends StatelessWidget {
     this.expand = true,
     this.compact = false,
   }) : variant = AppButtonVariant.secondary;
+
+  const AppButton.outline({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.leadingIcon,
+    this.trailingIcon,
+    this.isLoading = false,
+    this.expand = true,
+    this.compact = false,
+  }) : variant = AppButtonVariant.outline;
 
   const AppButton.ghost({
     super.key,
@@ -131,7 +145,12 @@ class AppButton extends StatelessWidget {
         ),
         child: Material(
           color: background,
-          borderRadius: AppRadii.buttonRadius,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadii.buttonRadius,
+            side: variant == AppButtonVariant.outline
+                ? const BorderSide(color: AppColors.border, width: 1.5)
+                : BorderSide.none,
+          ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: _enabled ? onPressed : null,
@@ -161,6 +180,11 @@ class AppButton extends StatelessWidget {
         AppColors.textDisabled,
       ),
       AppButtonVariant.secondary => (AppColors.accent, AppColors.onAccent),
+      AppButtonVariant.outline when disabled => (
+        AppColors.card,
+        AppColors.textDisabled,
+      ),
+      AppButtonVariant.outline => (AppColors.card, AppColors.text),
       AppButtonVariant.ghost when disabled => (
         Colors.transparent,
         AppColors.textDisabled,

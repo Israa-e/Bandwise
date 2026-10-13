@@ -3,27 +3,59 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/auth_placeholder_screens.dart';
 import '../../features/dev_gallery/presentation/component_gallery_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/learn/presentation/learn_screen.dart';
+import '../../features/onboarding/domain/onboarding_state.dart';
+import '../../features/onboarding/presentation/current_level_screen.dart';
+import '../../features/onboarding/presentation/onboarding_controller.dart';
+import '../../features/onboarding/presentation/daily_time_screen.dart';
+import '../../features/onboarding/presentation/exam_date_screen.dart';
+import '../../features/onboarding/presentation/onboarding_navigation.dart';
+import '../../features/onboarding/presentation/placement_screen.dart';
+import '../../features/onboarding/presentation/plan_screen.dart';
+import '../../features/onboarding/presentation/skills_screen.dart';
+import '../../features/onboarding/presentation/target_band_screen.dart';
+import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/practice/presentation/practice_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
+import '../../features/splash/presentation/splash_screen.dart';
 import '../widgets/app_bottom_nav.dart';
 import 'app_routes.dart';
-
-final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 /// The app router.
 ///
 /// The five tabs live in a [StatefulShellRoute] so each tab keeps its own
 /// navigation stack. Routes that must hide the bottom nav (e.g. timed exams)
-/// go at the top level and use [_rootNavigatorKey].
+/// go at the top level and use `rootNavigatorKey`.
 final routerProvider = Provider<GoRouter>((ref) {
+  // One key per router: a shared global key would let a new router adopt
+  // the previous router's Navigator (and its stale pages).
+  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
   final router = GoRouter(
-    navigatorKey: _rootNavigatorKey,
-    initialLocation: AppRoutes.home,
+    navigatorKey: rootNavigatorKey,
+    initialLocation: AppRoutes.splash,
+    redirect: (context, state) => _guard(ref, state.matchedLocation),
     routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
+      for (final step in OnboardingStep.values)
+        GoRoute(
+          path: onboardingPath(step),
+          builder: (context, state) => _onboardingScreen(step),
+        ),
+      GoRoute(
+        path: AppRoutes.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.createAccount,
+        builder: (context, state) => const CreateAccountScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => _TabShell(shell: shell),
         branches: [
@@ -37,7 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (kDebugMode)
         GoRoute(
           path: AppRoutes.componentGallery,
-          parentNavigatorKey: _rootNavigatorKey,
+          parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const ComponentGalleryScreen(),
         ),
     ],
@@ -45,6 +77,46 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(router.dispose);
   return router;
 });
+
+const _tabPaths = {
+  AppRoutes.home,
+  AppRoutes.learn,
+  AppRoutes.practice,
+  AppRoutes.progress,
+  AppRoutes.profile,
+};
+
+/// Keeps navigation consistent with saved onboarding state, including when
+/// the platform restores a URL (web refresh, deep link):
+/// - until saved state has loaded, everything goes through the splash;
+/// - unfinished onboarding can't open the main tabs;
+/// - finished onboarding can't reopen onboarding screens.
+String? _guard(Ref ref, String location) {
+  final onboarding = ref.read(onboardingControllerProvider);
+  if (!onboarding.hasValue) {
+    return location == AppRoutes.splash ? null : AppRoutes.splash;
+  }
+  final state = onboarding.requireValue;
+  final inOnboarding =
+      location == AppRoutes.welcome ||
+      location.startsWith('${AppRoutes.onboarding}/');
+  if (!state.completed && _tabPaths.contains(location)) {
+    return onboardingPath(state.step);
+  }
+  if (state.completed && inOnboarding) return AppRoutes.home;
+  return null;
+}
+
+Widget _onboardingScreen(OnboardingStep step) => switch (step) {
+  OnboardingStep.welcome => const WelcomeScreen(),
+  OnboardingStep.targetBand => const TargetBandScreen(),
+  OnboardingStep.examDate => const ExamDateScreen(),
+  OnboardingStep.currentLevel => const CurrentLevelScreen(),
+  OnboardingStep.dailyTime => const DailyTimeScreen(),
+  OnboardingStep.skills => const SkillsScreen(),
+  OnboardingStep.placement => const PlacementScreen(),
+  OnboardingStep.plan => const PlanScreen(),
+};
 
 StatefulShellBranch _branch(String path, Widget screen) => StatefulShellBranch(
   routes: [GoRoute(path: path, builder: (context, state) => screen)],

@@ -4,8 +4,22 @@ import 'package:bandwise/features/dev_gallery/presentation/component_gallery_scr
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  // Onboarding already done, so the app opens on Home after the splash.
+  setUp(
+    () => SharedPreferences.setMockInitialValues({
+      'onboarding.v1': '{"completed": true}',
+    }),
+  );
+
+  Future<void> pumpApp(WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: BandwiseApp()));
+    await tester.pump(const Duration(seconds: 2)); // splash
+    await tester.pumpAndSettle();
+  }
+
   void usePhoneSize(WidgetTester tester) {
     tester.view.physicalSize = const Size(390, 844) * 3;
     tester.view.devicePixelRatio = 3;
@@ -14,8 +28,7 @@ void main() {
 
   testWidgets('app starts on Home and switches tabs', (tester) async {
     usePhoneSize(tester);
-    await tester.pumpWidget(const ProviderScope(child: BandwiseApp()));
-    await tester.pumpAndSettle();
+    await pumpApp(tester);
 
     expect(find.byType(AppBottomNav), findsOneWidget);
     expect(
@@ -37,8 +50,7 @@ void main() {
 
   testWidgets('Profile opens the component gallery in debug', (tester) async {
     usePhoneSize(tester);
-    await tester.pumpWidget(const ProviderScope(child: BandwiseApp()));
-    await tester.pumpAndSettle();
+    await pumpApp(tester);
 
     await tester.tap(
       find.descendant(
@@ -57,8 +69,7 @@ void main() {
     testWidgets('gallery renders every section without overflow '
         '(${rtl ? 'RTL' : 'LTR'})', (tester) async {
       usePhoneSize(tester);
-      await tester.pumpWidget(const ProviderScope(child: BandwiseApp()));
-      await tester.pumpAndSettle();
+      await pumpApp(tester);
       await tester.tap(
         find.descendant(
           of: find.byType(AppBottomNav),
