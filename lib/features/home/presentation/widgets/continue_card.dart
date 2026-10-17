@@ -38,7 +38,7 @@ class ContinueCard extends StatelessWidget {
     final lesson = this.lesson;
     final start = this.start;
     final (tag, tagIcon, title) = start == null
-        ? ('Unit ${lesson!.unit} · ${lesson.unitTitle}', null, lesson.title)
+        ? ('Unit ${lesson!.unit}', null, lesson.title)
         : ('Recommended start', Icons.flag_rounded, start.title);
     final minutes = lesson?.estimatedMinutes ?? _fallbackMinutes;
     final id = lesson?.id ?? 'u${start!.unit}-l1';

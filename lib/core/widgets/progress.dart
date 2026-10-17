@@ -80,7 +80,10 @@ class AppLinearProgress extends StatelessWidget {
       excludeSemantics: true,
       child: ClipRRect(
         borderRadius: AppRadii.pillRadius,
+        // Full width even at 0%, when nothing else gives the bar a width
+        // (e.g. in a start-aligned Column).
         child: SizedBox(
+          width: double.infinity,
           height: height,
           child: Stack(
             children: [

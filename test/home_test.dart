@@ -189,6 +189,9 @@ void main() {
       expect(find.text('Active today'), findsOneWidget);
       expect(find.text('5m left'), findsOneWidget);
       expect(find.text('Building a clear main argument'), findsOneWidget);
+      // The chip names the unit number only, not its title.
+      expect(find.text('Unit 3'), findsOneWidget);
+      expect(find.textContaining('Paraphrasing'), findsNothing);
       expect(find.text('50% of unit'), findsOneWidget);
       expect(find.text('12 saved mistakes'), findsOneWidget);
 
