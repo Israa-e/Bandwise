@@ -5,6 +5,68 @@ import 'progress.dart';
 
 const _barHeight = 64.0;
 
+/// Background for custom top bars. Flat while the content under it is at
+/// the top; shows a subtle shadow once content scrolls underneath, like
+/// [AppBar.scrolledUnderElevation].
+///
+/// Listens to the nearest [Scaffold]'s scroll notifications, so it only
+/// reacts when used as (part of) a [Scaffold.appBar].
+class TopBarSurface extends StatefulWidget {
+  const TopBarSurface({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<TopBarSurface> createState() => _TopBarSurfaceState();
+}
+
+class _TopBarSurfaceState extends State<TopBarSurface> {
+  ScrollNotificationObserverState? _observer;
+  bool _scrolledUnder = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _observer?.removeListener(_onScroll);
+    _observer = ScrollNotificationObserver.maybeOf(context);
+    _observer?.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _observer?.removeListener(_onScroll);
+    super.dispose();
+  }
+
+  void _onScroll(ScrollNotification notification) {
+    if (notification is! ScrollUpdateNotification ||
+        !defaultScrollNotificationPredicate(notification)) {
+      return;
+    }
+    final metrics = notification.metrics;
+    final scrolledUnder = switch (metrics.axisDirection) {
+      AxisDirection.down => metrics.extentBefore > 0,
+      AxisDirection.up => metrics.extentAfter > 0,
+      // Horizontal lists (carousels, chip rows) don't affect the bar.
+      AxisDirection.left || AxisDirection.right => _scrolledUnder,
+    };
+    if (scrolledUnder != _scrolledUnder) {
+      setState(() => _scrolledUnder = scrolledUnder);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        boxShadow: _scrolledUnder ? AppShadows.topBar : null,
+      ),
+      child: Material(type: MaterialType.transparency, child: widget.child),
+    );
+  }
+}
+
 /// Circular back button. The arrow icon mirrors automatically in RTL.
 class AppBackButton extends StatelessWidget {
   const AppBackButton({super.key, this.onPressed});
@@ -51,8 +113,7 @@ class OnboardingTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.background,
+    return TopBarSurface(
       child: SafeArea(
         bottom: false,
         child: SizedBox(
@@ -104,8 +165,7 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.background,
+    return TopBarSurface(
       child: SafeArea(
         bottom: false,
         child: SizedBox(

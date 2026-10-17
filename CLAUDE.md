@@ -10,7 +10,7 @@ Independent IELTS Academic prep app. Not affiliated with IELTS, British Council,
 - No API keys in the app. AI calls will go through a server function.
 
 ## Design source of truth
-- design/screens/*.html are Stitch exports: use them for LAYOUT and CONTENT only.
+- design/screens/*.md are Stitch exports (HTML inside Markdown): use them for LAYOUT and CONTENT only.
 - Do NOT copy colors from their tailwind config (it is wrong). Use only these tokens in lib/core/theme:
   - primary #6558D3, accent/lime #DDF6A7, background #F7F6FC, card #FFFFFF, text #25243A
   - success #38A169 / #EDFDF5, warning #E29A36 / #FEF9EE, error #E5484D (borders, icons) and #B42318 (error text)
@@ -25,6 +25,7 @@ Independent IELTS Academic prep app. Not affiliated with IELTS, British Council,
 - No band on lessons, units, skill cards, placement, or the study plan. Use accuracy %, "Mastered", or levels.
 - Placement gives a recommended starting point, not a level or band.
 - Official band descriptors: 6 Competent, 7 Good, 8 Very good, 9 Expert.
+- The user's own chosen target may be shown as "Goal X.X". It is a goal, not a score.
 - Writing Task 1 uses Task Achievement; Task 2 uses Task Response.
 - Don't claim AI where logic is rule-based.
 - Consent checkboxes are unchecked by default.

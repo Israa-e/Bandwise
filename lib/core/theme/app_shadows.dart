@@ -22,6 +22,15 @@ abstract final class AppShadows {
     ),
   ];
 
+  /// Under a top bar while content is scrolled beneath it.
+  static final topBar = [
+    BoxShadow(
+      color: AppColors.shadow.withValues(alpha: 0.08),
+      offset: const Offset(0, 1),
+      blurRadius: 8,
+    ),
+  ];
+
   /// Glow under the primary button.
   static final primaryButton = [
     BoxShadow(
