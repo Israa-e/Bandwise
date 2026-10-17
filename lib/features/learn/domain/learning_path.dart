@@ -7,7 +7,7 @@ enum LessonStatus {
   /// Done, with no saved mistakes.
   completed,
 
-  /// Done, with mistakes saved for review.
+  /// Done, with saved mistakes not yet rated Good or Easy in a review.
   reviewNeeded,
 
   /// The next lesson to take (one per course).
@@ -32,6 +32,8 @@ class LessonNode {
   final Lesson lesson;
   final LessonStatus status;
   final LessonResult? result;
+
+  /// Saved mistakes still to review (see [ProgressState.openMistakesFor]).
   final int mistakeCount;
 
   /// e.g. "Unlocks after Lesson 2". Only for [LessonStatus.locked].
@@ -111,7 +113,7 @@ class LearningPath {
   }
 
   LessonNode nodeFor(Lesson lesson) {
-    final mistakes = progress.mistakesFor(lesson.id).length;
+    final mistakes = progress.openMistakesFor(lesson.id).length;
     final result = progress.results[lesson.id];
     final reason = _lockedReason(lesson);
     final status = result != null

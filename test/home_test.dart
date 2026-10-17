@@ -193,7 +193,7 @@ void main() {
       expect(find.text('Unit 3'), findsOneWidget);
       expect(find.textContaining('Paraphrasing'), findsNothing);
       expect(find.text('50% of unit'), findsOneWidget);
-      expect(find.text('12 saved mistakes'), findsOneWidget);
+      expect(find.text('4 mistakes · 8 words'), findsOneWidget);
 
       expect(find.text('88% accuracy'), findsOneWidget);
       expect(find.text('74% accuracy'), findsOneWidget);
@@ -337,7 +337,7 @@ void main() {
 
     testWidgets('review card opens review', (tester) async {
       await _launchApp(tester, HomeFixture.activeUser);
-      await tester.tap(find.text('12 saved mistakes'));
+      await tester.tap(find.text('4 mistakes · 8 words'));
       await tester.pumpAndSettle();
       expect(find.byType(ReviewScreen), findsOneWidget);
       expect(find.byType(AppBottomNav), findsNothing);

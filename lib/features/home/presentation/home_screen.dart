@@ -124,7 +124,8 @@ class _HomeContent extends ConsumerWidget {
         if (summary.reviewsDue > 0) ...[
           const SizedBox(height: AppSpacing.smd),
           ReviewCard(
-            dueCount: summary.reviewsDue,
+            mistakesDue: summary.mistakesDue,
+            wordsDue: summary.wordsDue,
             onOpen: () => context.push(AppRoutes.review),
           ),
         ],

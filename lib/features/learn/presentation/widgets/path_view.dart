@@ -284,7 +284,7 @@ class _LessonCard extends StatelessWidget {
       LessonStatus.locked => node.lockedReason!,
       LessonStatus.reviewNeeded =>
         '${node.mistakeCount} '
-            '${node.mistakeCount == 1 ? 'mistake' : 'mistakes'} saved',
+            '${node.mistakeCount == 1 ? 'mistake' : 'mistakes'} to review',
       LessonStatus.completed when result != null && result.total > 0 =>
         '${result.correct}/${result.total} correct',
       _ => '${lesson.estimatedMinutes} min',

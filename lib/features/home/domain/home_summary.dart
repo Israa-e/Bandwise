@@ -16,7 +16,8 @@ class HomeSummary {
     required this.minutesToday,
     required this.hasCompletedLessons,
     required this.nextLesson,
-    required this.reviewsDue,
+    required this.mistakesDue,
+    required this.wordsDue,
     required this.skills,
     required this.minutesByDay,
   });
@@ -35,8 +36,11 @@ class HomeSummary {
   /// The next lesson on the path, or null when nothing is left to open.
   final NextLesson? nextLesson;
 
-  /// Mistakes saved for review.
-  final int reviewsDue;
+  /// Saved mistakes and vocabulary due for review today.
+  final int mistakesDue;
+  final int wordsDue;
+
+  int get reviewsDue => mistakesDue + wordsDue;
   final Map<Skill, SkillActivity> skills;
 
   /// Study minutes per local day (date-only keys), for days before today.

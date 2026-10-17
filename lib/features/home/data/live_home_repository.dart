@@ -1,5 +1,6 @@
 import '../../learn/domain/course.dart';
 import '../../learn/domain/learning_path.dart';
+import '../../review/domain/review_planner.dart';
 import '../domain/home_repository.dart';
 import '../domain/home_summary.dart';
 
@@ -16,6 +17,10 @@ class LiveHomeRepository implements HomeRepository {
     final path = await this.path;
     final progress = path.progress;
     final next = path.nextLesson;
+    final due = ReviewPlanner(
+      course: path.course,
+      progress: progress,
+    ).dueOn(today);
     return HomeSummary(
       // No accounts yet, so there is no name to greet.
       displayName: null,
@@ -25,7 +30,8 @@ class LiveHomeRepository implements HomeRepository {
       minutesToday: progress.minutesOn(today),
       hasCompletedLessons: progress.results.isNotEmpty,
       nextLesson: next == null ? null : _nextLesson(path, next),
-      reviewsDue: progress.mistakes.length,
+      mistakesDue: due.whereType<MistakeReviewItem>().length,
+      wordsDue: due.whereType<WordReviewItem>().length,
       // Lessons don't practise the four skills yet.
       skills: const {},
       minutesByDay: progress.minutesByDay,

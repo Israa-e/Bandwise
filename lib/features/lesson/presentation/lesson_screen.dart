@@ -15,7 +15,6 @@ import '../../progress/presentation/progress_controller.dart';
 import 'widgets/exercise_views.dart';
 import 'widgets/lesson_complete_view.dart';
 import 'widgets/lesson_intro_view.dart';
-import 'widgets/lesson_top_bar.dart';
 
 /// A lesson, outside the tab shell: intro, exercises, then results.
 ///
@@ -96,6 +95,8 @@ class _LessonLoaded extends StatelessWidget {
   }
 }
 
+const _closeTooltip = 'Close lesson';
+
 enum _Phase { intro, exercises, complete }
 
 class _LessonFlow extends ConsumerStatefulWidget {
@@ -168,7 +169,7 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
         mistakes.add(
           SavedMistake(
             lessonId: lesson.id,
-            prompt: _promptOf(q),
+            prompt: q.savedPrompt,
             yourAnswer: q.options[picked],
             correctAnswer: q.correctAnswer,
             explanation: q.explanation,
@@ -197,13 +198,6 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
       _saving = false;
     });
   }
-
-  static String _promptOf(QuestionExercise q) => switch (q) {
-    FillBlankExercise(:final sentence) => sentence,
-    MultipleChoiceExercise(:final passage?, :final prompt) =>
-      '$prompt\n$passage',
-    MultipleChoiceExercise(:final prompt) => prompt,
-  };
 
   void _exit() {
     if (context.canPop()) {
@@ -253,7 +247,7 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
 
   Widget _intro() {
     return Scaffold(
-      appBar: LessonTopBar(onClose: _exit),
+      appBar: SessionTopBar(onClose: _exit, closeTooltip: _closeTooltip),
       body: LessonIntroView(
         unit: widget.unit,
         lesson: widget.lesson,
@@ -312,10 +306,12 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
     }
 
     return Scaffold(
-      appBar: LessonTopBar(
+      appBar: SessionTopBar(
         onClose: _confirmLeave,
-        step: done,
-        total: _exercises.length,
+        closeTooltip: _closeTooltip,
+        progress: done / _exercises.length,
+        counter: '$done/${_exercises.length}',
+        progressLabel: 'Lesson progress',
       ),
       body: ListView(
         // A fresh scroll position for each exercise.
@@ -394,7 +390,7 @@ class _Message extends StatelessWidget {
     void back() =>
         context.canPop() ? context.pop() : context.go(AppRoutes.learn);
     return Scaffold(
-      appBar: LessonTopBar(onClose: back),
+      appBar: SessionTopBar(onClose: back, closeTooltip: _closeTooltip),
       body: EmptyStateView(
         icon: icon,
         title: title,

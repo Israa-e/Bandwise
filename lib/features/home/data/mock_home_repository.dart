@@ -50,7 +50,8 @@ const _newUser = HomeSummary(
   minutesToday: 0,
   hasCompletedLessons: false,
   nextLesson: null,
-  reviewsDue: 0,
+  mistakesDue: 0,
+  wordsDue: 0,
   skills: {},
   minutesByDay: {},
 );
@@ -78,7 +79,8 @@ HomeSummary _activeUser(DateTime today) {
       unitProgress: 0.5,
       estimatedMinutes: 10,
     ),
-    reviewsDue: 12,
+    mistakesDue: 4,
+    wordsDue: 8,
     skills: {
       Skill.listening: SkillActivity(
         attempts: 12,

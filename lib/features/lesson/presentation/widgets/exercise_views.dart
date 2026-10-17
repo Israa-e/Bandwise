@@ -10,17 +10,19 @@ class FlashcardView extends StatelessWidget {
     super.key,
     required this.exercise,
     required this.revealed,
+    this.eyebrow = 'New word',
   });
 
   final FlashcardExercise exercise;
   final bool revealed;
+  final String eyebrow;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _Eyebrow('New word'),
+        _Eyebrow(eyebrow),
         const SizedBox(height: AppSpacing.smd),
         AppCard(
           child: Column(
@@ -216,20 +218,24 @@ class _BlankSentence extends StatelessWidget {
 }
 
 /// Result shown after "Check": correct or not, the answer, the explanation
-/// and Continue. Wrong answers never block progress.
+/// and Continue (or a custom [action]). Wrong answers never block progress.
 class FeedbackPanel extends StatelessWidget {
   const FeedbackPanel({
     super.key,
     required this.correct,
     required this.correctAnswer,
     required this.explanation,
-    required this.onContinue,
-  });
+    this.onContinue,
+    this.action,
+  }) : assert((onContinue == null) != (action == null));
 
   final bool correct;
   final String correctAnswer;
   final String explanation;
-  final VoidCallback onContinue;
+  final VoidCallback? onContinue;
+
+  /// Replaces the Continue button.
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -314,7 +320,8 @@ class FeedbackPanel extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                AppButton.primary(label: 'Continue', onPressed: onContinue),
+                action ??
+                    AppButton.primary(label: 'Continue', onPressed: onContinue),
               ],
             ),
           ),

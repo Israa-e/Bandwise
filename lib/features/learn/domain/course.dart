@@ -122,6 +122,15 @@ sealed class QuestionExercise extends Exercise {
   final int correctIndex;
 
   String get correctAnswer => options[correctIndex];
+
+  /// The question as saved with a mistake: with its sentence or passage, if
+  /// it has one. Unique within a lesson.
+  String get savedPrompt => switch (this) {
+    FillBlankExercise(:final sentence) => sentence,
+    MultipleChoiceExercise(:final passage?, :final prompt) =>
+      '$prompt\n$passage',
+    MultipleChoiceExercise(:final prompt) => prompt,
+  };
 }
 
 class MultipleChoiceExercise extends QuestionExercise {

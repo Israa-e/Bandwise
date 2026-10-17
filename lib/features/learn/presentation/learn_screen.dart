@@ -113,7 +113,11 @@ class _LearnContent extends ConsumerWidget {
           ..showSnackBar(SnackBar(content: Text('${node.lockedReason}.')));
         return;
       }
-      context.push(AppRoutes.lessonPath(node.lesson.id));
+      context.push(
+        node.status == LessonStatus.reviewNeeded
+            ? AppRoutes.review
+            : AppRoutes.lessonPath(node.lesson.id),
+      );
     }
 
     return ListView(

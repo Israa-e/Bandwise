@@ -27,6 +27,17 @@ class ProgressController extends AsyncNotifier<ProgressState> {
     await _repository.save(next);
   }
 
+  /// Records one reviewed item as soon as it is rated, so leaving a review
+  /// early keeps what was done. Returns the XP earned.
+  Future<int> review(ReviewCompletion review) async {
+    final current = state.value ?? await future;
+    final xp = current.reviewXpFor(review.rating, review.date);
+    final next = current.withReview(review);
+    state = AsyncData(next);
+    await _repository.save(next);
+    return xp;
+  }
+
   /// Debug helper: forget all progress.
   Future<void> reset() async {
     await _repository.clear();

@@ -1,11 +1,17 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/dates.dart';
+import 'review_schedule.dart';
 
 /// XP rules.
 abstract final class XpRules {
   static const perLesson = 10;
   static const perFirstTryCorrect = 2;
+
+  /// Per reviewed item, up to [maxReviewPerDay] a day, so reviews can't be
+  /// farmed for XP.
+  static const perReview = 1;
+  static const maxReviewPerDay = 10;
 
   static int forLesson(int correctFirstTry) =>
       perLesson + perFirstTryCorrect * correctFirstTry;
@@ -20,6 +26,7 @@ class ProgressState {
     this.minutesByDay = const {},
     this.activeDays = const {},
     this.mistakes = const [],
+    this.reviews = const {},
   });
 
   /// Latest result per completed lesson id.
@@ -33,6 +40,27 @@ class ProgressState {
   /// Wrong answers saved for review.
   final List<SavedMistake> mistakes;
 
+  /// Spaced-repetition schedule per reviewed item, by review key (see
+  /// [SavedMistake.reviewKey] and [wordReviewKey]). Items not reviewed yet
+  /// have no entry.
+  final Map<String, ReviewSchedule> reviews;
+
+  ProgressState _copyWith({
+    Map<String, LessonResult>? results,
+    List<XpEntry>? xpLog,
+    Map<DateTime, int>? minutesByDay,
+    Set<DateTime>? activeDays,
+    List<SavedMistake>? mistakes,
+    Map<String, ReviewSchedule>? reviews,
+  }) => ProgressState(
+    results: results ?? this.results,
+    xpLog: xpLog ?? this.xpLog,
+    minutesByDay: minutesByDay ?? this.minutesByDay,
+    activeDays: activeDays ?? this.activeDays,
+    mistakes: mistakes ?? this.mistakes,
+    reviews: reviews ?? this.reviews,
+  );
+
   bool isCompleted(String lessonId) => results.containsKey(lessonId);
 
   int get totalXp => xpLog.fold(0, (sum, e) => sum + e.amount);
@@ -45,6 +73,26 @@ class ProgressState {
 
   List<SavedMistake> mistakesFor(String lessonId) =>
       mistakes.where((m) => m.lessonId == lessonId).toList();
+
+  /// [lessonId]'s mistakes not yet rated Good or Easy in a review. The lesson
+  /// needs review while this isn't empty.
+  List<SavedMistake> openMistakesFor(String lessonId) => [
+    for (final m in mistakesFor(lessonId))
+      if (!(reviews[m.reviewKey]?.lastRating.isRemembered ?? false)) m,
+  ];
+
+  /// XP earned from reviews on [day].
+  int reviewXpOn(DateTime day) => xpLog
+      .where((e) => e.source == XpEntry.reviewSource && e.date == dateOnly(day))
+      .fold(0, (sum, e) => sum + e.amount);
+
+  /// XP a review rated [rating] on [day] would earn: [XpRules.perReview]
+  /// unless the item must be seen again, or the daily cap is reached.
+  int reviewXpFor(ReviewRating rating, DateTime day) {
+    if (rating == ReviewRating.again) return 0;
+    final left = XpRules.maxReviewPerDay - reviewXpOn(day);
+    return left <= 0 ? 0 : XpRules.perReview.clamp(0, left);
+  }
 
   /// Consecutive active days ending today, or yesterday if today has no
   /// activity yet (the streak is still alive until today ends).
@@ -65,6 +113,9 @@ class ProgressState {
   /// its saved mistakes, and earns XP again.
   ProgressState withCompletedLesson(LessonCompletion c) {
     final day = dateOnly(c.date);
+    final oldMistakeKeys = {
+      for (final m in mistakesFor(c.lessonId)) m.reviewKey,
+    };
     return ProgressState(
       results: {
         ...results,
@@ -77,7 +128,7 @@ class ProgressState {
       },
       xpLog: [
         ...xpLog,
-        XpEntry(date: day, amount: c.xp, lessonId: c.lessonId),
+        XpEntry(date: day, amount: c.xp, source: c.lessonId),
       ],
       minutesByDay: {...minutesByDay, day: minutesOn(day) + c.minutes},
       activeDays: {...activeDays, day},
@@ -85,6 +136,34 @@ class ProgressState {
         ...mistakes.where((m) => m.lessonId != c.lessonId),
         ...c.mistakes,
       ],
+      // The new mistakes start their reviews from scratch.
+      reviews: {
+        for (final e in reviews.entries)
+          if (!oldMistakeKeys.contains(e.key)) e.key: e.value,
+      },
+    );
+  }
+
+  /// Records one reviewed item: its next due date, XP (capped per day),
+  /// study minutes and a streak day.
+  ProgressState withReview(ReviewCompletion r) {
+    final day = dateOnly(r.date);
+    final xp = reviewXpFor(r.rating, day);
+    return _copyWith(
+      reviews: {
+        ...reviews,
+        r.key: ReviewSchedule.next(reviews[r.key], r.rating, day),
+      },
+      xpLog: xp == 0
+          ? null
+          : [
+              ...xpLog,
+              XpEntry(date: day, amount: xp, source: XpEntry.reviewSource),
+            ],
+      minutesByDay: r.minutes == 0
+          ? null
+          : {...minutesByDay, day: minutesOn(day) + r.minutes},
+      activeDays: {...activeDays, day},
     );
   }
 
@@ -92,15 +171,17 @@ class ProgressState {
     'results': {for (final e in results.entries) e.key: e.value.toJson()},
     'xpLog': [for (final e in xpLog) e.toJson()],
     'minutesByDay': {
-      for (final e in minutesByDay.entries) _day(e.key): e.value,
+      for (final e in minutesByDay.entries) formatIsoDay(e.key): e.value,
     },
-    'activeDays': [for (final d in activeDays) _day(d)],
+    'activeDays': [for (final d in activeDays) formatIsoDay(d)],
     'mistakes': [for (final m in mistakes) m.toJson()],
+    'reviews': {for (final e in reviews.entries) e.key: e.value.toJson()},
   };
 
   static ProgressState fromJson(Map<String, dynamic> json) {
     final results = json['results'] as Map<String, dynamic>? ?? {};
     final minutes = json['minutesByDay'] as Map<String, dynamic>? ?? {};
+    final reviews = json['reviews'] as Map<String, dynamic>? ?? {};
     return ProgressState(
       results: {
         for (final e in results.entries)
@@ -111,27 +192,23 @@ class ProgressState {
           XpEntry.fromJson(e as Map<String, dynamic>),
       ],
       minutesByDay: {
-        for (final e in minutes.entries) _parseDay(e.key): e.value as int,
+        for (final e in minutes.entries) parseIsoDay(e.key): e.value as int,
       },
       activeDays: {
         for (final d in json['activeDays'] as List? ?? const [])
-          _parseDay(d as String),
+          parseIsoDay(d as String),
       },
       mistakes: [
         for (final m in json['mistakes'] as List? ?? const [])
           SavedMistake.fromJson(m as Map<String, dynamic>),
       ],
+      reviews: {
+        for (final e in reviews.entries)
+          e.key: ReviewSchedule.fromJson(e.value as Map<String, dynamic>),
+      },
     );
   }
 }
-
-/// "2026-10-15".
-String _day(DateTime d) =>
-    '${d.year.toString().padLeft(4, '0')}-'
-    '${d.month.toString().padLeft(2, '0')}-'
-    '${d.day.toString().padLeft(2, '0')}';
-
-DateTime _parseDay(String s) => dateOnly(DateTime.parse(s));
 
 @immutable
 class LessonResult {
@@ -152,14 +229,14 @@ class LessonResult {
     'correct': correct,
     'total': total,
     'xp': xp,
-    'completedOn': _day(completedOn),
+    'completedOn': formatIsoDay(completedOn),
   };
 
   static LessonResult fromJson(Map<String, dynamic> json) => LessonResult(
     correct: json['correct'] as int,
     total: json['total'] as int,
     xp: json['xp'] as int,
-    completedOn: _parseDay(json['completedOn'] as String),
+    completedOn: parseIsoDay(json['completedOn'] as String),
   );
 }
 
@@ -168,23 +245,29 @@ class XpEntry {
   const XpEntry({
     required this.date,
     required this.amount,
-    required this.lessonId,
+    required this.source,
   });
+
+  /// [source] for XP earned in reviews.
+  static const reviewSource = 'review';
 
   final DateTime date;
   final int amount;
-  final String lessonId;
+
+  /// The lesson id, or [reviewSource].
+  final String source;
 
   Map<String, dynamic> toJson() => {
-    'date': _day(date),
+    'date': formatIsoDay(date),
     'amount': amount,
-    'lessonId': lessonId,
+    'source': source,
   };
 
   static XpEntry fromJson(Map<String, dynamic> json) => XpEntry(
-    date: _parseDay(json['date'] as String),
+    date: parseIsoDay(json['date'] as String),
     amount: json['amount'] as int,
-    lessonId: json['lessonId'] as String,
+    // Saved before reviews existed, when XP only came from lessons.
+    source: (json['source'] ?? json['lessonId']) as String,
   );
 }
 
@@ -206,6 +289,10 @@ class SavedMistake {
   final String yourAnswer;
   final String correctAnswer;
   final String explanation;
+
+  /// Identifies this mistake's schedule in [ProgressState.reviews]. The
+  /// prompt is unique within a lesson.
+  String get reviewKey => 'mistake:$lessonId:$prompt';
 
   Map<String, dynamic> toJson() => {
     'lessonId': lessonId,
@@ -251,4 +338,25 @@ class LessonCompletion {
     final minutes = (elapsed.inSeconds / 60).ceil();
     return minutes.clamp(1, estimatedMinutes * 2);
   }
+}
+
+/// Identifies a flashcard word's schedule in [ProgressState.reviews].
+String wordReviewKey(String lessonId, String word) => 'word:$lessonId:$word';
+
+/// One item rated in a review session.
+@immutable
+class ReviewCompletion {
+  const ReviewCompletion({
+    required this.key,
+    required this.rating,
+    required this.date,
+    this.minutes = 0,
+  });
+
+  final String key;
+  final ReviewRating rating;
+  final DateTime date;
+
+  /// Study minutes to add for the time spent since the last recorded item.
+  final int minutes;
 }

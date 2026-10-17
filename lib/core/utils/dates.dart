@@ -3,6 +3,19 @@ import 'package:intl/intl.dart';
 /// Strips the time from [date], keeping the local calendar day.
 DateTime dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
+/// [date] moved by [days] calendar days (DST-safe), date-only.
+DateTime addDays(DateTime date, int days) =>
+    DateTime(date.year, date.month, date.day + days);
+
+/// "2026-10-15".
+String formatIsoDay(DateTime d) =>
+    '${d.year.toString().padLeft(4, '0')}-'
+    '${d.month.toString().padLeft(2, '0')}-'
+    '${d.day.toString().padLeft(2, '0')}';
+
+/// Parses [formatIsoDay] output as a local, date-only day.
+DateTime parseIsoDay(String s) => dateOnly(DateTime.parse(s));
+
 /// Whole days from [from] to [to], ignoring time of day and DST shifts.
 int daysBetween(DateTime from, DateTime to) => DateTime.utc(
   to.year,
