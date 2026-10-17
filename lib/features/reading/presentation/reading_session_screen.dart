@@ -340,10 +340,13 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
         if (!didPop) _confirmLeave();
       },
       child: Scaffold(
-        appBar: _SessionTopBar(
+        appBar: TitledSessionTopBar(
           title: widget.passage.title,
+          closeTooltip: 'Close practice',
           onClose: _submitted ? _exit : _confirmLeave,
-          remaining: _timed && !_submitted ? _remaining : null,
+          trailing: _timed && !_submitted
+              ? TimerPill(remaining: _remaining, warningAt: _warningAt)
+              : null,
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
@@ -495,124 +498,6 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Close, the passage title and, in timed mode, the time left.
-class _SessionTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const _SessionTopBar({
-    required this.title,
-    required this.onClose,
-    this.remaining,
-  });
-
-  final String title;
-  final VoidCallback onClose;
-  final Duration? remaining;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(64);
-
-  @override
-  Widget build(BuildContext context) {
-    final remaining = this.remaining;
-    return TopBarSurface(
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: preferredSize.height,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: AppSpacing.xs,
-              end: AppSpacing.page,
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: onClose,
-                  tooltip: 'Close practice',
-                  icon: const Icon(Icons.close_rounded, color: AppColors.text),
-                  style: IconButton.styleFrom(
-                    minimumSize: const Size.square(48),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.xxs),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: AppTextStyles.labelLg,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (remaining != null) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  TimerPill(remaining: remaining),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// "18:42" in tabular figures. Turns to the warning color from 5:00. Not
-/// animated.
-class TimerPill extends StatelessWidget {
-  const TimerPill({super.key, required this.remaining});
-
-  final Duration remaining;
-
-  static String format(Duration d) {
-    final minutes = d.inMinutes;
-    final seconds = d.inSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:'
-        '${seconds.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final warning = remaining <= _warningAt;
-    final text = format(remaining);
-    return Semantics(
-      label:
-          'Time left: ${remaining.inMinutes} minutes '
-          '${remaining.inSeconds % 60} seconds',
-      excludeSemantics: true,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: warning ? AppColors.warningTint : AppColors.primaryTint,
-          borderRadius: AppRadii.pillRadius,
-          border: warning ? Border.all(color: AppColors.warning) : null,
-        ),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.smd,
-            vertical: AppSpacing.xs,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.timer_outlined,
-                size: 16,
-                color: warning ? AppColors.warning : AppColors.primary,
-              ),
-              const SizedBox(width: AppSpacing.xxs),
-              Text(
-                text,
-                key: const ValueKey('timer'),
-                style: AppTextStyles.tabular(
-                  AppTextStyles.labelLg,
-                ).copyWith(color: AppColors.text),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

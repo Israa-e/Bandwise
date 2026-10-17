@@ -29,6 +29,13 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/review/presentation/review_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/writing/domain/writing.dart';
+import '../../features/writing/presentation/annotated_essay_screen.dart';
+import '../../features/writing/presentation/criterion_detail_screen.dart';
+import '../../features/writing/presentation/revision_compare_screen.dart';
+import '../../features/writing/presentation/writing_editor_screen.dart';
+import '../../features/writing/presentation/writing_hub_screen.dart';
+import '../../features/writing/presentation/writing_result_screen.dart';
 import '../models/skill.dart';
 import '../widgets/app_bottom_nav.dart';
 import 'app_routes.dart';
@@ -89,6 +96,48 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '${AppRoutes.writing}/task/:id',
+        builder: (context, state) => WritingEditorScreen(
+          taskId: state.pathParameters['id']!,
+          mode: state.uri.queryParameters['mode'] == 'timed'
+              ? WritingMode.timed
+              : WritingMode.learning,
+        ),
+      ),
+      GoRoute(
+        path: '${AppRoutes.writing}/revise/:id',
+        builder: (context, state) => WritingEditorScreen.revise(
+          submissionId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '${AppRoutes.writing}/submission/:id',
+        builder: (context, state) => WritingResultScreen(
+          submissionId: state.pathParameters['id']!,
+          timeUp: state.uri.queryParameters['timeUp'] == '1',
+        ),
+        routes: [
+          GoRoute(
+            path: 'criterion/:criterion',
+            builder: (context, state) => CriterionDetailScreen(
+              submissionId: state.pathParameters['id']!,
+              criterionId: state.pathParameters['criterion']!,
+            ),
+          ),
+          GoRoute(
+            path: 'essay',
+            builder: (context, state) =>
+                AnnotatedEssayScreen(submissionId: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: 'compare',
+            builder: (context, state) => RevisionCompareScreen(
+              submissionId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
         path: AppRoutes.notifications,
         builder: (context, state) => const NotificationsScreen(),
       ),
@@ -113,6 +162,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'reading',
                     builder: (context, state) => const ReadingHubScreen(),
+                  ),
+                  GoRoute(
+                    path: 'writing',
+                    builder: (context, state) => const WritingHubScreen(),
                   ),
                   GoRoute(
                     path: 'skill/:skill',
@@ -158,6 +211,7 @@ const _mainPaths = [
   AppRoutes.review,
   AppRoutes.notifications,
   AppRoutes.reading,
+  AppRoutes.writing,
 ];
 
 bool _isMainPath(String location) =>

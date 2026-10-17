@@ -482,12 +482,21 @@ void main() {
   });
 
   group('practice tab', () {
-    testWidgets('four skill cards; Reading opens the hub, others are '
-        'coming soon', (tester) async {
+    testWidgets('four skill cards; Reading and Writing open their hubs, '
+        'the others are coming soon', (tester) async {
       await _launchApp(tester);
       await _tapTab(tester, 'Practice');
       expect(find.byType(PracticeSkillCard), findsNWidgets(4));
-      expect(find.text('Coming soon'), findsNWidgets(3));
+      expect(find.text('Coming soon'), findsNWidgets(2));
+      for (final skill in ['listening', 'speaking']) {
+        expect(
+          find.descendant(
+            of: find.byKey(ValueKey('practice-$skill')),
+            matching: find.text('Coming soon'),
+          ),
+          findsOneWidget,
+        );
+      }
 
       await _tap(tester, find.byKey(const ValueKey('practice-listening')));
       expect(find.byType(SkillComingSoonScreen), findsOneWidget);

@@ -194,6 +194,18 @@ class ProgressState {
     );
   }
 
+  /// Records a submitted essay: study minutes and a streak day.
+  ProgressState withWritingSubmission({
+    required DateTime date,
+    required int minutes,
+  }) {
+    final day = dateOnly(date);
+    return _copyWith(
+      minutesByDay: {...minutesByDay, day: minutesOn(day) + minutes},
+      activeDays: {...activeDays, day},
+    );
+  }
+
   /// Records one reviewed item: its next due date, XP (capped per day),
   /// study minutes and a streak day.
   ProgressState withReview(ReviewCompletion r) {

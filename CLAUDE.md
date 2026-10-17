@@ -34,6 +34,17 @@ Independent IELTS Academic prep app. Not affiliated with IELTS, British Council,
 - Dates in mock data are in the future relative to today.
 - Timed exam screens hide the bottom nav and have no hints or animations.
 
+## Writing feedback rules (never break these)
+- The overall and per-criterion estimates are RANGES 0.5 wide, in 0.5 steps (e.g. 6.0–6.5), always labelled "AI practice estimate — not an official IELTS score".
+- Task 1 criteria: Task Achievement, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy. Task 2 uses Task Response instead of Task Achievement.
+- No other numbers about quality: no projected bands, no per-phrase bands ("Band 7+ alternative" becomes "Suggested alternative"), no percentages, no score deltas between drafts, no descriptor label next to a range.
+- From the Stitch writing designs, leave out: "Projected: Band 6.5 → 7.5", the "Lexical Range Band 7.0" and "Grammar Accuracy 68%" tiles, "Band target 7.5+", "Cohesion +15%", the 78% ring, "Fastest ROI", "Competent" labels.
+- Feedback never rewrites the student's essay. No "Accept suggestion": the note sheet has "Got it" and "Next". The student makes changes themselves when revising.
+- Feedback (WritingFeedback) is validated before it is shown: ranges 1–9 in 0.5 steps, criteria match the task type, the overall range lies within the criteria span; an annotation is dropped if text[start:end] != original.
+- The app never calls an AI API. Until the backend exists, the mock reviews only the sample essays; any other text gets general "Demo feedback — AI review isn't connected yet" with no ranges and no annotations.
+- Mock feedback quotes the sample essays exactly; word counts are computed, never hardcoded.
+- Timed writing: autocorrect, suggestions and spell check are off (computer-delivered IELTS has none).
+
 ## Working rules
 - Build shared widgets before screens; reuse them.
 - Every screen supports loading, empty, and error states where relevant.

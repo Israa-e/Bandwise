@@ -5,6 +5,7 @@ import '../../learn/domain/learning_path.dart';
 import '../../progress/domain/progress_state.dart';
 import '../../reading/domain/reading.dart';
 import '../../review/domain/review_planner.dart';
+import '../../writing/domain/writing_submission.dart';
 import '../domain/home_repository.dart';
 import '../domain/home_summary.dart';
 
@@ -13,6 +14,7 @@ class LiveHomeRepository implements HomeRepository {
   const LiveHomeRepository({
     required this.path,
     required this.passages,
+    required this.writing,
     required this.today,
   });
 
@@ -21,6 +23,9 @@ class LiveHomeRepository implements HomeRepository {
 
   /// Reading passages, for reading mistakes due for review.
   final Future<List<ReadingPassage>> passages;
+
+  /// Submitted essays, for the Writing card.
+  final Future<List<WritingSubmission>> writing;
   final DateTime today;
 
   @override
@@ -44,10 +49,12 @@ class LiveHomeRepository implements HomeRepository {
       nextLesson: next == null ? null : _nextLesson(path, next),
       mistakesDue: due.where((i) => i.isMistake).length,
       wordsDue: due.whereType<WordReviewItem>().length,
-      // Only Reading has practice so far.
+      // Listening and Speaking have no practice yet.
       skills: {
         if (progress.readingAttempts.isNotEmpty)
           Skill.reading: readingActivity(progress.readingAttempts, today),
+        if (await writing case final essays when essays.isNotEmpty)
+          Skill.writing: writingActivity(essays, today),
       },
       minutesByDay: progress.minutesByDay,
     );
@@ -68,6 +75,21 @@ class LiveHomeRepository implements HomeRepository {
       lastPracticed: attempts
           .map((a) => a.date)
           .reduce((a, b) => a.isAfter(b) ? a : b),
+    );
+  }
+
+  /// Writing practice as Home shows it: essays submitted, no scores.
+  static SkillActivity writingActivity(
+    List<WritingSubmission> essays,
+    DateTime today,
+  ) {
+    final day = dateOnly(today);
+    final monday = addDays(day, -(day.weekday - DateTime.monday));
+    final dates = [for (final e in essays) dateOnly(e.submittedAt)];
+    return SkillActivity(
+      attempts: essays.length,
+      thisWeek: dates.where((d) => !d.isBefore(monday)).length,
+      lastPracticed: dates.reduce((a, b) => a.isAfter(b) ? a : b),
     );
   }
 

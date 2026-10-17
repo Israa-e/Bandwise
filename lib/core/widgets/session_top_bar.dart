@@ -81,3 +81,79 @@ class SessionTopBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
+
+/// Top bar for a session with a title: close, the title (and optional
+/// subtitle such as "Draft saved"), and an optional trailing widget such as
+/// a timer.
+class TitledSessionTopBar extends StatelessWidget
+    implements PreferredSizeWidget {
+  const TitledSessionTopBar({
+    super.key,
+    required this.title,
+    required this.onClose,
+    this.closeTooltip = 'Close',
+    this.subtitle,
+    this.trailing,
+  });
+
+  final String title;
+  final VoidCallback onClose;
+  final String closeTooltip;
+  final Widget? subtitle;
+  final Widget? trailing;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(64);
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitle = this.subtitle;
+    final trailing = this.trailing;
+    return TopBarSurface(
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: preferredSize.height,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: AppSpacing.xs,
+              end: AppSpacing.page,
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: onClose,
+                  tooltip: closeTooltip,
+                  icon: const Icon(Icons.close_rounded, color: AppColors.text),
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size.square(48),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xxs),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.labelLg,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      ?subtitle,
+                    ],
+                  ),
+                ),
+                if (trailing != null) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  trailing,
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

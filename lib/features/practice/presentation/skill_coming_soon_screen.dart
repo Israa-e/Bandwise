@@ -17,8 +17,8 @@ class SkillComingSoonScreen extends StatelessWidget {
       icon: skill.icon,
       heading: '${skill.label} practice is coming soon',
       message:
-          'In the meantime, you can practise Reading from the Practice '
-          'tab.',
+          'In the meantime, you can practise Reading and Writing from the '
+          'Practice tab.',
     );
   }
 }

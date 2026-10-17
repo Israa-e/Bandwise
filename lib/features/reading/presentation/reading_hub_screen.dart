@@ -92,7 +92,7 @@ class _ReadingHubScreenState extends ConsumerState<ReadingHubScreen> {
     return ListView(
       padding: _padding,
       children: [
-        const _SectionTitle('Passage'),
+        const SectionTitle('Passage'),
         for (final p in passages) ...[
           SelectionCard(
             key: ValueKey('passage-${p.id}'),
@@ -109,7 +109,7 @@ class _ReadingHubScreenState extends ConsumerState<ReadingHubScreen> {
           const SizedBox(height: AppSpacing.smd),
         ],
         const SizedBox(height: AppSpacing.sm),
-        const _SectionTitle('Mode'),
+        const SectionTitle('Mode'),
         SelectionCard(
           title: 'Learning',
           subtitle: 'No timer. Check each answer and see why.',
@@ -128,7 +128,7 @@ class _ReadingHubScreenState extends ConsumerState<ReadingHubScreen> {
           onTap: () => setState(() => _mode = ReadingMode.timed),
         ),
         const SizedBox(height: AppSpacing.lg),
-        const _SectionTitle('Question type'),
+        const SectionTitle('Question type'),
         if (timed)
           Text(
             'Timed practice uses every question in the passage.',
@@ -139,13 +139,13 @@ class _ReadingHubScreenState extends ConsumerState<ReadingHubScreen> {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              _FilterChip(
+              AppFilterChip(
                 label: 'All types',
                 selected: type == null,
                 onTap: () => setState(() => _type = null),
               ),
               for (final t in passage.types)
-                _FilterChip(
+                AppFilterChip(
                   label: t.label,
                   selected: type == t,
                   onTap: () => setState(() => _type = t),
@@ -153,75 +153,9 @@ class _ReadingHubScreenState extends ConsumerState<ReadingHubScreen> {
             ],
           ),
         const SizedBox(height: AppSpacing.xl),
-        const _SectionTitle('Recent attempts'),
+        const SectionTitle('Recent attempts'),
         _RecentAttempts(attempts: attempts, passages: passages),
       ],
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.sm),
-      child: Semantics(
-        header: true,
-        child: Text(text, style: AppTextStyles.headlineSm),
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: Material(
-        color: selected ? AppColors.selectedSurface : AppColors.card,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadii.pillRadius,
-          side: BorderSide(
-            color: selected ? AppColors.primary : AppColors.border,
-            width: selected ? 2 : 1.5,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 40),
-            child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: Text(
-                label,
-                style: AppTextStyles.labelMd.copyWith(
-                  color: selected ? AppColors.primary : AppColors.text,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

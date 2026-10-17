@@ -6,8 +6,8 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 
-/// The Practice tab: one card per skill. Reading opens the Reading hub; the
-/// other skills are coming soon.
+/// The Practice tab: one card per skill. Reading and Writing open their
+/// hubs; Listening and Speaking are coming soon.
 ///
 /// [initialSkill] comes from the `skill` query parameter, e.g. when a skill
 /// card on Home opens this tab, and is shown highlighted.
@@ -16,18 +16,22 @@ class PracticeScreen extends StatelessWidget {
 
   final Skill? initialSkill;
 
-  static bool isAvailable(Skill skill) => skill == Skill.reading;
+  static bool isAvailable(Skill skill) => hubFor(skill) != null;
+
+  /// The skill's practice hub, or null while it's coming soon.
+  static String? hubFor(Skill skill) => switch (skill) {
+    Skill.reading => AppRoutes.readingHub,
+    Skill.writing => AppRoutes.writingHub,
+    Skill.listening || Skill.speaking => null,
+  };
 
   @override
   Widget build(BuildContext context) {
     Widget card(Skill skill) => PracticeSkillCard(
       skill: skill,
       selected: skill == initialSkill,
-      onTap: () => context.push(
-        isAvailable(skill)
-            ? AppRoutes.readingHub
-            : AppRoutes.practiceSkill(skill),
-      ),
+      onTap: () =>
+          context.push(hubFor(skill) ?? AppRoutes.practiceSkill(skill)),
     );
 
     Widget row(Skill a, Skill b) => IntrinsicHeight(
@@ -81,9 +85,12 @@ class PracticeSkillCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final available = PracticeScreen.isAvailable(skill);
-    final subtitle = available
-        ? 'Passages with True / False / Not Given, headings and more'
-        : 'Practice sets on the way';
+    final subtitle = switch (skill) {
+      Skill.reading =>
+        'Passages with True / False / Not Given, headings and more',
+      Skill.writing => 'Task 1 reports and Task 2 essays, with feedback',
+      Skill.listening || Skill.speaking => 'Practice sets on the way',
+    };
     return AppCard(
       key: ValueKey('practice-${skill.name}'),
       selected: selected,
