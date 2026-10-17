@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/widgets.dart';
 
-/// "Up next for review": vocabulary cards due today.
+/// "Up next for review": mistakes saved from lessons.
 class ReviewCard extends StatelessWidget {
   const ReviewCard({super.key, required this.dueCount, required this.onOpen});
 
@@ -12,9 +12,7 @@ class ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final due = dueCount == 1
-        ? '1 vocabulary card due'
-        : '$dueCount vocabulary cards due';
+    final due = dueCount == 1 ? '1 saved mistake' : '$dueCount saved mistakes';
     return AppCard(
       onTap: onOpen,
       semanticLabel: 'Up next for review: $due',

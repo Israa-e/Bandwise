@@ -41,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
     final ready =
         data != null &&
         !summary.hasError &&
-        (data.currentLesson != null || start.hasValue);
+        (data.hasCompletedLessons || start.hasValue);
     final failed = summary.hasError || (start.hasError && !start.hasValue);
 
     final Widget body;
@@ -97,7 +97,7 @@ class _HomeContent extends ConsumerWidget {
       minutesByDay: summary.minutesByDay,
       dailyGoal: dailyGoal,
     );
-    final lesson = summary.currentLesson;
+    final lesson = summary.nextLesson;
     void openLesson(String id) => context.push(AppRoutes.lessonPath(id));
 
     return ListView(
@@ -117,10 +117,10 @@ class _HomeContent extends ConsumerWidget {
           dailyGoal: dailyGoal,
         ),
         const SizedBox(height: AppSpacing.md),
-        if (lesson != null)
-          ContinueCard.resume(lesson: lesson, onOpen: openLesson)
-        else
-          ContinueCard.start(start: start!, onOpen: openLesson),
+        if (!summary.hasCompletedLessons)
+          ContinueCard.start(start: start!, lesson: lesson, onOpen: openLesson)
+        else if (lesson != null)
+          ContinueCard.next(lesson: lesson, onOpen: openLesson),
         if (summary.reviewsDue > 0) ...[
           const SizedBox(height: AppSpacing.smd),
           ReviewCard(

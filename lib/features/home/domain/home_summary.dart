@@ -14,7 +14,8 @@ class HomeSummary {
     required this.totalXp,
     required this.xpToday,
     required this.minutesToday,
-    required this.currentLesson,
+    required this.hasCompletedLessons,
+    required this.nextLesson,
     required this.reviewsDue,
     required this.skills,
     required this.minutesByDay,
@@ -27,10 +28,14 @@ class HomeSummary {
   final int xpToday;
   final int minutesToday;
 
-  /// The lesson in progress, or null if the learner hasn't started one.
-  final LessonProgress? currentLesson;
+  /// False on day 1: Home recommends the starting unit instead of
+  /// [nextLesson].
+  final bool hasCompletedLessons;
 
-  /// Vocabulary cards due for spaced review.
+  /// The next lesson on the path, or null when nothing is left to open.
+  final NextLesson? nextLesson;
+
+  /// Mistakes saved for review.
   final int reviewsDue;
   final Map<Skill, SkillActivity> skills;
 
@@ -42,17 +47,16 @@ class HomeSummary {
       skills[skill] ?? const SkillActivity();
 }
 
-/// A lesson the learner has started.
+/// The next lesson on the learner's path.
 @immutable
-class LessonProgress {
-  const LessonProgress({
+class NextLesson {
+  const NextLesson({
     required this.id,
     required this.unit,
     required this.unitTitle,
-    required this.lessonNumber,
-    required this.lessonCount,
+    required this.label,
     required this.title,
-    required this.progress,
+    required this.unitProgress,
     required this.estimatedMinutes,
   });
 
@@ -61,14 +65,13 @@ class LessonProgress {
   /// 1-based unit number.
   final int unit;
   final String unitTitle;
-  final int lessonNumber;
-  final int lessonCount;
+
+  /// "Lesson 2" or "Checkpoint".
+  final String label;
   final String title;
 
-  /// 0.0 to 1.0.
-  final double progress;
-
-  /// Estimated minutes left.
+  /// Share of the unit completed, 0.0 to 1.0.
+  final double unitProgress;
   final int estimatedMinutes;
 }
 

@@ -7,7 +7,7 @@ import '../../features/auth/presentation/auth_placeholder_screens.dart';
 import '../../features/dev_gallery/presentation/component_gallery_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/learn/presentation/learn_screen.dart';
-import '../../features/learn/presentation/lesson_screen.dart';
+import '../../features/lesson/presentation/lesson_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/onboarding/domain/onboarding_state.dart';
 import '../../features/onboarding/presentation/current_level_screen.dart';

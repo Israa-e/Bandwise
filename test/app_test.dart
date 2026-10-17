@@ -2,6 +2,7 @@ import 'package:bandwise/app.dart';
 import 'package:bandwise/core/widgets/widgets.dart';
 import 'package:bandwise/features/dev_gallery/presentation/component_gallery_screen.dart';
 import 'package:bandwise/features/home/presentation/widgets/home_top_bar.dart';
+import 'package:bandwise/features/learn/presentation/learn_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,6 +45,8 @@ void main() {
       await tester.pumpAndSettle();
       if (tab == 'Home') {
         expect(find.byType(HomeTopBar), findsOneWidget);
+      } else if (tab == 'Learn') {
+        expect(find.byType(LearnScreen), findsOneWidget);
       } else {
         expect(find.widgetWithText(AppBar, tab), findsOneWidget);
       }

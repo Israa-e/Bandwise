@@ -75,16 +75,26 @@ class _MockDataSwitches extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final fixture = ref.watch(homeFixtureProvider);
-    return SwitchCard(
-      title: 'Home: active user',
-      subtitle: fixture == HomeFixture.activeUser
-          ? 'Showing a learner with history. Turn off for a new user.'
-          : 'Showing a new user on day 1. Turn on for a learner with history.',
-      value: fixture == HomeFixture.activeUser,
-      onChanged: (active) => ref
-          .read(homeFixtureProvider.notifier)
-          .select(active ? HomeFixture.activeUser : HomeFixture.newUser),
-    );
+    void select(HomeFixture? f) =>
+        ref.read(homeFixtureProvider.notifier).select(f);
+    SelectionCardState stateOf(HomeFixture? f) =>
+        f == fixture ? SelectionCardState.selected : SelectionCardState.idle;
+
+    return _Stack([
+      const Text('Home data', style: AppTextStyles.labelLg),
+      SelectionCard(
+        title: 'Live progress',
+        subtitle: 'Saved lessons, XP and streak on this device',
+        state: stateOf(null),
+        onTap: () => select(null),
+      ),
+      for (final f in HomeFixture.values)
+        SelectionCard(
+          title: 'Mock: ${f.label}',
+          state: stateOf(f),
+          onTap: () => select(f),
+        ),
+    ]);
   }
 }
 

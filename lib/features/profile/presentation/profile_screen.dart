@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
+import '../../progress/presentation/progress_controller.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -25,6 +26,12 @@ class ProfileScreen extends ConsumerWidget {
                     label: 'Component gallery',
                     leadingIcon: Icons.widgets_outlined,
                     onPressed: () => context.push(AppRoutes.componentGallery),
+                  ),
+                  AppButton.ghost(
+                    label: 'Reset progress',
+                    leadingIcon: Icons.delete_sweep_outlined,
+                    onPressed: () =>
+                        ref.read(progressControllerProvider.notifier).reset(),
                   ),
                   AppButton.ghost(
                     label: 'Reset onboarding',

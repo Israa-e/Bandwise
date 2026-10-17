@@ -12,7 +12,7 @@ import 'package:bandwise/features/home/domain/weekly_activity.dart';
 import 'package:bandwise/features/home/presentation/home_providers.dart';
 import 'package:bandwise/features/home/presentation/home_screen.dart';
 import 'package:bandwise/features/home/presentation/widgets/home_skeleton.dart';
-import 'package:bandwise/features/learn/presentation/lesson_screen.dart';
+import 'package:bandwise/features/lesson/presentation/lesson_screen.dart';
 import 'package:bandwise/features/notifications/presentation/notifications_screen.dart';
 import 'package:bandwise/features/onboarding/domain/onboarding_state.dart';
 import 'package:bandwise/features/onboarding/presentation/onboarding_controller.dart';
@@ -139,7 +139,7 @@ void main() {
       );
       expect(find.text('Lesson 1 · Not started'), findsOneWidget);
       expect(find.text('Start lesson'), findsOneWidget);
-      expect(find.text('Resume lesson'), findsNothing);
+      expect(find.text('50% of unit'), findsNothing);
 
       // No reviews due.
       expect(find.text('UP NEXT FOR REVIEW'), findsNothing);
@@ -188,9 +188,9 @@ void main() {
       expect(find.text('+45 today'), findsOneWidget);
       expect(find.text('Active today'), findsOneWidget);
       expect(find.text('5m left'), findsOneWidget);
-      expect(find.text('Resume lesson'), findsOneWidget);
-      expect(find.text('65% complete'), findsOneWidget);
-      expect(find.text('12 vocabulary cards due'), findsOneWidget);
+      expect(find.text('Building a clear main argument'), findsOneWidget);
+      expect(find.text('50% of unit'), findsOneWidget);
+      expect(find.text('12 saved mistakes'), findsOneWidget);
 
       expect(find.text('88% accuracy'), findsOneWidget);
       expect(find.text('74% accuracy'), findsOneWidget);
@@ -313,12 +313,12 @@ void main() {
       tester,
     ) async {
       await _launchApp(tester, HomeFixture.activeUser);
-      await tester.tap(find.text('Resume lesson'));
+      await tester.tap(find.text('Start lesson'));
       await tester.pumpAndSettle();
       expect(find.byType(LessonScreen), findsOneWidget);
       expect(find.byType(AppBottomNav), findsNothing);
 
-      await tester.tap(find.byType(AppBackButton));
+      await tester.tap(find.byTooltip('Close lesson'));
       await tester.pumpAndSettle();
       expect(find.byType(HomeScreen), findsOneWidget);
       expect(find.byType(AppBottomNav), findsOneWidget);
@@ -334,7 +334,7 @@ void main() {
 
     testWidgets('review card opens review', (tester) async {
       await _launchApp(tester, HomeFixture.activeUser);
-      await tester.tap(find.text('12 vocabulary cards due'));
+      await tester.tap(find.text('12 saved mistakes'));
       await tester.pumpAndSettle();
       expect(find.byType(ReviewScreen), findsOneWidget);
       expect(find.byType(AppBottomNav), findsNothing);
@@ -375,7 +375,8 @@ void main() {
       overrides: [todayProvider.overrideWithValue(_today)],
     );
     addTearDown(container.dispose);
-    expect(container.read(homeFixtureProvider), HomeFixture.newUser);
+    // Live progress by default.
+    expect(container.read(homeFixtureProvider), isNull);
     container.read(homeFixtureProvider.notifier).select(HomeFixture.activeUser);
     final repo = container.read(homeRepositoryProvider) as MockHomeRepository;
     expect(repo.fixture, HomeFixture.activeUser);

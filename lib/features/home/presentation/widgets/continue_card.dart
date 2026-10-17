@@ -5,51 +5,43 @@ import '../../../../core/widgets/widgets.dart';
 import '../../../onboarding/domain/placement.dart';
 import '../../domain/home_summary.dart';
 
-/// Estimated length of a unit's first lesson, until lesson data exists.
-const _firstLessonMinutes = 10;
+/// Used when the first lesson's details aren't available (mock data).
+const _fallbackMinutes = 8;
 
-/// "Continue learning": the lesson in progress, or the recommended starting
-/// unit for a learner who hasn't started yet.
+/// "Continue learning": the next lesson on the path, or the recommended
+/// starting unit for a learner who hasn't finished a lesson yet.
 class ContinueCard extends StatelessWidget {
-  const ContinueCard.resume({
+  const ContinueCard.next({
     super.key,
-    required LessonProgress this.lesson,
+    required NextLesson this.lesson,
     required this.onOpen,
   }) : start = null;
 
+  /// [lesson] is the first lesson of [start], when known.
   const ContinueCard.start({
     super.key,
     required StartingPoint this.start,
+    this.lesson,
     required this.onOpen,
-  }) : lesson = null;
+  });
 
-  final LessonProgress? lesson;
+  final NextLesson? lesson;
+
+  /// Set for a learner who hasn't finished a lesson yet.
   final StartingPoint? start;
 
   /// Opens the lesson. Receives the lesson id.
   final ValueChanged<String> onOpen;
 
-  /// Lesson id for the first lesson of [StartingPoint.unit].
-  static String firstLessonId(StartingPoint start) => 'u${start.unit}-l1';
-
   @override
   Widget build(BuildContext context) {
     final lesson = this.lesson;
     final start = this.start;
-    final (tag, tagIcon, title, minutes) = lesson != null
-        ? (
-            'Unit ${lesson.unit} · ${lesson.unitTitle}',
-            null,
-            lesson.title,
-            lesson.estimatedMinutes,
-          )
-        : (
-            'Recommended start',
-            Icons.flag_rounded,
-            start!.title,
-            _firstLessonMinutes,
-          );
-    final id = lesson?.id ?? firstLessonId(start!);
+    final (tag, tagIcon, title) = start == null
+        ? ('Unit ${lesson!.unit} · ${lesson.unitTitle}', null, lesson.title)
+        : ('Recommended start', Icons.flag_rounded, start.title);
+    final minutes = lesson?.estimatedMinutes ?? _fallbackMinutes;
+    final id = lesson?.id ?? 'u${start!.unit}-l1';
 
     return AppCard(
       child: Column(
@@ -88,19 +80,19 @@ class ContinueCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.smd),
           Text(title, style: AppTextStyles.headlineSm),
           const SizedBox(height: AppSpacing.sm),
-          if (lesson != null) ...[
+          if (start == null) ...[
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    'Lesson ${lesson.lessonNumber} of ${lesson.lessonCount}',
+                    lesson!.label,
                     style: AppTextStyles.labelMd.copyWith(
                       color: AppColors.textMuted,
                     ),
                   ),
                 ),
                 Text(
-                  '${(lesson.progress * 100).round()}% complete',
+                  '${(lesson.unitProgress * 100).round()}% of unit',
                   style: AppTextStyles.tabular(
                     AppTextStyles.labelMd,
                   ).copyWith(color: AppColors.primary),
@@ -109,12 +101,14 @@ class ContinueCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             AppLinearProgress(
-              value: lesson.progress,
-              semanticLabel: 'Lesson progress',
+              value: lesson.unitProgress,
+              semanticLabel: 'Unit progress',
             ),
           ] else
             Text(
-              'Lesson 1 · Not started',
+              lesson == null
+                  ? 'Lesson 1 · Not started'
+                  : 'Lesson 1 · ${lesson.title}',
               style: AppTextStyles.labelMd.copyWith(color: AppColors.textMuted),
             ),
           const SizedBox(height: AppSpacing.md),
@@ -145,7 +139,7 @@ class ContinueCard extends StatelessWidget {
                   ],
                 ),
                 AppButton.primary(
-                  label: lesson != null ? 'Resume lesson' : 'Start lesson',
+                  label: 'Start lesson',
                   trailingIcon: Icons.arrow_forward_rounded,
                   compact: true,
                   expand: false,

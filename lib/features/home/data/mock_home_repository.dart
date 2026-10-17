@@ -3,7 +3,8 @@ import '../../../core/utils/dates.dart';
 import '../domain/home_repository.dart';
 import '../domain/home_summary.dart';
 
-/// Sample learners for the mock repository.
+/// Sample learners for the mock repository. Debug-only overrides of the
+/// live progress (see the component gallery).
 enum HomeFixture {
   /// Day 1: no streak, no XP, no activity, no reviews due.
   newUser('New user'),
@@ -47,7 +48,8 @@ const _newUser = HomeSummary(
   totalXp: 0,
   xpToday: 0,
   minutesToday: 0,
-  currentLesson: null,
+  hasCompletedLessons: false,
+  nextLesson: null,
   reviewsDue: 0,
   skills: {},
   minutesByDay: {},
@@ -66,15 +68,15 @@ HomeSummary _activeUser(DateTime today) {
     totalXp: 1240,
     xpToday: 45,
     minutesToday: 15,
-    currentLesson: const LessonProgress(
+    hasCompletedLessons: true,
+    nextLesson: const NextLesson(
       id: 'u3-l4',
       unit: 3,
       unitTitle: 'Paraphrasing and argument structure',
-      lessonNumber: 4,
-      lessonCount: 6,
-      title: 'Paraphrasing with synonyms and word forms',
-      progress: 0.65,
-      estimatedMinutes: 8,
+      label: 'Lesson 4',
+      title: 'Building a clear main argument',
+      unitProgress: 0.5,
+      estimatedMinutes: 10,
     ),
     reviewsDue: 12,
     skills: {

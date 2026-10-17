@@ -12,7 +12,8 @@ class ReviewScreen extends StatelessWidget {
       title: 'Review',
       icon: Icons.style_rounded,
       heading: 'Review is coming soon',
-      message: 'Spaced review of your saved vocabulary will appear here.',
+      message:
+          'Practice with the mistakes you saved in lessons will appear here.',
     );
   }
 }
