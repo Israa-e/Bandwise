@@ -8,6 +8,9 @@ abstract final class AppRadii {
   static const double nested = 12;
   static const double pill = 999;
 
+  /// Top corners of chart bars.
+  static const double bar = 6;
+
   static const cardRadius = BorderRadius.all(Radius.circular(card));
   static const buttonRadius = BorderRadius.all(Radius.circular(button));
   static const inputRadius = BorderRadius.all(Radius.circular(input));

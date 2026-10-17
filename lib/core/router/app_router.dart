@@ -7,6 +7,8 @@ import '../../features/auth/presentation/auth_placeholder_screens.dart';
 import '../../features/dev_gallery/presentation/component_gallery_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/learn/presentation/learn_screen.dart';
+import '../../features/learn/presentation/lesson_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/onboarding/domain/onboarding_state.dart';
 import '../../features/onboarding/presentation/current_level_screen.dart';
 import '../../features/onboarding/presentation/onboarding_controller.dart';
@@ -21,7 +23,9 @@ import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/practice/presentation/practice_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
+import '../../features/review/presentation/review_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../models/skill.dart';
 import '../widgets/app_bottom_nav.dart';
 import 'app_routes.dart';
 
@@ -56,12 +60,39 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.createAccount,
         builder: (context, state) => const CreateAccountScreen(),
       ),
+      GoRoute(
+        path: '${AppRoutes.lesson}/:id',
+        builder: (context, state) =>
+            LessonScreen(lessonId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoutes.review,
+        builder: (context, state) => const ReviewScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (context, state) => const NotificationsScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => _TabShell(shell: shell),
         branches: [
           _branch(AppRoutes.home, const HomeScreen()),
           _branch(AppRoutes.learn, const LearnScreen()),
-          _branch(AppRoutes.practice, const PracticeScreen()),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.practice,
+                builder: (context, state) {
+                  final name = state.uri.queryParameters['skill'];
+                  return PracticeScreen(
+                    initialSkill: Skill.values
+                        .where((s) => s.name == name)
+                        .firstOrNull,
+                  );
+                },
+              ),
+            ],
+          ),
           _branch(AppRoutes.progress, const ProgressScreen()),
           _branch(AppRoutes.profile, const ProfileScreen()),
         ],
@@ -78,18 +109,26 @@ final routerProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
-const _tabPaths = {
+/// Screens that need onboarding to be finished: the tabs and everything
+/// opened from them.
+const _mainPaths = [
   AppRoutes.home,
   AppRoutes.learn,
   AppRoutes.practice,
   AppRoutes.progress,
   AppRoutes.profile,
-};
+  AppRoutes.lesson,
+  AppRoutes.review,
+  AppRoutes.notifications,
+];
+
+bool _isMainPath(String location) =>
+    _mainPaths.any((path) => location == path || location.startsWith('$path/'));
 
 /// Keeps navigation consistent with saved onboarding state, including when
 /// the platform restores a URL (web refresh, deep link):
 /// - until saved state has loaded, everything goes through the splash;
-/// - unfinished onboarding can't open the main tabs;
+/// - unfinished onboarding can't open the main tabs or screens under them;
 /// - finished onboarding can't reopen onboarding screens.
 String? _guard(Ref ref, String location) {
   final onboarding = ref.read(onboardingControllerProvider);
@@ -100,7 +139,7 @@ String? _guard(Ref ref, String location) {
   final inOnboarding =
       location == AppRoutes.welcome ||
       location.startsWith('${AppRoutes.onboarding}/');
-  if (!state.completed && _tabPaths.contains(location)) {
+  if (!state.completed && _isMainPath(location)) {
     return onboardingPath(state.step);
   }
   if (state.completed && inOnboarding) return AppRoutes.home;

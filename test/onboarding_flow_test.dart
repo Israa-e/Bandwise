@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:bandwise/app.dart';
 import 'package:bandwise/core/widgets/widgets.dart';
+import 'package:bandwise/features/home/data/mock_home_repository.dart';
+import 'package:bandwise/features/home/presentation/home_providers.dart';
 import 'package:bandwise/features/home/presentation/home_screen.dart';
 import 'package:bandwise/features/onboarding/data/mock_placement_repository.dart';
 import 'package:bandwise/features/onboarding/domain/onboarding_state.dart';
@@ -25,7 +27,17 @@ void main() {
       ProviderScope(
         // A new ProviderScope is a fresh app start; prefs survive it.
         key: UniqueKey(),
-        overrides: [todayProvider.overrideWithValue(_today)],
+        overrides: [
+          todayProvider.overrideWithValue(_today),
+          // Home loads without a delay, so no timer outlives the test.
+          homeRepositoryProvider.overrideWithValue(
+            MockHomeRepository(
+              fixture: HomeFixture.newUser,
+              today: _today,
+              delay: Duration.zero,
+            ),
+          ),
+        ],
         child: const BandwiseApp(),
       ),
     );

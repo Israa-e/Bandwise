@@ -32,8 +32,14 @@ class PlacementQuestion {
 /// Where the plan suggests the learner starts. Rule-based, not a level or band.
 @immutable
 class StartingPoint {
-  const StartingPoint({required this.title, required this.reason});
+  const StartingPoint({
+    required this.unit,
+    required this.title,
+    required this.reason,
+  });
 
+  /// 1-based unit number.
+  final int unit;
   final String title;
   final String reason;
 
@@ -54,6 +60,7 @@ class StartingPoint {
       final ratio = correctAnswers / totalQuestions;
       final unit = ratio < 0.4 ? 0 : (ratio < 0.75 ? 1 : 2);
       return StartingPoint(
+        unit: unit + 1,
         title: _units[unit],
         reason:
             'Based on your placement check '
@@ -67,11 +74,13 @@ class StartingPoint {
         EnglishLevel.upperIntermediate || EnglishLevel.advanced => 2,
       };
       return StartingPoint(
+        unit: unit + 1,
         title: _units[unit],
         reason: 'Based on your self-assessment. You can change it anytime.',
       );
     }
     return StartingPoint(
+      unit: 1,
       title: _units[0],
       reason: 'Starting from the beginning. You can change it anytime.',
     );

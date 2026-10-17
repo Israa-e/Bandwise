@@ -4,6 +4,8 @@ import '../models/skill.dart';
 import '../theme/app_theme.dart';
 
 /// Rounded pill used for badges, tags and status labels.
+///
+/// A label too long for the available width is cut with an ellipsis.
 class AppPill extends StatelessWidget {
   const AppPill({
     super.key,
@@ -43,10 +45,14 @@ class AppPill extends StatelessWidget {
             Icon(icon, size: small ? 14 : 16, color: iconColor ?? foreground),
             const SizedBox(width: AppSpacing.xxs),
           ],
-          Text(
-            label,
-            style: (small ? AppTextStyles.labelSm : AppTextStyles.labelMd)
-                .copyWith(color: foreground),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: (small ? AppTextStyles.labelSm : AppTextStyles.labelMd)
+                  .copyWith(color: foreground),
+            ),
           ),
         ],
       ),

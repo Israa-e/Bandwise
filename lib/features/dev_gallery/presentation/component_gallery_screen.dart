@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/skill.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../home/data/mock_home_repository.dart';
+import '../../home/presentation/home_providers.dart';
 
 /// Debug-only screen showing every shared widget in every state.
 class ComponentGalleryScreen extends StatefulWidget {
@@ -40,6 +43,7 @@ class _ComponentGalleryScreenState extends State<ComponentGalleryScreen> {
             AppSpacing.xxl,
           ),
           children: const [
+            _Section('Mock data', child: _MockDataSwitches()),
             _Section('Colors', child: _ColorsDemo()),
             _Section('Typography', child: _TypographyDemo()),
             _Section('Buttons', child: _ButtonsDemo()),
@@ -53,10 +57,33 @@ class _ComponentGalleryScreenState extends State<ComponentGalleryScreen> {
             _Section('Top bars', child: _TopBarsDemo()),
             _Section('Bottom nav', child: _BottomNavDemo()),
             _Section('Info banners', child: _BannersDemo()),
+            _Section('Skeleton', child: _SkeletonDemo()),
             _Section('Empty state', child: _EmptyStateDemo()),
           ],
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Debug switches
+
+class _MockDataSwitches extends ConsumerWidget {
+  const _MockDataSwitches();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fixture = ref.watch(homeFixtureProvider);
+    return SwitchCard(
+      title: 'Home: active user',
+      subtitle: fixture == HomeFixture.activeUser
+          ? 'Showing a learner with history. Turn off for a new user.'
+          : 'Showing a new user on day 1. Turn on for a learner with history.',
+      value: fixture == HomeFixture.activeUser,
+      onChanged: (active) => ref
+          .read(homeFixtureProvider.notifier)
+          .select(active ? HomeFixture.activeUser : HomeFixture.newUser),
     );
   }
 }
@@ -884,6 +911,19 @@ class _BannersDemo extends StatelessWidget {
         actionLabel: 'Retry',
         onAction: () {},
       ),
+    ]);
+  }
+}
+
+class _SkeletonDemo extends StatelessWidget {
+  const _SkeletonDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _Stack([
+      SkeletonBox(width: 160, height: 24),
+      SkeletonBox(height: 16),
+      SkeletonCard(height: 96),
     ]);
   }
 }

@@ -36,6 +36,9 @@ abstract final class AppColors {
   /// Unfilled part of progress bars, rings and step segments.
   static const track = Color(0x266558D3); // primary @ 15%
 
+  /// Past-day bars in activity charts (today uses [primary]).
+  static const chartBar = Color(0x596558D3); // primary @ 35%
+
   /// Focus ring around inputs.
   static const focusRing = Color(0x266558D3); // primary @ 15%
 

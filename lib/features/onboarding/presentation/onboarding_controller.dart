@@ -20,6 +20,22 @@ final placementQuestionsProvider = FutureProvider<List<PlacementQuestion>>(
   (ref) => ref.watch(placementRepositoryProvider).fetchQuestions(),
 );
 
+/// The rule-based starting unit from the placement check (or the
+/// self-assessment when placement was skipped).
+final startingPointProvider = FutureProvider<StartingPoint>((ref) async {
+  final state = await ref.watch(onboardingControllerProvider.future);
+  final answeredPlacement =
+      !state.placementSkipped && state.placementAnswers.isNotEmpty;
+  final questions = answeredPlacement
+      ? await ref.watch(placementQuestionsProvider.future)
+      : const <PlacementQuestion>[];
+  return StartingPoint.recommend(
+    correctAnswers: placementScore(state, questions),
+    totalQuestions: questions.length,
+    selfAssessed: state.level,
+  );
+});
+
 /// Today's date (local, no time). Overridable in tests.
 final todayProvider = Provider<DateTime>((ref) => dateOnly(DateTime.now()));
 

@@ -27,3 +27,15 @@ String formatMediumDate(DateTime date) => DateFormat.yMMMd().format(date);
 
 /// "May 2026".
 String formatMonthYear(DateTime date) => DateFormat.yMMMM().format(date);
+
+/// "Oct 14".
+String formatShortDate(DateTime date) => DateFormat.MMMd().format(date);
+
+/// "today" / "yesterday" / "3 days ago" / "Oct 4" for a past [date].
+String timeAgoLabel(DateTime today, DateTime date) {
+  final days = daysBetween(date, today);
+  if (days <= 0) return 'today';
+  if (days == 1) return 'yesterday';
+  if (days < 7) return '$days days ago';
+  return formatShortDate(date);
+}

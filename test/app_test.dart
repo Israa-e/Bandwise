@@ -1,6 +1,7 @@
 import 'package:bandwise/app.dart';
 import 'package:bandwise/core/widgets/widgets.dart';
 import 'package:bandwise/features/dev_gallery/presentation/component_gallery_screen.dart';
+import 'package:bandwise/features/home/presentation/widgets/home_top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,10 +32,7 @@ void main() {
     await pumpApp(tester);
 
     expect(find.byType(AppBottomNav), findsOneWidget);
-    expect(
-      find.text('Your daily plan, streak and next lesson will appear here.'),
-      findsOneWidget,
-    );
+    expect(find.byType(HomeTopBar), findsOneWidget);
 
     for (final tab in ['Learn', 'Practice', 'Progress', 'Profile', 'Home']) {
       await tester.tap(
@@ -44,7 +42,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(AppBar, tab), findsOneWidget);
+      if (tab == 'Home') {
+        expect(find.byType(HomeTopBar), findsOneWidget);
+      } else {
+        expect(find.widgetWithText(AppBar, tab), findsOneWidget);
+      }
     }
   });
 
@@ -81,7 +83,12 @@ void main() {
       await tester.pumpAndSettle();
 
       if (rtl) {
-        await tester.tap(find.byType(Switch));
+        await tester.tap(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.byType(Switch),
+          ),
+        );
         await tester.pumpAndSettle();
       }
 
@@ -99,7 +106,9 @@ void main() {
 
   testWidgets('quiz demo shows correct and incorrect states', (tester) async {
     usePhoneSize(tester);
-    await tester.pumpWidget(const MaterialApp(home: ComponentGalleryScreen()));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: ComponentGalleryScreen())),
+    );
     final list = find.byType(Scrollable).first;
     await tester.scrollUntilVisible(
       find.text('were finalising'),
