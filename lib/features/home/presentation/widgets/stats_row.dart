@@ -40,7 +40,7 @@ class StatsRow extends StatelessWidget {
   Widget _streakCard() {
     final unit = streakDays == 1 ? 'day' : 'days';
     final (String footer, Color footerColor, bool check) = streakDays == 0
-        ? ('Start today', AppColors.primary, false)
+        ? ('Start today', AppColors.textMuted, false)
         : minutesToday > 0
         ? ('Active today', AppColors.textMuted, true)
         : ('Keep it going', AppColors.textMuted, false);
@@ -57,16 +57,21 @@ class StatsRow extends StatelessWidget {
 
   Widget _xpCard() {
     final format = NumberFormat.decimalPattern();
-    final today = xpToday > 0 ? '+${format.format(xpToday)} today' : null;
+    final (String? footer, Color footerColor) = xpToday > 0
+        ? ('+${format.format(xpToday)} today', AppColors.primary)
+        : totalXp == 0
+        ? ('Earn XP in lessons', AppColors.textMuted)
+        : (null, AppColors.textMuted);
     return _StatCard(
-      semanticLabel: ['Total XP: ${format.format(totalXp)}', ?today].join('. '),
+      semanticLabel: [
+        'Total XP: ${format.format(totalXp)}',
+        ?footer,
+      ].join('. '),
       icon: Icons.bolt_rounded,
       iconColor: AppColors.primary,
       label: 'Total XP',
       value: format.format(totalXp),
-      footer: today == null
-          ? null
-          : _Footer(text: today, color: AppColors.primary),
+      footer: footer == null ? null : _Footer(text: footer, color: footerColor),
     );
   }
 

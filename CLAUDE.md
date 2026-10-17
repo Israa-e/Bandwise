@@ -26,6 +26,7 @@ Independent IELTS Academic prep app. Not affiliated with IELTS, British Council,
 - Placement gives a recommended starting point, not a level or band.
 - Official band descriptors: 6 Competent, 7 Good, 8 Very good, 9 Expert.
 - The user's own chosen target may be shown as "Goal X.X". It is a goal, not a score.
+- A streak day = any day with at least one completed activity. The daily goal is tracked separately and does not affect the streak.
 - Writing Task 1 uses Task Achievement; Task 2 uses Task Response.
 - Don't claim AI where logic is rule-based.
 - Consent checkboxes are unchecked by default.

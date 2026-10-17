@@ -126,6 +126,7 @@ void main() {
 
       expect(find.text('Hi, Sam'), findsOneWidget);
       expect(find.text('Start today'), findsOneWidget);
+      expect(find.text('Earn XP in lessons'), findsOneWidget);
       expect(find.textContaining('+'), findsNothing); // no "+N today"
       expect(find.text('Active today'), findsNothing);
       expect(find.text('20m left'), findsOneWidget);
