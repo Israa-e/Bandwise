@@ -73,21 +73,23 @@ class _RatingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (background, foreground) = switch (rating) {
-      ReviewRating.again => (AppColors.errorTint, AppColors.errorText),
-      ReviewRating.hard => (AppColors.warningTint, AppColors.text),
-      ReviewRating.good => (AppColors.successTint, AppColors.text),
-      ReviewRating.easy => (AppColors.primaryTint, AppColors.primary),
+    final foreground = switch (rating) {
+      ReviewRating.again => AppColors.errorText,
+      ReviewRating.hard || ReviewRating.good => AppColors.text,
+      ReviewRating.easy => AppColors.primary,
     };
     return Semantics(
       button: true,
       enabled: onTap != null,
       label: '${rating.label}, next review ${hint.toLowerCase()}',
       excludeSemantics: true,
+      // White with a border, so the tiles stand out on the green and red
+      // feedback panels too.
       child: Material(
-        color: background,
+        color: AppColors.card,
         shape: const RoundedRectangleBorder(
           borderRadius: AppRadii.buttonRadius,
+          side: BorderSide(color: AppColors.border, width: 1.5),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(

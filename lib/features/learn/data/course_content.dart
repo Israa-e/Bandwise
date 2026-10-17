@@ -21,6 +21,7 @@ const course = Course([
         estimatedMinutes: 8,
         exercises: [
           FlashcardExercise(
+            id: 'u1-l1-e1',
             word: 'fluctuate',
             partOfSpeech: 'verb',
             meaning: 'to rise and fall repeatedly, often within a range',
@@ -32,6 +33,7 @@ const course = Course([
                 'instead of moving in one direction.',
           ),
           FlashcardExercise(
+            id: 'u1-l1-e2',
             word: 'considerable',
             partOfSpeech: 'adjective',
             meaning: 'large in size, amount or importance',
@@ -43,6 +45,7 @@ const course = Course([
                 'before nouns such as increase, amount and difference.',
           ),
           MultipleChoiceExercise(
+            id: 'u1-l1-e3',
             prompt:
                 'Which verb describes a figure that falls suddenly and by a '
                 'large amount?',
@@ -54,6 +57,7 @@ const course = Course([
                 '"recover" means to rise again after a fall.',
           ),
           FillBlankExercise(
+            id: 'u1-l1-e4',
             sentence:
                 'After rising for three years, the number of applications '
                 '____ and stayed at about the same level.',
@@ -64,6 +68,7 @@ const course = Course([
                 'stays roughly the same afterwards.',
           ),
           MultipleChoiceExercise(
+            id: 'u1-l1-e5',
             prompt: 'Which word completes the sentence in a formal style?',
             passage: 'Car ownership in the region rose ____ over the period.',
             options: ['steadily', 'a lot', 'loads', 'kind of'],
@@ -73,6 +78,7 @@ const course = Course([
                 'academic writing. The other options are informal.',
           ),
           FillBlankExercise(
+            id: 'u1-l1-e6',
             sentence:
                 'Public spending on research ____ by almost 40% between 2010 '
                 'and 2020.',
@@ -167,6 +173,7 @@ const course = Course([
         estimatedMinutes: 8,
         exercises: [
           FlashcardExercise(
+            id: 'u2-l1-e1',
             word: 'clause',
             partOfSpeech: 'noun',
             meaning: 'a group of words that contains a subject and a verb',
@@ -179,6 +186,7 @@ const course = Course([
                 'cannot.',
           ),
           MultipleChoiceExercise(
+            id: 'u2-l1-e2',
             prompt: 'Which of these is a complete sentence?',
             options: [
               'Because the population grew rapidly.',
@@ -192,6 +200,7 @@ const course = Course([
                 '("grew"), and it does not depend on another clause.',
           ),
           MultipleChoiceExercise(
+            id: 'u2-l1-e3',
             prompt: 'What is wrong with this sentence?',
             passage: 'Although many cities have expanded public transport.',
             options: [
@@ -206,6 +215,7 @@ const course = Course([
                 'clause, for example: "…, traffic is still a problem."',
           ),
           FillBlankExercise(
+            id: 'u2-l1-e4',
             sentence:
                 'The experiment was repeated three times, ____ the results '
                 'were consistent.',
@@ -217,6 +227,7 @@ const course = Course([
                 'clause.',
           ),
           FillBlankExercise(
+            id: 'u2-l1-e5',
             sentence:
                 '____ the cost was high, the government approved the '
                 'project.',
@@ -228,6 +239,7 @@ const course = Course([
                 '"however" cannot join two clauses like this.',
           ),
           MultipleChoiceExercise(
+            id: 'u2-l1-e6',
             prompt: 'Which sentence is punctuated correctly?',
             options: [
               'Prices rose, demand fell.',
@@ -325,6 +337,7 @@ const course = Course([
         estimatedMinutes: 8,
         exercises: [
           FlashcardExercise(
+            id: 'u3-l1-e1',
             word: 'paraphrase',
             partOfSpeech: 'verb',
             meaning: 'to express the same meaning using different words',
@@ -336,6 +349,7 @@ const course = Course([
                 'is not enough if the meaning changes too.',
           ),
           FlashcardExercise(
+            id: 'u3-l1-e2',
             word: 'approximately',
             partOfSpeech: 'adverb',
             meaning: 'close to a number or amount, but not exactly',
@@ -347,6 +361,7 @@ const course = Course([
                 'figures.',
           ),
           MultipleChoiceExercise(
+            id: 'u3-l1-e3',
             prompt: 'Which is the best paraphrase?',
             passage: 'The number of people living alone has increased.',
             options: [
@@ -361,6 +376,7 @@ const course = Course([
                 'adding new ideas such as a preference.',
           ),
           MultipleChoiceExercise(
+            id: 'u3-l1-e4',
             prompt: 'Which word is closest in meaning to "essential" here?',
             passage: 'Clean water is essential for public health.',
             options: ['vital', 'useful', 'common', 'expensive'],
@@ -370,6 +386,7 @@ const course = Course([
                 '"Useful" is weaker, so it would change the meaning.',
           ),
           FillBlankExercise(
+            id: 'u3-l1-e5',
             prompt: 'Choose a formal synonym for "buy".',
             sentence: 'Many consumers now ____ their groceries online.',
             options: ['purchase', 'grab', 'pick up', 'get hold of'],
@@ -379,6 +396,7 @@ const course = Course([
                 'are informal.',
           ),
           MultipleChoiceExercise(
+            id: 'u3-l1-e6',
             prompt: 'Which change would alter the meaning of this sentence?',
             passage: 'Some experts believe the policy failed.',
             options: [

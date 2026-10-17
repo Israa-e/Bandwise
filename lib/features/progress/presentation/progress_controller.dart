@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../learn/presentation/learn_providers.dart';
 import '../data/prefs_progress_repository.dart';
 import '../domain/progress_repository.dart';
 import '../domain/progress_state.dart';
 
 final progressRepositoryProvider = Provider<ProgressRepository>(
-  (ref) => PrefsProgressRepository(),
+  (ref) => PrefsProgressRepository(
+    loadCourse: () => ref.read(courseProvider.future),
+  ),
 );
 
 final progressControllerProvider =

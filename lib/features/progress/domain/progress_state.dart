@@ -71,8 +71,11 @@ class ProgressState {
 
   int minutesOn(DateTime day) => minutesByDay[dateOnly(day)] ?? 0;
 
-  List<SavedMistake> mistakesFor(String lessonId) =>
-      mistakes.where((m) => m.lessonId == lessonId).toList();
+  /// Mistakes saved from lesson [lessonId].
+  List<SavedMistake> mistakesFor(String lessonId) => [
+    for (final m in mistakes)
+      if (m.source == MistakeSource.lesson && m.sourceId == lessonId) m,
+  ];
 
   /// [lessonId]'s mistakes not yet rated Good or Easy in a review. The lesson
   /// needs review while this isn't empty.
@@ -133,7 +136,7 @@ class ProgressState {
       minutesByDay: {...minutesByDay, day: minutesOn(day) + c.minutes},
       activeDays: {...activeDays, day},
       mistakes: [
-        ...mistakes.where((m) => m.lessonId != c.lessonId),
+        ...mistakes.where((m) => !oldMistakeKeys.contains(m.reviewKey)),
         ...c.mistakes,
       ],
       // The new mistakes start their reviews from scratch.
@@ -167,7 +170,11 @@ class ProgressState {
     );
   }
 
+  /// Bumped when the saved format changes; see the progress migration.
+  static const schemaVersion = 2;
+
   Map<String, dynamic> toJson() => {
+    'version': schemaVersion,
     'results': {for (final e in results.entries) e.key: e.value.toJson()},
     'xpLog': [for (final e in xpLog) e.toJson()],
     'minutesByDay': {
@@ -266,36 +273,48 @@ class XpEntry {
   static XpEntry fromJson(Map<String, dynamic> json) => XpEntry(
     date: parseIsoDay(json['date'] as String),
     amount: json['amount'] as int,
-    // Saved before reviews existed, when XP only came from lessons.
-    source: (json['source'] ?? json['lessonId']) as String,
+    source: json['source'] as String,
   );
 }
+
+/// Where a saved mistake was made.
+enum MistakeSource { lesson, reading }
 
 /// A wrong answer kept for later review.
 @immutable
 class SavedMistake {
   const SavedMistake({
-    required this.lessonId,
+    this.source = MistakeSource.lesson,
+    required this.sourceId,
+    required this.itemId,
     required this.prompt,
     required this.yourAnswer,
     required this.correctAnswer,
     required this.explanation,
   });
 
-  final String lessonId;
+  final MistakeSource source;
 
-  /// The question, with its sentence or passage if it has one.
+  /// The lesson or reading passage id.
+  final String sourceId;
+
+  /// The exercise or reading question id. Unique across the app.
+  final String itemId;
+
+  /// The question as it was asked, with its sentence or passage if it has
+  /// one. Shown in results; reviews ask the current version by [itemId].
   final String prompt;
   final String yourAnswer;
   final String correctAnswer;
   final String explanation;
 
-  /// Identifies this mistake's schedule in [ProgressState.reviews]. The
-  /// prompt is unique within a lesson.
-  String get reviewKey => 'mistake:$lessonId:$prompt';
+  /// Identifies this mistake's schedule in [ProgressState.reviews].
+  String get reviewKey => mistakeReviewKey(itemId);
 
   Map<String, dynamic> toJson() => {
-    'lessonId': lessonId,
+    'source': source.name,
+    'sourceId': sourceId,
+    'itemId': itemId,
     'prompt': prompt,
     'yourAnswer': yourAnswer,
     'correctAnswer': correctAnswer,
@@ -303,7 +322,9 @@ class SavedMistake {
   };
 
   static SavedMistake fromJson(Map<String, dynamic> json) => SavedMistake(
-    lessonId: json['lessonId'] as String,
+    source: MistakeSource.values.byName(json['source'] as String),
+    sourceId: json['sourceId'] as String,
+    itemId: json['itemId'] as String,
     prompt: json['prompt'] as String,
     yourAnswer: json['yourAnswer'] as String,
     correctAnswer: json['correctAnswer'] as String,
@@ -340,8 +361,11 @@ class LessonCompletion {
   }
 }
 
+/// Identifies a saved mistake's schedule in [ProgressState.reviews].
+String mistakeReviewKey(String itemId) => 'mistake:$itemId';
+
 /// Identifies a flashcard word's schedule in [ProgressState.reviews].
-String wordReviewKey(String lessonId, String word) => 'word:$lessonId:$word';
+String wordReviewKey(String exerciseId) => 'word:$exerciseId';
 
 /// One item rated in a review session.
 @immutable

@@ -108,12 +108,18 @@ class QuestionView extends StatelessWidget {
     required this.picked,
     required this.checked,
     required this.onPick,
+    this.optionOrder,
   });
 
   final QuestionExercise exercise;
+
+  /// Index into the exercise's options; order-independent.
   final int? picked;
   final bool checked;
   final ValueChanged<int> onPick;
+
+  /// The option indexes in display order; null keeps the original order.
+  final List<int>? optionOrder;
 
   SelectionCardState _stateFor(int i) {
     if (!checked) {
@@ -154,11 +160,15 @@ class QuestionView extends StatelessWidget {
         ),
         if (body != null) ...[const SizedBox(height: AppSpacing.md), body],
         const SizedBox(height: AppSpacing.lg),
-        for (var i = 0; i < exercise.options.length; i++) ...[
-          if (i > 0) const SizedBox(height: AppSpacing.smd),
+        for (final (position, i)
+            in (optionOrder ?? List.generate(exercise.options.length, (i) => i))
+                .indexed) ...[
+          if (position > 0) const SizedBox(height: AppSpacing.smd),
           SelectionCard(
             title: exercise.options[i],
-            leading: SelectionLeadingBox(text: String.fromCharCode(65 + i)),
+            leading: SelectionLeadingBox(
+              text: String.fromCharCode(65 + position),
+            ),
             state: _stateFor(i),
             onTap: checked ? null : () => onPick(i),
           ),

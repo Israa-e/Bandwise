@@ -2,12 +2,19 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../learn/domain/course.dart';
 import '../domain/progress_repository.dart';
 import '../domain/progress_state.dart';
+import 'progress_migration.dart';
 
 /// Stores progress on the device with shared_preferences.
 class PrefsProgressRepository implements ProgressRepository {
+  PrefsProgressRepository({required this.loadCourse});
+
   static const _key = 'progress.v1';
+
+  /// Needed to migrate progress saved in an older format.
+  final Future<Course> Function() loadCourse;
 
   @override
   Future<ProgressState> load() async {
@@ -15,9 +22,13 @@ class PrefsProgressRepository implements ProgressRepository {
     final raw = prefs.getString(_key);
     if (raw == null) return const ProgressState();
     try {
-      return ProgressState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final migrated = migrateProgressJson(json, await loadCourse());
+      final state = ProgressState.fromJson(migrated);
+      if (!identical(migrated, json)) await save(state);
+      return state;
     } catch (_) {
-      // Unreadable data (e.g. from an older format): start fresh.
+      // Unreadable data: start fresh.
       return const ProgressState();
     }
   }

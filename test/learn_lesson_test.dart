@@ -370,7 +370,8 @@ void main() {
         minutes: 9,
         mistakes: const [
           SavedMistake(
-            lessonId: 'u2-l1',
+            sourceId: 'u2-l1',
+            itemId: 'u2-l1-e2',
             prompt: 'Which sentence is punctuated correctly?',
             yourAnswer: 'Prices rose, demand fell.',
             correctAnswer: 'Prices rose; demand fell.',

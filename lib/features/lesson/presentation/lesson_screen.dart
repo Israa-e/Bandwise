@@ -168,7 +168,8 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
       } else {
         mistakes.add(
           SavedMistake(
-            lessonId: lesson.id,
+            sourceId: lesson.id,
+            itemId: q.id,
             prompt: q.savedPrompt,
             yourAnswer: q.options[picked],
             correctAnswer: q.correctAnswer,

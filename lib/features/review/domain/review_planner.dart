@@ -72,12 +72,12 @@ class ReviewPlanner {
       final result = progress.results[lesson.id];
       if (result == null) continue;
       final mistakes = {
-        for (final m in progress.mistakesFor(lesson.id)) m.prompt: m,
+        for (final m in progress.mistakesFor(lesson.id)) m.itemId: m,
       };
-      // In exercise order. Mistakes whose question has since changed or
-      // been removed are skipped.
+      // In exercise order. Mistakes whose exercise has been removed are
+      // skipped.
       for (final exercise in lesson.exercises.whereType<QuestionExercise>()) {
-        final mistake = mistakes[exercise.savedPrompt];
+        final mistake = mistakes[exercise.id];
         if (mistake == null) continue;
         final schedule = progress.reviews[mistake.reviewKey];
         items.add(
@@ -92,7 +92,7 @@ class ReviewPlanner {
         );
       }
       for (final card in lesson.exercises.whereType<FlashcardExercise>()) {
-        final key = wordReviewKey(lesson.id, card.word);
+        final key = wordReviewKey(card.id);
         final schedule = progress.reviews[key];
         items.add(
           WordReviewItem(

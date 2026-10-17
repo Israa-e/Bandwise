@@ -11,9 +11,12 @@ import 'package:bandwise/features/learn/domain/learning_path.dart';
 import 'package:bandwise/features/lesson/presentation/widgets/exercise_views.dart';
 import 'package:bandwise/features/onboarding/domain/onboarding_state.dart';
 import 'package:bandwise/features/onboarding/presentation/onboarding_controller.dart';
+import 'package:bandwise/features/progress/data/prefs_progress_repository.dart';
 import 'package:bandwise/features/progress/domain/progress_state.dart';
 import 'package:bandwise/features/progress/domain/review_schedule.dart';
+import 'package:bandwise/features/review/domain/option_shuffle.dart';
 import 'package:bandwise/features/review/domain/review_planner.dart';
+import 'package:bandwise/features/review/presentation/review_providers.dart';
 import 'package:bandwise/features/review/presentation/review_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +39,9 @@ const _onboarding = OnboardingState(
 
 Lesson _lesson(String id) => course.lessonById(id)!;
 
+/// The flashcard "clause" in Unit 2 Lesson 1.
+const _clause = 'u2-l1-e1';
+
 QuestionExercise _question(String lessonId, int index) =>
     _lesson(lessonId).exercises[index] as QuestionExercise;
 
@@ -43,7 +49,8 @@ QuestionExercise _question(String lessonId, int index) =>
 SavedMistake _mistake(String lessonId, int index) {
   final q = _question(lessonId, index);
   return SavedMistake(
-    lessonId: lessonId,
+    sourceId: lessonId,
+    itemId: q.id,
     prompt: q.savedPrompt,
     yourAnswer: q.options[(q.correctIndex + 1) % q.options.length],
     correctAnswer: q.correctAnswer,
@@ -94,12 +101,17 @@ void _setSize(WidgetTester tester, Size size) {
   addTearDown(tester.view.reset);
 }
 
+const _seed = 7;
+
 Future<void> _launchApp(WidgetTester tester, {ProgressState? progress}) async {
   _savePrefs(progress: progress);
   _setSize(tester, const Size(390, 1000));
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [todayProvider.overrideWithValue(_today)],
+      overrides: [
+        todayProvider.overrideWithValue(_today),
+        reviewShuffleSeedProvider.overrideWithValue(() => _seed),
+      ],
       child: const BandwiseApp(),
     ),
   );
@@ -214,8 +226,8 @@ void main() {
           .withCompletedLesson(_completion('u1-l1', _day(-1), wrongAt: [3]));
       final due = _planner(progress).dueOn(_today);
       String describe(ReviewItem i) => switch (i) {
-        MistakeReviewItem(:final mistake) =>
-          'mistake ${i.lesson.id} ${_lesson(i.lesson.id).exercises.indexWhere((e) => e is QuestionExercise && e.savedPrompt == mistake.prompt)}',
+        MistakeReviewItem(:final exercise) =>
+          'mistake ${i.lesson.id} ${_lesson(i.lesson.id).exercises.indexOf(exercise)}',
         WordReviewItem(:final card) => 'word ${i.lesson.id} ${card.word}',
       };
       expect(due.map(describe), [
@@ -257,7 +269,7 @@ void main() {
           )
           .withReview(
             ReviewCompletion(
-              key: wordReviewKey('u2-l1', 'clause'),
+              key: wordReviewKey(_clause),
               rating: ReviewRating.hard,
               date: _today,
             ),
@@ -279,7 +291,7 @@ void main() {
 
     test('replaying a lesson restarts its mistakes; words keep their '
         'schedule', () {
-      final word = wordReviewKey('u2-l1', 'clause');
+      final word = wordReviewKey(_clause);
       final mistake = _mistake('u2-l1', 1).reviewKey;
       final reviewed = _yesterdayWithMistake
           .withReview(
@@ -357,10 +369,10 @@ void main() {
       expect(p.activeDays, contains(_today));
     });
 
-    test('reviews survive a JSON round trip; old XP entries still load', () {
+    test('reviews survive a JSON round trip', () {
       final p = _yesterdayWithMistake.withReview(
         ReviewCompletion(
-          key: wordReviewKey('u2-l1', 'clause'),
+          key: wordReviewKey(_clause),
           rating: ReviewRating.easy,
           date: _today,
         ),
@@ -368,17 +380,10 @@ void main() {
       final restored = ProgressState.fromJson(
         jsonDecode(jsonEncode(p.toJson())) as Map<String, dynamic>,
       );
-      final s = restored.reviews[wordReviewKey('u2-l1', 'clause')]!;
+      final s = restored.reviews[wordReviewKey(_clause)]!;
       expect(s.dueOn, _day(7));
       expect(s.lastRating, ReviewRating.easy);
       expect(restored.reviewXpOn(_today), 1);
-
-      final legacy = XpEntry.fromJson({
-        'date': '2026-10-14',
-        'amount': 12,
-        'lessonId': 'u2-l1',
-      });
-      expect(legacy.source, 'u2-l1');
     });
   });
 
@@ -533,7 +538,7 @@ void main() {
       final mistake = saved.reviews[_mistake('u2-l1', 1).reviewKey]!;
       expect(mistake.lastRating, ReviewRating.easy);
       expect(mistake.dueOn, _day(7));
-      expect(saved.reviews[wordReviewKey('u2-l1', 'clause')], isNull);
+      expect(saved.reviews[wordReviewKey(_clause)], isNull);
       // Only the word is left.
       expect(find.text('1 vocabulary card due'), findsOneWidget);
     });
@@ -571,6 +576,232 @@ void main() {
       expect(find.byType(ReviewScreen), findsOneWidget);
       expect(find.text('1 of 2'), findsOneWidget);
     });
+  });
+
+  group('stable ids', () {
+    test('every exercise id is unique and names its lesson', () {
+      final ids = [
+        for (final lesson in course.lessons)
+          for (final e in lesson.exercises) e.id,
+      ];
+      expect(ids.toSet(), hasLength(ids.length));
+      for (final lesson in course.lessons) {
+        for (final e in lesson.exercises) {
+          expect(e.id, startsWith('${lesson.id}-e'));
+        }
+      }
+    });
+
+    test('editing a prompt keeps the mistake and its schedule', () {
+      final original = _question('u2-l1', 1) as MultipleChoiceExercise;
+      final progress = _yesterdayWithMistake.withReview(
+        ReviewCompletion(
+          key: _mistake('u2-l1', 1).reviewKey,
+          rating: ReviewRating.hard,
+          date: _today,
+        ),
+      );
+
+      // The same exercise (same id) with reworded text.
+      final edited = MultipleChoiceExercise(
+        id: original.id,
+        prompt: '${original.prompt} (reworded)',
+        options: original.options,
+        correctIndex: original.correctIndex,
+        explanation: original.explanation,
+        passage: original.passage,
+      );
+      final lesson = _lesson('u2-l1');
+      final editedLesson = Lesson(
+        unit: lesson.unit,
+        number: lesson.number,
+        title: lesson.title,
+        objective: lesson.objective,
+        learnItems: lesson.learnItems,
+        estimatedMinutes: lesson.estimatedMinutes,
+        exercises: [
+          for (final e in lesson.exercises) e.id == original.id ? edited : e,
+        ],
+      );
+      final editedCourse = Course([
+        for (final unit in course.units)
+          Unit(
+            number: unit.number,
+            title: unit.title,
+            focus: unit.focus,
+            lessons: [
+              for (final l in unit.lessons)
+                l.id == lesson.id ? editedLesson : l,
+            ],
+          ),
+      ]);
+
+      final planner = ReviewPlanner(course: editedCourse, progress: progress);
+      final item = planner.items.whereType<MistakeReviewItem>().single;
+      expect(item.exercise.prompt, edited.prompt);
+      expect(item.schedule!.lastRating, ReviewRating.hard);
+      expect(item.dueOn, _day(1));
+      expect(
+        LearningPath(
+          course: editedCourse,
+          progress: progress,
+          startUnit: 2,
+        ).nodeFor(editedLesson).mistakeCount,
+        1,
+      );
+    });
+
+    test('progress saved with prompt keys is migrated to ids', () async {
+      final q = _question('u2-l1', 1);
+      SharedPreferences.setMockInitialValues({
+        'progress.v1': jsonEncode({
+          'results': {
+            'u2-l1': {
+              'correct': 4,
+              'total': 5,
+              'xp': 18,
+              'completedOn': '2026-10-14',
+            },
+          },
+          'xpLog': [
+            {'date': '2026-10-14', 'amount': 18, 'lessonId': 'u2-l1'},
+          ],
+          'minutesByDay': {'2026-10-14': 8},
+          'activeDays': ['2026-10-14'],
+          'mistakes': [
+            {
+              'lessonId': 'u2-l1',
+              'prompt': q.savedPrompt,
+              'yourAnswer': 'x',
+              'correctAnswer': q.correctAnswer,
+              'explanation': q.explanation,
+            },
+            // A question that no longer exists: dropped.
+            {
+              'lessonId': 'u2-l1',
+              'prompt': 'Removed question',
+              'yourAnswer': 'x',
+              'correctAnswer': 'y',
+              'explanation': 'z',
+            },
+          ],
+          'reviews': {
+            'mistake:u2-l1:${q.savedPrompt}': {
+              'dueOn': '2026-10-18',
+              'intervalDays': 3,
+              'lastRating': 'good',
+            },
+            'word:u2-l1:clause': {
+              'dueOn': '2026-10-22',
+              'intervalDays': 7,
+              'lastRating': 'easy',
+            },
+            'mistake:u2-l1:Removed question': {
+              'dueOn': '2026-10-16',
+              'intervalDays': 1,
+              'lastRating': 'hard',
+            },
+          },
+        }),
+      });
+      final repo = PrefsProgressRepository(loadCourse: () async => course);
+      final loaded = await repo.load();
+
+      expect(loaded.mistakes.single.itemId, q.id);
+      expect(loaded.mistakes.single.sourceId, 'u2-l1');
+      expect(loaded.reviews.keys, {
+        mistakeReviewKey(q.id),
+        wordReviewKey(_clause),
+      });
+      expect(loaded.reviews[mistakeReviewKey(q.id)]!.dueOn, _day(3));
+      expect(loaded.totalXp, 18);
+      expect(loaded.openMistakesFor('u2-l1'), isEmpty);
+
+      // The migrated form is saved, so it only happens once.
+      final saved = jsonDecode(
+        (await SharedPreferences.getInstance()).getString('progress.v1')!,
+      );
+      expect(saved['version'], ProgressState.schemaVersion);
+    });
+  });
+
+  group('option shuffle', () {
+    test('a stable permutation per seed and item', () {
+      final a = shuffledOptionOrder(4, seed: 1, key: 'mistake:u2-l1-e2');
+      expect(a.toSet(), {0, 1, 2, 3});
+      expect(shuffledOptionOrder(4, seed: 1, key: 'mistake:u2-l1-e2'), a);
+      // Some seed reorders the options.
+      expect(
+        List.generate(
+          10,
+          (s) => shuffledOptionOrder(4, seed: s, key: 'k'),
+        ).any((o) => o.join() != '0123'),
+        isTrue,
+      );
+    });
+
+    List<String> shownOptions(WidgetTester tester) => [
+      for (final c in tester.widgetList<SelectionCard>(
+        find.byType(SelectionCard),
+      ))
+        c.title,
+    ];
+
+    testWidgets('review shows the session order, kept after Again', (
+      tester,
+    ) async {
+      await _launchApp(tester, progress: _yesterdayWithMistake);
+      await _push(tester, '/review');
+      final q = _question('u2-l1', 1);
+      final expected = [
+        for (final i in shuffledOptionOrder(
+          q.options.length,
+          seed: _seed,
+          key: mistakeReviewKey(q.id),
+        ))
+          q.options[i],
+      ];
+      expect(expected, isNot(q.options), reason: 'pick a seed that shuffles');
+      expect(shownOptions(tester), expected);
+
+      await _answer(tester, correct: false);
+      expect(shownOptions(tester), expected);
+      await _tap(tester, find.widgetWithText(AppButton, 'Continue'));
+      await _tap(tester, find.widgetWithText(AppButton, 'Reveal meaning'));
+      await _tap(tester, _rating('Good'));
+      // The same question again, in the same order.
+      expect(shownOptions(tester), expected);
+    });
+
+    testWidgets('lessons keep the original order', (tester) async {
+      await _launchApp(tester);
+      await _push(tester, '/lesson/u2-l1');
+      await _tap(tester, find.widgetWithText(AppButton, 'Start'));
+      await _tap(tester, find.widgetWithText(AppButton, 'Reveal meaning'));
+      await _tap(tester, find.widgetWithText(AppButton, 'Continue'));
+      expect(shownOptions(tester), _question('u2-l1', 1).options);
+    });
+  });
+
+  testWidgets('rating tiles are white with a border on feedback panels', (
+    tester,
+  ) async {
+    await _launchApp(tester, progress: _yesterdayWithMistake);
+    await _push(tester, '/review');
+    await _answer(tester, correct: true);
+    final tiles = find.descendant(
+      of: find.byType(FeedbackPanel),
+      matching: find.byWidgetPredicate(
+        (w) =>
+            w is Material &&
+            w.shape is RoundedRectangleBorder &&
+            (w.shape! as RoundedRectangleBorder).side.color == AppColors.border,
+      ),
+    );
+    expect(tiles, findsNWidgets(4));
+    for (final m in tester.widgetList<Material>(tiles)) {
+      expect(m.color, AppColors.card);
+    }
   });
 
   group('layout', () {

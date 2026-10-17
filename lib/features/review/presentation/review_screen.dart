@@ -11,6 +11,7 @@ import '../../onboarding/presentation/onboarding_controller.dart';
 import '../../progress/domain/progress_state.dart';
 import '../../progress/domain/review_schedule.dart';
 import '../../progress/presentation/progress_controller.dart';
+import '../domain/option_shuffle.dart';
 import '../domain/review_planner.dart';
 import 'review_providers.dart';
 import 'widgets/review_complete_view.dart';
@@ -132,6 +133,10 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
   var _xp = 0;
 
   final _startedAt = DateTime.now();
+
+  /// Shuffles answer options: fixed for the session, so an item keeps its
+  /// order while on screen and when it comes back after "Again".
+  late final int _seed = ref.read(reviewShuffleSeedProvider)();
   var _ratings = 0;
   var _minutesRecorded = 0;
 
@@ -226,6 +231,11 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
       case MistakeReviewItem(:final exercise):
         body = QuestionView(
           exercise: exercise,
+          optionOrder: shuffledOptionOrder(
+            exercise.options.length,
+            seed: _seed,
+            key: item.key,
+          ),
           picked: _picked,
           checked: _checked,
           onPick: (i) => setState(() => _picked = i),

@@ -81,7 +81,11 @@ class Lesson {
 /// One step in a lesson.
 @immutable
 sealed class Exercise {
-  const Exercise({required this.explanation});
+  const Exercise({required this.id, required this.explanation});
+
+  /// Fixed id such as "u2-l1-e2". Saved progress refers to exercises by
+  /// it, so it must never change, even when the exercise's text does.
+  final String id;
 
   /// Shown after checking, or under a revealed flashcard.
   final String explanation;
@@ -91,6 +95,7 @@ sealed class Exercise {
 /// Not scored.
 class FlashcardExercise extends Exercise {
   const FlashcardExercise({
+    required super.id,
     required this.word,
     required this.partOfSpeech,
     required this.meaning,
@@ -111,6 +116,7 @@ class FlashcardExercise extends Exercise {
 /// A scored exercise with one correct option.
 sealed class QuestionExercise extends Exercise {
   const QuestionExercise({
+    required super.id,
     required this.prompt,
     required this.options,
     required this.correctIndex,
@@ -124,7 +130,7 @@ sealed class QuestionExercise extends Exercise {
   String get correctAnswer => options[correctIndex];
 
   /// The question as saved with a mistake: with its sentence or passage, if
-  /// it has one. Unique within a lesson.
+  /// it has one.
   String get savedPrompt => switch (this) {
     FillBlankExercise(:final sentence) => sentence,
     MultipleChoiceExercise(:final passage?, :final prompt) =>
@@ -135,6 +141,7 @@ sealed class QuestionExercise extends Exercise {
 
 class MultipleChoiceExercise extends QuestionExercise {
   const MultipleChoiceExercise({
+    required super.id,
     required super.prompt,
     required super.options,
     required super.correctIndex,
@@ -149,6 +156,7 @@ class MultipleChoiceExercise extends QuestionExercise {
 /// A sentence with one gap ([blank]) and options to fill it.
 class FillBlankExercise extends QuestionExercise {
   const FillBlankExercise({
+    required super.id,
     required this.sentence,
     required super.options,
     required super.correctIndex,
