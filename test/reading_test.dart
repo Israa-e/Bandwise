@@ -22,6 +22,7 @@ import 'package:bandwise/features/review/domain/review_planner.dart';
 import 'package:bandwise/features/review/presentation/review_screen.dart';
 import 'package:bandwise/features/learn/data/course_content.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -198,6 +199,11 @@ Finder _labelled(Pattern pattern) => find.byWidgetPredicate((w) {
   return label != null && pattern.allMatches(label).isNotEmpty;
 });
 
+/// The navigator button's full semantics label.
+Finder _navigatorLabel(String label) => find.byWidgetPredicate(
+  (w) => w is Semantics && w.properties.label == label,
+);
+
 /// The evidence sentence's rectangle on screen.
 Rect _sentenceOnScreen(WidgetTester tester, int paragraph, int sentence) {
   final para = find.byWidgetPredicate(
@@ -366,6 +372,16 @@ void main() {
       }
     });
 
+    test('time-q4 reminds learners to answer only from the passage', () {
+      expect(
+        _time.questionById('time-q4')!.explanation,
+        endsWith(
+          'Even if you know this from elsewhere, answer only from the '
+          'passage.',
+        ),
+      );
+    });
+
     test('no band text in reading content', () {
       for (final p in readingPassages) {
         final all = [
@@ -511,7 +527,7 @@ void main() {
       expect(find.byType(AppBottomNav), findsNothing);
       await _showQuestions(tester);
       expect(find.text('Questions 1–3'), findsOneWidget);
-      expect(find.text('0/3 answered'), findsOneWidget);
+      expect(_navigatorLabel('Questions: 0 of 3 answered'), findsOneWidget);
     });
   });
 
@@ -558,6 +574,112 @@ void main() {
       expect(saved.minutesOn(_today), 13);
     });
 
+    testWidgets('navigator button: short count on phones, full label for '
+        'screen readers', (tester) async {
+      await _launchApp(tester, size: const Size(320, 640));
+      await _go(tester, '/reading/uhi?mode=timed');
+      await _showQuestions(tester);
+      for (final q in _heat.questions.take(6)) {
+        await _answer(tester, q, correct: true);
+      }
+      final button = find.byKey(const ValueKey('navigatorButton'));
+      final label = find.descendant(of: button, matching: find.text('6/10'));
+      expect(label, findsOneWidget);
+      expect(find.textContaining('answered'), findsNothing);
+      expect(
+        tester.renderObject<RenderParagraph>(label).didExceedMaxLines,
+        isFalse,
+      );
+      expect(_navigatorLabel('Questions: 6 of 10 answered'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('matching headings: chosen heading text and the headings '
+        'sheet', (tester) async {
+      await _launchApp(tester);
+      await _go(tester, '/reading/uhi?mode=learning');
+      await _showQuestions(tester);
+      final q = _heat.questionById('uhi-q6')! as HeadingQuestion;
+      final chosen = find.byKey(ValueKey('chosen-${q.id}'));
+      await tester.ensureVisible(chosen);
+      expect(tester.widget<Text>(chosen).data, 'No heading chosen yet');
+
+      await _tap(
+        tester,
+        find.descendant(of: _questionCard(q), matching: find.text('iv')),
+      );
+      expect(tester.widget<Text>(chosen).data, 'iv. ${q.options[3]}');
+
+      await _tap(
+        tester,
+        find.descendant(
+          of: _questionCard(q),
+          matching: find.text('View headings'),
+        ),
+      );
+      expect(find.text('Choose the heading for Paragraph B.'), findsOneWidget);
+      for (var i = 0; i < q.options.length; i++) {
+        expect(find.byKey(ValueKey('sheet-heading-$i')), findsOneWidget);
+      }
+      await _tap(tester, find.byKey(const ValueKey('sheet-heading-1')));
+      expect(find.byKey(const ValueKey('sheet-heading-1')), findsNothing);
+      expect(tester.widget<Text>(chosen).data, 'ii. ${q.options[1]}');
+      expect(q.correctIndex, 1);
+    });
+
+    testWidgets('Not Given feedback says the information is not in the '
+        'passage', (tester) async {
+      await _launchApp(tester);
+      await _go(tester, '/reading/uhi?mode=learning');
+      await _showQuestions(tester);
+      Future<void> check(ReadingQuestion q) async {
+        await _answer(tester, q, correct: true);
+        await _tap(
+          tester,
+          find.descendant(
+            of: _questionCard(q),
+            matching: find.widgetWithText(AppButton, 'Check'),
+          ),
+        );
+      }
+
+      final notGiven = _heat.questionById('uhi-q3')!;
+      final trueQ = _heat.questionById('uhi-q1')!;
+      expect(notGiven.isNotGiven, isTrue);
+      expect(trueQ.isNotGiven, isFalse);
+      await check(notGiven);
+      await check(trueQ);
+      Finder inCard(ReadingQuestion q, String text) =>
+          find.descendant(of: _questionCard(q), matching: find.text(text));
+      expect(inCard(notGiven, 'Show related part'), findsOneWidget);
+      expect(inCard(notGiven, 'Show in passage'), findsNothing);
+      expect(
+        inCard(notGiven, "This information isn't in the passage."),
+        findsOneWidget,
+      );
+      expect(inCard(trueQ, 'Show in passage'), findsOneWidget);
+      expect(
+        inCard(trueQ, "This information isn't in the passage."),
+        findsNothing,
+      );
+
+      // The related part is still shown.
+      await _tap(tester, inCard(notGiven, 'Show related part'));
+      final para = tester.widget<PassageParagraph>(
+        find.byWidgetPredicate((w) => w is PassageParagraph && w.index == 5),
+      );
+      expect(para.evidenceSentence, notGiven.evidence.sentence);
+    });
+
+    testWidgets('learning results show the elapsed time', (tester) async {
+      await _launchApp(tester);
+      await _go(tester, '/reading/uhi?mode=learning');
+      _now = _now.add(const Duration(minutes: 24, seconds: 5));
+      await _submit(tester, label: 'Finish');
+      expect(_labelled('Time: 24:05 elapsed'), findsOneWidget);
+      expect(find.textContaining('Accuracy:'), findsNothing);
+    });
+
     testWidgets('timed mode shows no feedback before submit', (tester) async {
       await _launchApp(tester);
       await _go(tester, '/reading/time?mode=timed');
@@ -571,12 +693,38 @@ void main() {
         expect(find.text('Show in passage'), findsNothing);
         expect(find.text(q.explanation), findsNothing);
       }
-      expect(find.text('10/10 answered'), findsOneWidget);
+      expect(find.widgetWithText(AppButton, '10/10'), findsOneWidget);
       await _submit(tester);
       expect(find.text('Your results'), findsOneWidget);
       expect(find.text('9/10'), findsOneWidget);
       // 9 correct × 2 + 10 for the timed passage.
       expect(find.text('+28'), findsOneWidget);
+      expect(_labelled('Time: 00:00 of 20:00'), findsOneWidget);
+      // Results: Not Given questions link to the related part.
+      for (final q in _time.questions) {
+        final card = find.byKey(ValueKey('result-${q.id}'));
+        expect(
+          find.descendant(
+            of: card,
+            matching: find.text(
+              q.isNotGiven ? 'Show related part' : 'Show in passage',
+            ),
+          ),
+          findsOneWidget,
+          reason: q.id,
+        );
+        expect(
+          find.descendant(
+            of: card,
+            matching: find.text("This information isn't in the passage."),
+          ),
+          q.isNotGiven ? findsOneWidget : findsNothing,
+        );
+      }
+      // The one wrong answer is saved for review.
+      expect((await _savedProgress()).mistakes.map((m) => m.itemId), [
+        'time-q2',
+      ]);
       _expectNoBands(tester);
     });
 
@@ -638,9 +786,13 @@ void main() {
       expect(find.text("Time's up"), findsOneWidget);
       expect(find.text('Your results'), findsOneWidget);
       expect(find.text('1/10'), findsOneWidget);
+      // Auto-submitted at the limit: all 20 minutes used.
+      expect(_labelled('Time: 20:00 of 20:00'), findsOneWidget);
       final saved = await _savedProgress();
       expect(saved.readingAttempts.single.correct, 1);
       expect(saved.readingAttempts.single.timed, isTrue);
+      // Nine unanswered questions are scored wrong but not reviewed.
+      expect(saved.mistakes, isEmpty);
     });
 
     testWidgets('timer stays right after background and resume', (
@@ -676,7 +828,7 @@ void main() {
       await _tap(tester, find.byTooltip('Flag question 2'));
       expect(find.byTooltip('Remove flag from question 2'), findsOneWidget);
 
-      await _tap(tester, find.widgetWithText(AppButton, '1/10 answered'));
+      await _tap(tester, find.byKey(const ValueKey('navigatorButton')));
       expect(find.text('1 of 10 answered'), findsOneWidget);
       Finder tile(String label) => _labelled(label);
       expect(tile('Question 1, answered'), findsOneWidget);
@@ -714,8 +866,11 @@ void main() {
         'sentence', (tester) async {
       await _launchApp(tester, size: const Size(390, 700));
       await _go(tester, '/reading/time?mode=timed');
+      _now = _now.add(const Duration(minutes: 14, seconds: 32));
+      await tester.pump(const Duration(seconds: 1));
       await _submit(tester);
       expect(find.byType(ResultsPane), findsOneWidget);
+      expect(_labelled('Time: 14:32 of 20:00'), findsOneWidget);
       expect(find.text('0/10'), findsOneWidget);
 
       // Question 10: paragraph E, sentence 4.
@@ -882,7 +1037,7 @@ void main() {
           }
           await scrollThrough(tester, list('questions'));
 
-          await _tap(tester, find.widgetWithText(AppButton, '10/10 answered'));
+          await _tap(tester, find.byKey(const ValueKey('navigatorButton')));
           expect(tester.takeException(), isNull);
           await tester.tapAt(const Offset(10, 10));
           await tester.pumpAndSettle();

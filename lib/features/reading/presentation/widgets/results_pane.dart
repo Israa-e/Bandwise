@@ -13,6 +13,8 @@ class ResultsPane extends StatelessWidget {
     required this.grade,
     required this.xp,
     required this.timeUp,
+    required this.timed,
+    required this.timeUsed,
     required this.onShowEvidence,
     this.controller,
   });
@@ -22,7 +24,17 @@ class ResultsPane extends StatelessWidget {
 
   /// Submitted automatically when the time ran out.
   final bool timeUp;
+
+  /// Timed mode shows the time used out of the limit; learning mode shows
+  /// the time spent.
+  final bool timed;
+  final Duration timeUsed;
   final ValueChanged<ReadingQuestion> onShowEvidence;
+
+  /// "14:32"; hours become minutes ("75:00").
+  static String formatTime(Duration d) =>
+      '${d.inMinutes.toString().padLeft(2, '0')}:'
+      '${(d.inSeconds % 60).toString().padLeft(2, '0')}';
   final ScrollController? controller;
 
   @override
@@ -68,9 +80,10 @@ class ResultsPane extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: ResultStatTile(
-                    label: 'Accuracy',
-                    value: '${score.percent}%',
-                    caption: 'of questions',
+                    key: const ValueKey('readingTime'),
+                    label: 'Time',
+                    value: formatTime(timeUsed),
+                    caption: timed ? 'of $_limit' : 'elapsed',
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -141,6 +154,7 @@ class ResultsPane extends StatelessWidget {
                       null => null,
                     },
                     showYourAnswer: true,
+                    notGiven: q.isNotGiven,
                     explanation: q.explanation,
                     onShowEvidence: () => onShowEvidence(q),
                   ),
@@ -153,6 +167,10 @@ class ResultsPane extends StatelessWidget {
       ),
     );
   }
+
+  static final _limit = formatTime(
+    const Duration(minutes: ReadingPassage.timedMinutes),
+  );
 
   /// Headings with their numeral, e.g. "ii. How building materials…".
   static String _answerText(ReadingQuestion q, String answer) {

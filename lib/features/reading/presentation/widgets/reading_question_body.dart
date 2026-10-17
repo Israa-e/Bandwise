@@ -144,7 +144,8 @@ class _ChoiceList extends StatelessWidget {
   }
 }
 
-/// "Paragraph B" and a row of numerals, one per heading.
+/// "Paragraph B", a row of numerals (one per heading), the chosen
+/// heading's text, and "View headings" for the full list.
 class _HeadingChips extends StatelessWidget {
   const _HeadingChips({
     required this.question,
@@ -186,8 +187,85 @@ class _HeadingChips extends StatelessWidget {
               ),
           ],
         ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          switch (picked) {
+            final i? => '${HeadingQuestion.numeral(i)}. ${question.options[i]}',
+            null => 'No heading chosen yet',
+          },
+          key: ValueKey('chosen-${question.id}'),
+          style: AppTextStyles.bodySm.copyWith(
+            color: picked == null ? AppColors.textMuted : AppColors.text,
+            fontStyle: picked == null ? FontStyle.italic : null,
+          ),
+        ),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            onPressed: () => _showHeadings(context),
+            icon: const Icon(Icons.list_alt_rounded, size: 18),
+            label: const Text('View headings'),
+          ),
+        ),
       ],
     );
+  }
+
+  /// The full list of headings. When the question is still open, tapping a
+  /// heading chooses it.
+  Future<void> _showHeadings(BuildContext context) async {
+    final onPick = this.onPick;
+    final chosen = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpacing.page,
+            0,
+            AppSpacing.page,
+            AppSpacing.lg,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('List of headings', style: AppTextStyles.headlineSm),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                onPick == null
+                    ? 'For ${question.prompt}.'
+                    : 'Choose the heading for ${question.prompt}.',
+                style: AppTextStyles.bodySm.copyWith(
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.smd),
+              for (var i = 0; i < question.options.length; i++) ...[
+                SelectionCard(
+                  key: ValueKey('sheet-heading-$i'),
+                  title: question.options[i],
+                  leading: SelectionLeadingBox(
+                    text: HeadingQuestion.numeral(i),
+                  ),
+                  state: _stateFor(
+                    i,
+                    picked: picked,
+                    correctIndex: question.correctIndex,
+                    revealed: revealed,
+                  ),
+                  onTap: onPick == null
+                      ? null
+                      : () => Navigator.pop(sheetContext, i),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+    if (chosen != null) onPick?.call(chosen);
   }
 }
 

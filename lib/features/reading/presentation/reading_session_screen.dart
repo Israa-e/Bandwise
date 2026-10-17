@@ -127,6 +127,7 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
   /// Set once submitted.
   ReadingGrade? _grade;
   var _xp = 0;
+  var _timeUsed = Duration.zero;
   var _timeUp = false;
 
   bool get _timed => widget.mode == ReadingMode.timed;
@@ -182,6 +183,9 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
     final passage = widget.passage;
     final grade = ReadingGrade(_questions, Map.of(_responses));
     final today = ref.read(todayProvider);
+    const limit = Duration(minutes: ReadingPassage.timedMinutes);
+    final elapsed = _clock().difference(_startedAt);
+    final timeUsed = _timed && elapsed > limit ? limit : elapsed;
     final xp = XpRules.forReading(correct: grade.correct, timedPassage: _timed);
     final attempt = ReadingAttempt(
       passageId: passage.id,
@@ -207,17 +211,20 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
             attempt: attempt,
             questionIds: [for (final q in _questions) q.id],
             mistakes: [
+              // Unanswered questions count as wrong but aren't reviewed: there
+              // is no answer to learn from.
               for (final q in grade.wrong)
-                SavedMistake(
-                  source: MistakeSource.reading,
-                  sourceId: passage.id,
-                  itemId: q.id,
-                  prompt: q.prompt,
-                  yourAnswer: q.describe(_responses[q.id]) ?? 'No answer',
-                  correctAnswer: q.correctAnswer,
-                  explanation: q.explanation,
-                  savedOn: today,
-                ),
+                if (q.isAnswered(_responses[q.id]))
+                  SavedMistake(
+                    source: MistakeSource.reading,
+                    sourceId: passage.id,
+                    itemId: q.id,
+                    prompt: q.prompt,
+                    yourAnswer: q.describe(_responses[q.id])!,
+                    correctAnswer: q.correctAnswer,
+                    explanation: q.explanation,
+                    savedOn: today,
+                  ),
             ],
           ),
         );
@@ -225,6 +232,7 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
     setState(() {
       _grade = grade;
       _xp = xp;
+      _timeUsed = timeUsed;
       _timeUp = timeUp;
       _evidence = null;
       _pane = _Pane.questions;
@@ -377,15 +385,7 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
                 )
               : Row(
                   children: [
-                    Expanded(
-                      child: AppButton.outline(
-                        label:
-                            '${_questions.where((q) => q.isAnswered(_responses[q.id])).length}'
-                            '/${_questions.length} answered',
-                        leadingIcon: Icons.grid_view_rounded,
-                        onPressed: _openNavigator,
-                      ),
-                    ),
+                    Expanded(child: _navigatorButton(context)),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppButton.primary(
@@ -397,6 +397,29 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
                   ],
                 ),
         ),
+      ),
+    );
+  }
+
+  /// "6/10" with a grid icon, so it never truncates on phones; the split
+  /// layout has room for "6/10 answered". Screen readers always hear the
+  /// full text.
+  Widget _navigatorButton(BuildContext context) {
+    final answered = _questions
+        .where((q) => q.isAnswered(_responses[q.id]))
+        .length;
+    final total = _questions.length;
+    final wide = MediaQuery.sizeOf(context).width >= splitBreakpoint;
+    return Semantics(
+      button: true,
+      label: 'Questions: $answered of $total answered',
+      onTap: _openNavigator,
+      excludeSemantics: true,
+      child: AppButton.outline(
+        key: const ValueKey('navigatorButton'),
+        label: wide ? '$answered/$total answered' : '$answered/$total',
+        leadingIcon: Icons.grid_view_rounded,
+        onPressed: _openNavigator,
       ),
     );
   }
@@ -419,6 +442,8 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
         grade: grade,
         xp: _xp,
         timeUp: _timeUp,
+        timed: _timed,
+        timeUsed: _timeUsed,
         controller: _questionScroll,
         onShowEvidence: _showEvidence,
       );

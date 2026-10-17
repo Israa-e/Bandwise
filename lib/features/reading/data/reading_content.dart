@@ -400,7 +400,8 @@ const _timekeeping = ReadingPassage(
       answer: Tfng.notGiven,
       explanation:
           'Paragraph F says Essen and Parry built a caesium clock in 1955, '
-          'but there is no information about any award.',
+          'but there is no information about any award. Even if you know '
+          'this from elsewhere, answer only from the passage.',
       evidence: EvidenceSpan(5, 3),
     ),
     ReadingMultipleChoiceQuestion(

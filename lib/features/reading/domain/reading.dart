@@ -158,6 +158,10 @@ sealed class ReadingQuestion {
 
   String get correctAnswer;
 
+  /// The answer is "Not Given": the passage has no information on it, so
+  /// its evidence is only the related part of the passage.
+  bool get isNotGiven => false;
+
   bool isAnswered(ReadingResponse? response);
   bool isCorrect(ReadingResponse? response);
 
@@ -241,6 +245,9 @@ class TfngQuestion extends ChoiceReadingQuestion {
 
   @override
   bool get shuffleOptions => false;
+
+  @override
+  bool get isNotGiven => answer == Tfng.notGiven;
 }
 
 class ReadingMultipleChoiceQuestion extends ChoiceReadingQuestion {

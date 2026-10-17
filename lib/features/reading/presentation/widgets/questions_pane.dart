@@ -328,14 +328,18 @@ class _InlineFeedback extends StatelessWidget {
         correct: correct,
         correctAnswer: question.correctAnswer,
         explanation: question.explanation,
+        notGiven: question.isNotGiven,
         onShowEvidence: onShowEvidence,
       ),
     );
   }
 }
 
-/// Right or wrong, the correct answer, the explanation and "Show in
-/// passage". Used under checked questions and in results.
+/// Right or wrong, the correct answer, the explanation and a link to the
+/// evidence. Used under checked questions and in results.
+///
+/// A Not Given answer has no evidence, so it says so and links to the
+/// related part of the passage instead.
 class AnswerExplanation extends StatelessWidget {
   const AnswerExplanation({
     super.key,
@@ -345,7 +349,10 @@ class AnswerExplanation extends StatelessWidget {
     required this.onShowEvidence,
     this.yourAnswer,
     this.showYourAnswer = false,
+    this.notGiven = false,
   });
+
+  static const notGivenNote = "This information isn't in the passage.";
 
   final bool correct;
   final String correctAnswer;
@@ -355,6 +362,9 @@ class AnswerExplanation extends StatelessWidget {
   /// What the learner answered; null for no answer.
   final String? yourAnswer;
   final bool showYourAnswer;
+
+  /// The correct answer is Not Given.
+  final bool notGiven;
 
   @override
   Widget build(BuildContext context) {
@@ -412,6 +422,15 @@ class AnswerExplanation extends StatelessWidget {
               const SizedBox(height: AppSpacing.xxs),
               _LabelledValue(label: 'Correct answer', value: correctAnswer),
             ],
+            if (notGiven) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                notGivenNote,
+                style: AppTextStyles.bodySm.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.xs),
             Text(
               explanation,
@@ -422,7 +441,7 @@ class AnswerExplanation extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onShowEvidence,
                 icon: const Icon(Icons.find_in_page_outlined, size: 18),
-                label: const Text('Show in passage'),
+                label: Text(notGiven ? 'Show related part' : 'Show in passage'),
               ),
             ),
           ],

@@ -534,6 +534,7 @@ class ReadingCompletion {
   /// Every question practised, answered or not.
   final List<String> questionIds;
 
-  /// Wrong or unanswered questions, saved for review.
+  /// Wrong answers, saved for review. Unanswered questions are scored as
+  /// wrong but not saved.
   final List<SavedMistake> mistakes;
 }
