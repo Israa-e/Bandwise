@@ -13,8 +13,16 @@ abstract final class XpRules {
   static const perReview = 1;
   static const maxReviewPerDay = 10;
 
+  /// Reading practice: per correct answer, plus a bonus for finishing a
+  /// full passage in timed mode.
+  static const perReadingCorrect = 2;
+  static const timedPassageBonus = 10;
+
   static int forLesson(int correctFirstTry) =>
       perLesson + perFirstTryCorrect * correctFirstTry;
+
+  static int forReading({required int correct, required bool timedPassage}) =>
+      perReadingCorrect * correct + (timedPassage ? timedPassageBonus : 0);
 }
 
 /// The learner's saved history. Dates are local, date-only.
@@ -27,6 +35,7 @@ class ProgressState {
     this.activeDays = const {},
     this.mistakes = const [],
     this.reviews = const {},
+    this.readingAttempts = const [],
   });
 
   /// Latest result per completed lesson id.
@@ -45,6 +54,9 @@ class ProgressState {
   /// have no entry.
   final Map<String, ReviewSchedule> reviews;
 
+  /// Finished reading practice, oldest first.
+  final List<ReadingAttempt> readingAttempts;
+
   ProgressState _copyWith({
     Map<String, LessonResult>? results,
     List<XpEntry>? xpLog,
@@ -52,6 +64,7 @@ class ProgressState {
     Set<DateTime>? activeDays,
     List<SavedMistake>? mistakes,
     Map<String, ReviewSchedule>? reviews,
+    List<ReadingAttempt>? readingAttempts,
   }) => ProgressState(
     results: results ?? this.results,
     xpLog: xpLog ?? this.xpLog,
@@ -59,6 +72,7 @@ class ProgressState {
     activeDays: activeDays ?? this.activeDays,
     mistakes: mistakes ?? this.mistakes,
     reviews: reviews ?? this.reviews,
+    readingAttempts: readingAttempts ?? this.readingAttempts,
   );
 
   bool isCompleted(String lessonId) => results.containsKey(lessonId);
@@ -144,6 +158,39 @@ class ProgressState {
         for (final e in reviews.entries)
           if (!oldMistakeKeys.contains(e.key)) e.key: e.value,
       },
+      readingAttempts: readingAttempts,
+    );
+  }
+
+  /// Records finished reading practice: the attempt, XP, minutes, a streak
+  /// day, and the wrong answers as mistakes to review. Mistakes saved
+  /// earlier for the questions practised are replaced, and start their
+  /// reviews from scratch.
+  ProgressState withReadingAttempt(ReadingCompletion c) {
+    final day = dateOnly(c.attempt.date);
+    final replaced = {for (final id in c.questionIds) mistakeReviewKey(id)};
+    return _copyWith(
+      readingAttempts: [...readingAttempts, c.attempt],
+      xpLog: c.attempt.xp == 0
+          ? null
+          : [
+              ...xpLog,
+              XpEntry(
+                date: day,
+                amount: c.attempt.xp,
+                source: 'reading:${c.attempt.passageId}',
+              ),
+            ],
+      minutesByDay: {...minutesByDay, day: minutesOn(day) + c.attempt.minutes},
+      activeDays: {...activeDays, day},
+      mistakes: [
+        ...mistakes.where((m) => !replaced.contains(m.reviewKey)),
+        ...c.mistakes,
+      ],
+      reviews: {
+        for (final e in reviews.entries)
+          if (!replaced.contains(e.key)) e.key: e.value,
+      },
     );
   }
 
@@ -183,6 +230,7 @@ class ProgressState {
     'activeDays': [for (final d in activeDays) formatIsoDay(d)],
     'mistakes': [for (final m in mistakes) m.toJson()],
     'reviews': {for (final e in reviews.entries) e.key: e.value.toJson()},
+    'readingAttempts': [for (final a in readingAttempts) a.toJson()],
   };
 
   static ProgressState fromJson(Map<String, dynamic> json) {
@@ -213,6 +261,10 @@ class ProgressState {
         for (final e in reviews.entries)
           e.key: ReviewSchedule.fromJson(e.value as Map<String, dynamic>),
       },
+      readingAttempts: [
+        for (final a in json['readingAttempts'] as List? ?? const [])
+          ReadingAttempt.fromJson(a as Map<String, dynamic>),
+      ],
     );
   }
 }
@@ -291,6 +343,7 @@ class SavedMistake {
     required this.yourAnswer,
     required this.correctAnswer,
     required this.explanation,
+    this.savedOn,
   });
 
   final MistakeSource source;
@@ -308,6 +361,10 @@ class SavedMistake {
   final String correctAnswer;
   final String explanation;
 
+  /// The day the mistake was made; null for lesson mistakes saved before
+  /// this was recorded (the lesson's completion day is used instead).
+  final DateTime? savedOn;
+
   /// Identifies this mistake's schedule in [ProgressState.reviews].
   String get reviewKey => mistakeReviewKey(itemId);
 
@@ -315,6 +372,7 @@ class SavedMistake {
     'source': source.name,
     'sourceId': sourceId,
     'itemId': itemId,
+    if (savedOn case final d?) 'savedOn': formatIsoDay(d),
     'prompt': prompt,
     'yourAnswer': yourAnswer,
     'correctAnswer': correctAnswer,
@@ -325,6 +383,10 @@ class SavedMistake {
     source: MistakeSource.values.byName(json['source'] as String),
     sourceId: json['sourceId'] as String,
     itemId: json['itemId'] as String,
+    savedOn: switch (json['savedOn']) {
+      final String d => parseIsoDay(d),
+      _ => null,
+    },
     prompt: json['prompt'] as String,
     yourAnswer: json['yourAnswer'] as String,
     correctAnswer: json['correctAnswer'] as String,
@@ -383,4 +445,95 @@ class ReviewCompletion {
 
   /// Study minutes to add for the time spent since the last recorded item.
   final int minutes;
+}
+
+/// Correct answers out of questions for one question type.
+@immutable
+class TypeScore {
+  const TypeScore({required this.correct, required this.total});
+
+  final int correct;
+  final int total;
+
+  Map<String, dynamic> toJson() => {'correct': correct, 'total': total};
+
+  static TypeScore fromJson(Map<String, dynamic> json) =>
+      TypeScore(correct: json['correct'] as int, total: json['total'] as int);
+}
+
+/// One finished reading practice. Raw scores only, never a band.
+@immutable
+class ReadingAttempt {
+  const ReadingAttempt({
+    required this.passageId,
+    required this.timed,
+    required this.date,
+    required this.correct,
+    required this.total,
+    required this.minutes,
+    required this.xp,
+    this.questionType,
+    this.byType = const {},
+  });
+
+  final String passageId;
+
+  /// Timed mode (the full passage) rather than learning mode.
+  final bool timed;
+  final DateTime date;
+  final int correct;
+  final int total;
+  final int minutes;
+  final int xp;
+
+  /// The one question type practised, by name; null for all types.
+  final String? questionType;
+
+  /// Scores by question type name.
+  final Map<String, TypeScore> byType;
+
+  Map<String, dynamic> toJson() => {
+    'passageId': passageId,
+    'timed': timed,
+    'date': formatIsoDay(date),
+    'correct': correct,
+    'total': total,
+    'minutes': minutes,
+    'xp': xp,
+    'questionType': ?questionType,
+    'byType': {for (final e in byType.entries) e.key: e.value.toJson()},
+  };
+
+  static ReadingAttempt fromJson(Map<String, dynamic> json) => ReadingAttempt(
+    passageId: json['passageId'] as String,
+    timed: json['timed'] as bool,
+    date: parseIsoDay(json['date'] as String),
+    correct: json['correct'] as int,
+    total: json['total'] as int,
+    minutes: json['minutes'] as int,
+    xp: json['xp'] as int,
+    questionType: json['questionType'] as String?,
+    byType: {
+      for (final e in (json['byType'] as Map<String, dynamic>? ?? {}).entries)
+        e.key: TypeScore.fromJson(e.value as Map<String, dynamic>),
+    },
+  );
+}
+
+/// Everything recorded when reading practice is submitted.
+@immutable
+class ReadingCompletion {
+  const ReadingCompletion({
+    required this.attempt,
+    required this.questionIds,
+    required this.mistakes,
+  });
+
+  final ReadingAttempt attempt;
+
+  /// Every question practised, answered or not.
+  final List<String> questionIds;
+
+  /// Wrong or unanswered questions, saved for review.
+  final List<SavedMistake> mistakes;
 }

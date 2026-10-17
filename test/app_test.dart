@@ -47,6 +47,8 @@ void main() {
         expect(find.byType(HomeTopBar), findsOneWidget);
       } else if (tab == 'Learn') {
         expect(find.byType(LearnScreen), findsOneWidget);
+      } else if (tab == 'Practice') {
+        expect(find.widgetWithText(TabTopBar, tab), findsOneWidget);
       } else {
         expect(find.widgetWithText(AppBar, tab), findsOneWidget);
       }

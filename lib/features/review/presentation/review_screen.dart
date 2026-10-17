@@ -11,6 +11,8 @@ import '../../onboarding/presentation/onboarding_controller.dart';
 import '../../progress/domain/progress_state.dart';
 import '../../progress/domain/review_schedule.dart';
 import '../../progress/presentation/progress_controller.dart';
+import '../../reading/domain/reading.dart';
+import '../../reading/presentation/widgets/reading_question_body.dart';
 import '../domain/option_shuffle.dart';
 import '../domain/review_planner.dart';
 import 'review_providers.dart';
@@ -141,6 +143,9 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
   var _minutesRecorded = 0;
 
   int? _picked;
+
+  /// The answer to a reading question.
+  ReadingResponse? _response;
   var _checked = false;
   var _revealed = false;
   var _saving = false;
@@ -185,6 +190,7 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
       }
       _xp += xp;
       _picked = null;
+      _response = null;
       _checked = false;
       _revealed = false;
       _saving = false;
@@ -240,48 +246,46 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
           checked: _checked,
           onPick: (i) => setState(() => _picked = i),
         );
-        final correct = _picked == exercise.correctIndex;
-        bottom = !_checked
-            ? StickyActionBar(
-                child: AppButton.primary(
-                  label: 'Check',
-                  onPressed: _picked == null
-                      ? null
-                      : () => setState(() => _checked = true),
-                ),
-              )
-            : correct
-            ? FeedbackPanel(
-                correct: true,
-                correctAnswer: exercise.correctAnswer,
-                explanation: exercise.explanation,
-                action: rating,
-              )
-            // A wrong answer is "Again": the question comes back later in
-            // this session.
-            : FeedbackPanel(
-                correct: false,
-                correctAnswer: exercise.correctAnswer,
-                explanation: exercise.explanation,
-                action: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      "You'll see this question again in this review.",
-                      style: AppTextStyles.bodySm.copyWith(
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.smd),
-                    AppButton.primary(
-                      label: 'Continue',
-                      isLoading: _saving,
-                      onPressed: () => _rate(ReviewRating.again),
-                    ),
-                  ],
-                ),
-              );
+        bottom = _mistakeBottom(
+          answered: _picked != null,
+          correct: _picked == exercise.correctIndex,
+          correctAnswer: exercise.correctAnswer,
+          explanation: exercise.explanation,
+          rating: rating,
+        );
+      case ReadingMistakeReviewItem(:final passage, :final question):
+        final shuffle =
+            question is ChoiceReadingQuestion && question.shuffleOptions;
+        body = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _ParagraphContext(
+              passage: passage,
+              paragraph: question.evidence.paragraph,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            ReadingQuestionBody(
+              question: question,
+              response: _response,
+              revealed: _checked,
+              optionOrder: shuffle
+                  ? shuffledOptionOrder(
+                      question.options.length,
+                      seed: _seed,
+                      key: item.key,
+                    )
+                  : null,
+              onChanged: (r) => setState(() => _response = r),
+            ),
+          ],
+        );
+        bottom = _mistakeBottom(
+          answered: question.isAnswered(_response),
+          correct: question.isCorrect(_response),
+          correctAnswer: question.correctAnswer,
+          explanation: question.explanation,
+          rating: rating,
+        );
     }
 
     final position = (_done + 1).clamp(1, _total);
@@ -308,6 +312,54 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
         ],
       ),
       bottomNavigationBar: bottom,
+    );
+  }
+
+  /// Check, then the result: rating buttons when right; when wrong, the
+  /// item is "Again" and comes back later in this session.
+  Widget _mistakeBottom({
+    required bool answered,
+    required bool correct,
+    required String correctAnswer,
+    required String explanation,
+    required Widget rating,
+  }) {
+    if (!_checked) {
+      return StickyActionBar(
+        child: AppButton.primary(
+          label: 'Check',
+          onPressed: answered ? () => setState(() => _checked = true) : null,
+        ),
+      );
+    }
+    if (correct) {
+      return FeedbackPanel(
+        correct: true,
+        correctAnswer: correctAnswer,
+        explanation: explanation,
+        action: rating,
+      );
+    }
+    return FeedbackPanel(
+      correct: false,
+      correctAnswer: correctAnswer,
+      explanation: explanation,
+      action: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            "You'll see this question again in this review.",
+            style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: AppSpacing.smd),
+          AppButton.primary(
+            label: 'Continue',
+            isLoading: _saving,
+            onPressed: () => _rate(ReviewRating.again),
+          ),
+        ],
+      ),
     );
   }
 
@@ -344,10 +396,22 @@ class _Source extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lesson = item.lesson;
-    final (label, icon) = switch (item) {
-      MistakeReviewItem() => ('Saved mistake', Icons.bookmark_rounded),
-      WordReviewItem() => ('Saved word', Icons.style_rounded),
+    final (label, icon, from) = switch (item) {
+      MistakeReviewItem(:final lesson) => (
+        'Saved mistake',
+        Icons.bookmark_rounded,
+        'Unit ${lesson.unit}, ${lesson.label}',
+      ),
+      ReadingMistakeReviewItem(:final passage) => (
+        'Saved mistake',
+        Icons.bookmark_rounded,
+        'Reading: ${passage.title}',
+      ),
+      WordReviewItem(:final lesson) => (
+        'Saved word',
+        Icons.style_rounded,
+        'Unit ${lesson.unit}, ${lesson.label}',
+      ),
     };
     return Row(
       children: [
@@ -355,11 +419,37 @@ class _Source extends StatelessWidget {
         const SizedBox(width: AppSpacing.xxs),
         Flexible(
           child: Text(
-            '$label · Unit ${lesson.unit}, ${lesson.label}',
+            '$label · $from',
             style: AppTextStyles.labelMd.copyWith(color: AppColors.textMuted),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The paragraph a reading question is about, labelled with its letter.
+class _ParagraphContext extends StatelessWidget {
+  const _ParagraphContext({required this.passage, required this.paragraph});
+
+  final ReadingPassage passage;
+  final int paragraph;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'PARAGRAPH ${ReadingPassage.paragraphLabel(paragraph)}',
+            style: AppTextStyles.labelSm.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(passage.paragraphs[paragraph].text, style: AppTextStyles.bodyMd),
+        ],
+      ),
     );
   }
 }

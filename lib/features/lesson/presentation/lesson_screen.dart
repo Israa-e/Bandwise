@@ -174,6 +174,7 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
             yourAnswer: q.options[picked],
             correctAnswer: q.correctAnswer,
             explanation: q.explanation,
+            savedOn: ref.read(todayProvider),
           ),
         );
       }

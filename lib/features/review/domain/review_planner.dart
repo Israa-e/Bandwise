@@ -4,66 +4,96 @@ import '../../../core/utils/dates.dart';
 import '../../learn/domain/course.dart';
 import '../../progress/domain/progress_state.dart';
 import '../../progress/domain/review_schedule.dart';
+import '../../reading/domain/reading.dart';
 
 /// Something to review: a saved mistake or a word from a finished lesson.
 @immutable
 sealed class ReviewItem {
   const ReviewItem({
     required this.key,
-    required this.lesson,
     required this.dueOn,
     required this.schedule,
   });
 
   /// See [ProgressState.reviews].
   final String key;
-  final Lesson lesson;
   final DateTime dueOn;
 
   /// Null until the item has been reviewed once.
   final ReviewSchedule? schedule;
+
+  /// A saved mistake rather than a word.
+  bool get isMistake => this is! WordReviewItem;
 }
 
-/// A question answered wrongly in a lesson, asked again.
+/// A lesson question answered wrongly, asked again.
 class MistakeReviewItem extends ReviewItem {
   const MistakeReviewItem({
     required super.key,
-    required super.lesson,
     required super.dueOn,
     required super.schedule,
+    required this.lesson,
     required this.mistake,
     required this.exercise,
   });
 
+  final Lesson lesson;
   final SavedMistake mistake;
   final QuestionExercise exercise;
+}
+
+/// A reading question answered wrongly, asked again with its paragraph.
+class ReadingMistakeReviewItem extends ReviewItem {
+  const ReadingMistakeReviewItem({
+    required super.key,
+    required super.dueOn,
+    required super.schedule,
+    required this.passage,
+    required this.mistake,
+    required this.question,
+  });
+
+  final ReadingPassage passage;
+  final SavedMistake mistake;
+  final ReadingQuestion question;
 }
 
 /// A flashcard word from a finished lesson.
 class WordReviewItem extends ReviewItem {
   const WordReviewItem({
     required super.key,
-    required super.lesson,
     required super.dueOn,
     required super.schedule,
+    required this.lesson,
     required this.card,
   });
 
+  final Lesson lesson;
   final FlashcardExercise card;
 }
 
-/// Builds the review queue from the course and the learner's progress.
+/// Builds the review queue from the course, reading passages and the
+/// learner's progress.
 ///
 /// - Mistakes are due on the day they were made, until first reviewed.
 /// - Words from a finished lesson are first due the day after it.
 /// - After that, [ProgressState.reviews] decides (see [ReviewSchedule]).
+///
+/// Items are found by stable id, so rewording an exercise keeps its
+/// schedule; items whose exercise or question was removed are skipped.
 class ReviewPlanner {
-  ReviewPlanner({required this.course, required this.progress});
+  ReviewPlanner({
+    required this.course,
+    required this.progress,
+    this.passages = const [],
+  });
 
   final Course course;
   final ProgressState progress;
+  final List<ReadingPassage> passages;
 
-  /// Every reviewable item, in path order: mistakes, then words, per lesson.
+  /// Every reviewable item in path order: per lesson, mistakes then words;
+  /// then reading mistakes per passage.
   late final List<ReviewItem> items = _build();
 
   List<ReviewItem> _build() {
@@ -74,8 +104,6 @@ class ReviewPlanner {
       final mistakes = {
         for (final m in progress.mistakesFor(lesson.id)) m.itemId: m,
       };
-      // In exercise order. Mistakes whose exercise has been removed are
-      // skipped.
       for (final exercise in lesson.exercises.whereType<QuestionExercise>()) {
         final mistake = mistakes[exercise.id];
         if (mistake == null) continue;
@@ -84,7 +112,7 @@ class ReviewPlanner {
           MistakeReviewItem(
             key: mistake.reviewKey,
             lesson: lesson,
-            dueOn: schedule?.dueOn ?? result.completedOn,
+            dueOn: schedule?.dueOn ?? mistake.savedOn ?? result.completedOn,
             schedule: schedule,
             mistake: mistake,
             exercise: exercise,
@@ -101,6 +129,29 @@ class ReviewPlanner {
             dueOn: schedule?.dueOn ?? addDays(result.completedOn, 1),
             schedule: schedule,
             card: card,
+          ),
+        );
+      }
+    }
+
+    final readingMistakes = {
+      for (final m in progress.mistakes)
+        if (m.source == MistakeSource.reading) m.itemId: m,
+    };
+    for (final passage in passages) {
+      for (final question in passage.questions) {
+        final mistake = readingMistakes[question.id];
+        final savedOn = mistake?.savedOn;
+        if (mistake == null || savedOn == null) continue;
+        final schedule = progress.reviews[mistake.reviewKey];
+        items.add(
+          ReadingMistakeReviewItem(
+            key: mistake.reviewKey,
+            dueOn: schedule?.dueOn ?? savedOn,
+            schedule: schedule,
+            passage: passage,
+            mistake: mistake,
+            question: question,
           ),
         );
       }
@@ -126,10 +177,7 @@ class ReviewPlanner {
     return [for (final (_, item) in due) item];
   }
 
-  static int _kindOrder(ReviewItem item) => switch (item) {
-    MistakeReviewItem() => 0,
-    WordReviewItem() => 1,
-  };
+  static int _kindOrder(ReviewItem item) => item.isMistake ? 0 : 1;
 
   /// The first day after [today] with something due, if any.
   DateTime? nextReviewAfter(DateTime today) {

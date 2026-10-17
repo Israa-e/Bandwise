@@ -88,6 +88,62 @@ class AppBackButton extends StatelessWidget {
   }
 }
 
+/// Top bar for a tab or a screen inside one: an optional back button, a
+/// title, and an optional trailing widget.
+class TabTopBar extends StatelessWidget implements PreferredSizeWidget {
+  const TabTopBar({
+    super.key,
+    required this.title,
+    this.trailing,
+    this.showBack = false,
+  });
+
+  final String title;
+  final Widget? trailing;
+  final bool showBack;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(64);
+
+  @override
+  Widget build(BuildContext context) {
+    return TopBarSurface(
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: preferredSize.height,
+          child: Padding(
+            padding: EdgeInsetsDirectional.only(
+              start: showBack ? AppSpacing.xs : AppSpacing.page,
+              end: AppSpacing.page,
+            ),
+            child: Row(
+              children: [
+                if (showBack) ...[
+                  const AppBackButton(),
+                  const SizedBox(width: AppSpacing.xxs),
+                ],
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      title,
+                      style: AppTextStyles.headlineMd,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                ?trailing,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Top bar for onboarding steps: back button, centered "Step X of Y" with a
 /// segmented progress bar, and an optional trailing action (e.g. Skip).
 class OnboardingTopBar extends StatelessWidget implements PreferredSizeWidget {

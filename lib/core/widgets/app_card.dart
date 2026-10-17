@@ -6,7 +6,8 @@ import '../theme/app_theme.dart';
 ///
 /// Pass [color] to render a flat tinted card (e.g. a skill tint); tinted cards
 /// drop the shadow so they sit flat on the background. Pass [onTap] to make
-/// the whole card tappable.
+/// the whole card tappable. [selected] gives the selected-card look: a light
+/// primary surface with a 2px primary border.
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -15,6 +16,7 @@ class AppCard extends StatelessWidget {
     this.color,
     this.onTap,
     this.semanticLabel,
+    this.selected = false,
   });
 
   final Widget child;
@@ -22,6 +24,7 @@ class AppCard extends StatelessWidget {
   final Color? color;
   final VoidCallback? onTap;
   final String? semanticLabel;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +35,12 @@ class AppCard extends StatelessWidget {
         boxShadow: tinted ? null : AppShadows.card,
       ),
       child: Material(
-        color: color ?? AppColors.card,
+        color: selected ? AppColors.selectedSurface : color ?? AppColors.card,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadii.cardRadius,
-          side: tinted
+          side: selected
+              ? const BorderSide(color: AppColors.primary, width: 2)
+              : tinted
               ? BorderSide.none
               : const BorderSide(color: AppColors.borderSubtle),
         ),
@@ -48,6 +53,11 @@ class AppCard extends StatelessWidget {
     );
 
     if (onTap == null && semanticLabel == null) return card;
-    return Semantics(button: onTap != null, label: semanticLabel, child: card);
+    return Semantics(
+      button: onTap != null,
+      selected: selected,
+      label: semanticLabel,
+      child: card,
+    );
   }
 }

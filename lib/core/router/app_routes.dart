@@ -18,6 +18,23 @@ abstract final class AppRoutes {
   static const lesson = '/lesson';
   static const review = '/review';
   static const notifications = '/notifications';
+  static const reading = '/reading';
+
+  /// Reading hub, inside the Practice tab.
+  static const readingHub = '$practice/reading';
+
+  /// "Coming soon" page for a skill without practice yet.
+  static String practiceSkill(Skill skill) => '$practice/skill/${skill.name}';
+
+  /// A reading session. [type] limits it to one question type.
+  static String readingSession(
+    String passageId, {
+    required bool timed,
+    String? type,
+  }) => Uri(
+    path: '$reading/$passageId',
+    queryParameters: {'mode': timed ? 'timed' : 'learning', 'type': ?type},
+  ).toString();
 
   static String lessonPath(String lessonId) => '$lesson/$lessonId';
 

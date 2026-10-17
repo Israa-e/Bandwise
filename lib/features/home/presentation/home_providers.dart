@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../learn/presentation/learn_providers.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
+import '../../reading/presentation/reading_providers.dart';
 import '../data/live_home_repository.dart';
 import '../data/mock_home_repository.dart';
 import '../domain/home_repository.dart';
@@ -30,6 +31,7 @@ final homeRepositoryProvider = Provider<HomeRepository>((ref) {
   // Rebuilt (so Home refetches) whenever progress changes.
   return LiveHomeRepository(
     path: ref.watch(learningPathProvider.future),
+    passages: ref.watch(readingPassagesProvider.future),
     today: today,
   );
 });

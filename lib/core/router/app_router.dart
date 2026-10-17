@@ -21,6 +21,10 @@ import '../../features/onboarding/presentation/skills_screen.dart';
 import '../../features/onboarding/presentation/target_band_screen.dart';
 import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/practice/presentation/practice_screen.dart';
+import '../../features/practice/presentation/skill_coming_soon_screen.dart';
+import '../../features/reading/domain/reading.dart';
+import '../../features/reading/presentation/reading_hub_screen.dart';
+import '../../features/reading/presentation/reading_session_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/review/presentation/review_screen.dart';
@@ -70,6 +74,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ReviewScreen(),
       ),
       GoRoute(
+        path: '${AppRoutes.reading}/:id',
+        builder: (context, state) {
+          final query = state.uri.queryParameters;
+          return ReadingSessionScreen(
+            passageId: state.pathParameters['id']!,
+            mode: query['mode'] == 'timed'
+                ? ReadingMode.timed
+                : ReadingMode.learning,
+            type: ReadingQuestionType.values
+                .where((t) => t.name == query['type'])
+                .firstOrNull,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.notifications,
         builder: (context, state) => const NotificationsScreen(),
       ),
@@ -90,6 +109,24 @@ final routerProvider = Provider<GoRouter>((ref) {
                         .firstOrNull,
                   );
                 },
+                routes: [
+                  GoRoute(
+                    path: 'reading',
+                    builder: (context, state) => const ReadingHubScreen(),
+                  ),
+                  GoRoute(
+                    path: 'skill/:skill',
+                    builder: (context, state) => SkillComingSoonScreen(
+                      skill:
+                          Skill.values
+                              .where(
+                                (s) => s.name == state.pathParameters['skill'],
+                              )
+                              .firstOrNull ??
+                          Skill.listening,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -120,6 +157,7 @@ const _mainPaths = [
   AppRoutes.lesson,
   AppRoutes.review,
   AppRoutes.notifications,
+  AppRoutes.reading,
 ];
 
 bool _isMainPath(String location) =>

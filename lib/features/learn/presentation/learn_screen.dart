@@ -49,48 +49,14 @@ class LearnScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: _LearnTopBar(streak: value?.progress.streak(today)),
-      body: body,
-    );
-  }
-}
-
-class _LearnTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const _LearnTopBar({required this.streak});
-
-  /// Null while loading.
-  final int? streak;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(64);
-
-  @override
-  Widget build(BuildContext context) {
-    final streak = this.streak;
-    return TopBarSurface(
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: preferredSize.height,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.page,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: const Text('Learn', style: AppTextStyles.headlineMd),
-                  ),
-                ),
-                if (streak != null)
-                  StreakChip(days: streak, active: streak > 0),
-              ],
-            ),
-          ),
-        ),
+      appBar: TabTopBar(
+        title: 'Learn',
+        trailing: switch (value?.progress.streak(today)) {
+          final streak? => StreakChip(days: streak, active: streak > 0),
+          null => null,
+        },
       ),
+      body: body,
     );
   }
 }

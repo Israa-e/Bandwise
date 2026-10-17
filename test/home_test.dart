@@ -368,7 +368,14 @@ void main() {
         find.byType(PracticeScreen),
       );
       expect(practice.initialSkill, Skill.reading);
-      expect(find.text('Reading practice'), findsOneWidget);
+      final card = find.byKey(const ValueKey('practice-reading'));
+      expect(tester.widget<AppCard>(card).selected, isTrue);
+      expect(
+        tester
+            .widget<AppCard>(find.byKey(const ValueKey('practice-writing')))
+            .selected,
+        isFalse,
+      );
       expect(find.byType(AppBottomNav), findsOneWidget);
     });
   });

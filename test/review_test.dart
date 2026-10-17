@@ -226,9 +226,11 @@ void main() {
           .withCompletedLesson(_completion('u1-l1', _day(-1), wrongAt: [3]));
       final due = _planner(progress).dueOn(_today);
       String describe(ReviewItem i) => switch (i) {
-        MistakeReviewItem(:final exercise) =>
-          'mistake ${i.lesson.id} ${_lesson(i.lesson.id).exercises.indexOf(exercise)}',
-        WordReviewItem(:final card) => 'word ${i.lesson.id} ${card.word}',
+        MistakeReviewItem(:final lesson, :final exercise) =>
+          'mistake ${lesson.id} ${lesson.exercises.indexOf(exercise)}',
+        WordReviewItem(:final lesson, :final card) =>
+          'word ${lesson.id} ${card.word}',
+        ReadingMistakeReviewItem(:final question) => 'reading ${question.id}',
       };
       expect(due.map(describe), [
         // Due Oct 12: u2-l1 mistakes in exercise order.
