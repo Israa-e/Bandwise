@@ -7,6 +7,17 @@ abstract final class AppRoutes {
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const createAccount = '/create-account';
+  static const forgotPassword = '/forgot-password';
+
+  /// Log in with [email] filled in.
+  static String loginWith(String email) => email.isEmpty
+      ? login
+      : Uri(path: login, queryParameters: {'email': email}).toString();
+
+  /// Password reset with [email] filled in.
+  static String forgotPasswordWith(String email) => email.isEmpty
+      ? forgotPassword
+      : Uri(path: forgotPassword, queryParameters: {'email': email}).toString();
 
   static const home = '/home';
   static const learn = '/learn';

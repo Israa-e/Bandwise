@@ -210,7 +210,7 @@ void main() {
     await tapText(tester, 'Start learning');
     expect(find.text('Create your account'), findsOneWidget);
     expect((await saved()).completed, isFalse);
-    await tapText(tester, 'Continue to Home');
+    await tapText(tester, 'Continue without an account');
     expect(find.byType(HomeScreen), findsOneWidget);
     expect((await saved()).completed, isTrue);
   });

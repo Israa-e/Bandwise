@@ -36,8 +36,22 @@ class PrivacyScreen extends StatelessWidget {
               'Settings such as the daily reminder time.',
             ],
             footer:
-                'Nothing is sent to a server yet. You can delete it all '
-                'from Profile › Delete all data.',
+                'As a guest, all of this stays on this device only. You can '
+                'delete it from Profile › Delete all data.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const _Section(
+            title: 'With an account',
+            icon: Icons.sync_rounded,
+            points: [
+              'Your plan, progress, settings and essays are synced to our '
+                  'server, so you can sign in on another device.',
+              'Only you can read your synced data.',
+              'Signing out removes it from this device; it stays in your '
+                  'account.',
+              'Delete account (Profile › Data and privacy) deletes your '
+                  'account and everything synced to it.',
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
           const _Section(

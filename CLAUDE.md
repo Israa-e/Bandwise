@@ -8,6 +8,9 @@ Independent IELTS Academic prep app. Not affiliated with IELTS, British Council,
 - Feature-first folders: lib/core (theme, widgets, utils), lib/features/<feature>/{data,domain,presentation}
 - All data behind repository interfaces with mock implementations first; real backend comes later.
 - No API keys in the app. AI calls will go through a server function.
+- Supabase (supabase_flutter) for accounts and sync. The app only gets SUPABASE_URL and SUPABASE_ANON_KEY, from `--dart-define-from-file=env.json` (gitignored; `env.example.json` is committed with empty values). Without them the app runs offline, guest only.
+- NEVER put a service_role key (or any other secret key) in the app or the repo. It lives only in the Supabase Edge Function environment.
+- Sync is local-first: the UI reads local storage only; SyncService uploads and downloads in the background (last write wins per document by updated_at).
 
 ## Design source of truth
 - design/screens/*.md are Stitch exports (HTML inside Markdown): use them for LAYOUT and CONTENT only.

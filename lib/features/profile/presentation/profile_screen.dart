@@ -2,17 +2,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/models/skill.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/clock.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../auth/domain/auth_service.dart';
+import '../../auth/presentation/account_flow.dart';
+import '../../auth/presentation/auth_providers.dart';
 import '../../onboarding/domain/onboarding_state.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
 import '../../progress/presentation/progress_controller.dart';
 import '../../settings/domain/app_settings.dart';
 import '../../settings/presentation/settings_controller.dart';
+import '../../sync/presentation/sync_service.dart';
 import '../../writing/presentation/writing_providers.dart';
 import '../domain/achievements.dart';
 import 'data_controls.dart';
@@ -40,13 +46,14 @@ class ProfileScreen extends ConsumerWidget {
         ref.watch(onboardingControllerProvider).value ??
         const OnboardingState();
     final today = ref.watch(todayProvider);
+    final user = ref.watch(authUserProvider);
 
     return Scaffold(
       appBar: const TabTopBar(title: 'Profile'),
       body: ListView(
         padding: _padding,
         children: [
-          _Header(plan: plan, today: today),
+          _Header(plan: plan, today: today, user: user),
           const SizedBox(height: AppSpacing.xl),
           const SectionTitle('Study plan'),
           _StudyPlan(plan: plan, today: today),
@@ -57,10 +64,10 @@ class ProfileScreen extends ConsumerWidget {
           _Settings(plan: plan),
           const SizedBox(height: AppSpacing.xl),
           const SectionTitle('Account'),
-          const _AccountCard(),
+          if (user == null) const _AccountCard() else _SignedIn(user: user),
           const SizedBox(height: AppSpacing.xl),
           const SectionTitle('Data and privacy'),
-          const _DataAndPrivacy(),
+          _DataAndPrivacy(signedIn: user != null),
           const SizedBox(height: AppSpacing.xl),
           const SectionTitle('About'),
           const _About(),
@@ -86,10 +93,13 @@ String _minutesLine(OnboardingState plan) =>
     '${plan.dailyMinutes ?? OnboardingState.defaultDailyMinutes} min a day';
 
 class _Header extends StatelessWidget {
-  const _Header({required this.plan, required this.today});
+  const _Header({required this.plan, required this.today, this.user});
 
   final OnboardingState plan;
   final DateTime today;
+
+  /// Null for a guest.
+  final AuthUser? user;
 
   @override
   Widget build(BuildContext context) {
@@ -138,17 +148,22 @@ class _Header extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // No accounts yet, so there is no name to show.
                     Semantics(
                       header: true,
-                      child: const Text(
-                        'Guest',
-                        key: ValueKey('profileName'),
+                      child: Text(
+                        switch (user) {
+                          null => 'Guest',
+                          AuthUser(:final displayName?) => displayName,
+                          AuthUser(:final email) => email,
+                        },
+                        key: const ValueKey('profileName'),
                         style: AppTextStyles.headlineMd,
                       ),
                     ),
                     Text(
-                      'Progress saved on this device',
+                      user == null
+                          ? 'Progress saved on this device'
+                          : user!.email,
                       style: AppTextStyles.bodySm.copyWith(
                         color: AppColors.textMuted,
                       ),
@@ -158,6 +173,10 @@ class _Header extends StatelessWidget {
               ),
             ],
           ),
+          if (user != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const _SyncStatusLine(),
+          ],
           if (goal != null) ...[
             const SizedBox(height: AppSpacing.smd),
             GoalChip(value: goal),
@@ -539,14 +558,116 @@ class _AccountCard extends StatelessWidget {
             label: 'Create account',
             onPressed: () => context.push(AppRoutes.createAccount),
           ),
+          const SizedBox(height: AppSpacing.xs),
+          AppButton.ghost(
+            label: 'I already have an account',
+            expand: true,
+            onPressed: () => context.push(AppRoutes.login),
+          ),
         ],
       ),
     );
   }
 }
 
+/// "Synced just now", "Offline — will sync later" or "Sync failed — Retry".
+class _SyncStatusLine extends ConsumerWidget {
+  const _SyncStatusLine();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sync = ref.watch(syncServiceProvider);
+    final now = ref.watch(clockProvider)();
+    final last = sync.lastSyncedAt;
+    final (IconData icon, Color color, String text) = switch (sync.phase) {
+      SyncPhase.syncing => (
+        Icons.sync_rounded,
+        AppColors.textMuted,
+        'Syncing…',
+      ),
+      SyncPhase.offline => (
+        Icons.cloud_off_rounded,
+        AppColors.warning,
+        'Offline — will sync later',
+      ),
+      SyncPhase.failed => (
+        Icons.error_outline_rounded,
+        AppColors.error,
+        'Sync failed',
+      ),
+      SyncPhase.idle || SyncPhase.signedOut => (
+        Icons.cloud_done_outlined,
+        AppColors.success,
+        last == null ? 'Waiting to sync' : 'Synced ${_ago(now, last)}',
+      ),
+    };
+    return Semantics(
+      liveRegion: true,
+      child: Row(
+        key: const ValueKey('syncStatus'),
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: Text(
+              text,
+              key: const ValueKey('syncStatusText'),
+              style: AppTextStyles.labelMd.copyWith(color: AppColors.textMuted),
+            ),
+          ),
+          if (sync.phase == SyncPhase.failed)
+            TextButton(
+              key: const ValueKey('syncRetry'),
+              onPressed: () => ref.read(syncServiceProvider.notifier).syncNow(),
+              child: const Text('Retry'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  static String _ago(DateTime now, DateTime then) {
+    final minutes = now.difference(then).inMinutes;
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return minutes == 1 ? '1 min ago' : '$minutes min ago';
+    final local = then.toLocal();
+    return daysBetween(local, now) == 0
+        ? 'today at ${DateFormat.jm().format(local)}'
+        : 'on ${formatShortDate(local)}';
+  }
+}
+
+/// The signed-in account: its email and Sign out.
+class _SignedIn extends ConsumerWidget {
+  const _SignedIn({required this.user});
+
+  final AuthUser user;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GroupCard(
+      children: [
+        AppListRow(
+          icon: Icons.account_circle_outlined,
+          title: user.displayName ?? 'Your account',
+          subtitle: user.email,
+        ),
+        AppListRow(
+          key: const ValueKey('signOut'),
+          icon: Icons.logout_rounded,
+          title: 'Sign out',
+          subtitle: 'Syncs first, then clears this device',
+          onTap: () => signOutFlow(context, ref),
+        ),
+      ],
+    );
+  }
+}
+
 class _DataAndPrivacy extends ConsumerWidget {
-  const _DataAndPrivacy();
+  const _DataAndPrivacy({required this.signedIn});
+
+  final bool signedIn;
 
   Future<void> _reset(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
@@ -554,11 +675,20 @@ class _DataAndPrivacy extends ConsumerWidget {
       title: 'Reset progress?',
       message: 'This deletes your learning history on this device:',
       items: resetProgressItems,
-      footnote: 'Your study plan and settings are kept.',
+      footnote: signedIn
+          ? 'Your study plan and settings are kept. The progress saved in '
+                'your account is reset too.'
+          : 'Your study plan and settings are kept.',
       confirmLabel: 'Reset progress',
     );
     if (!confirmed) return;
     await resetProgress(ref);
+    if (signedIn) {
+      // The account gets the reset too, including its essays.
+      await ref
+          .read(syncServiceProvider.notifier)
+          .adopt(AdoptMode.replaceAccount);
+    }
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -599,16 +729,30 @@ class _DataAndPrivacy extends ConsumerWidget {
           subtitle: 'Keeps your study plan and settings',
           onTap: () => _reset(context, ref),
         ),
-        AppListRow(
-          key: const ValueKey('deleteAllData'),
-          icon: Icons.delete_outline_rounded,
-          iconColor: AppColors.errorText,
-          iconBackground: AppColors.errorTint,
-          title: 'Delete all data',
-          titleColor: AppColors.errorText,
-          subtitle: 'Everything, including your plan',
-          onTap: () => _deleteAll(context, ref),
-        ),
+        // Signed in, Sign out clears this device and Delete account clears
+        // everything.
+        if (signedIn)
+          AppListRow(
+            key: const ValueKey('deleteAccount'),
+            icon: Icons.person_remove_outlined,
+            iconColor: AppColors.errorText,
+            iconBackground: AppColors.errorTint,
+            title: 'Delete account',
+            titleColor: AppColors.errorText,
+            subtitle: 'Your account, synced progress and essays',
+            onTap: () => deleteAccountFlow(context, ref),
+          )
+        else
+          AppListRow(
+            key: const ValueKey('deleteAllData'),
+            icon: Icons.delete_outline_rounded,
+            iconColor: AppColors.errorText,
+            iconBackground: AppColors.errorTint,
+            title: 'Delete all data',
+            titleColor: AppColors.errorText,
+            subtitle: 'Everything, including your plan',
+            onTap: () => _deleteAll(context, ref),
+          ),
       ],
     );
   }

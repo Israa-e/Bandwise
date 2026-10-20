@@ -174,6 +174,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState>
     ),
   );
 
+  /// The learner signed in, so they are no longer a guest.
+  Future<void> markSignedIn() => _update((s) => s.copyWith(isGuest: false));
+
   /// Ends onboarding; the app opens on Home from now on.
   Future<void> complete() =>
       _update((s) => s.copyWith(completed: true, step: OnboardingStep.plan));

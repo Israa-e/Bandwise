@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/auth_placeholder_screens.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/log_in_screen.dart';
+import '../../features/auth/presentation/sign_up_screen.dart';
 import '../../features/dev_gallery/presentation/component_gallery_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/learn/presentation/learn_screen.dart';
@@ -69,11 +71,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) =>
+            LogInScreen(initialEmail: state.uri.queryParameters['email']),
       ),
       GoRoute(
         path: AppRoutes.createAccount,
-        builder: (context, state) => const CreateAccountScreen(),
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => ForgotPasswordScreen(
+          initialEmail: state.uri.queryParameters['email'],
+        ),
       ),
       GoRoute(
         path: '${AppRoutes.lesson}/:id',

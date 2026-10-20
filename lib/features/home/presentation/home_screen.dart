@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../auth/presentation/auth_providers.dart';
 import '../../onboarding/domain/onboarding_state.dart';
 import '../../onboarding/domain/placement.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
@@ -36,6 +37,7 @@ class HomeScreen extends ConsumerWidget {
         const OnboardingState();
     final summary = ref.watch(homeSummaryProvider);
     final start = ref.watch(startingPointProvider);
+    final name = ref.watch(authUserProvider)?.displayName;
 
     final data = summary.value;
     final ready =
@@ -67,7 +69,7 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: HomeTopBar(
-        displayName: onboarding.isGuest ? null : data?.displayName,
+        displayName: name ?? (onboarding.isGuest ? null : data?.displayName),
         onNotifications: () => context.push(AppRoutes.notifications),
       ),
       body: body,
@@ -104,7 +106,9 @@ class _HomeContent extends ConsumerWidget {
       padding: _listPadding,
       children: [
         _Greeting(
-          name: onboarding.isGuest ? null : summary.displayName,
+          name:
+              ref.watch(authUserProvider)?.displayName ??
+              (onboarding.isGuest ? null : summary.displayName),
           target: onboarding.targetBand,
           line: _greetingLine(summary, dailyGoal),
         ),
