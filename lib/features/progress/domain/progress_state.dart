@@ -40,6 +40,8 @@ class ProgressState {
     this.mistakes = const [],
     this.reviews = const {},
     this.readingAttempts = const [],
+    this.reviewsByDay = const {},
+    this.removedFromReview = const {},
   });
 
   /// Latest result per completed lesson id.
@@ -61,6 +63,13 @@ class ProgressState {
   /// Finished reading practice, oldest first.
   final List<ReadingAttempt> readingAttempts;
 
+  /// Review items rated per local day, "Again" included.
+  final Map<DateTime, int> reviewsByDay;
+
+  /// Review keys the learner took out of the review queue. They stay in
+  /// the notebooks.
+  final Set<String> removedFromReview;
+
   ProgressState _copyWith({
     Map<String, LessonResult>? results,
     List<XpEntry>? xpLog,
@@ -69,6 +78,8 @@ class ProgressState {
     List<SavedMistake>? mistakes,
     Map<String, ReviewSchedule>? reviews,
     List<ReadingAttempt>? readingAttempts,
+    Map<DateTime, int>? reviewsByDay,
+    Set<String>? removedFromReview,
   }) => ProgressState(
     results: results ?? this.results,
     xpLog: xpLog ?? this.xpLog,
@@ -77,6 +88,8 @@ class ProgressState {
     mistakes: mistakes ?? this.mistakes,
     reviews: reviews ?? this.reviews,
     readingAttempts: readingAttempts ?? this.readingAttempts,
+    reviewsByDay: reviewsByDay ?? this.reviewsByDay,
+    removedFromReview: removedFromReview ?? this.removedFromReview,
   );
 
   bool isCompleted(String lessonId) => results.containsKey(lessonId);
@@ -88,6 +101,41 @@ class ProgressState {
       .fold(0, (sum, e) => sum + e.amount);
 
   int minutesOn(DateTime day) => minutesByDay[dateOnly(day)] ?? 0;
+
+  /// The day the first lesson was finished. Replaying a lesson replaces
+  /// its result, so this reads the XP log, which keeps every completion.
+  DateTime? get firstLessonOn {
+    final dates = [
+      for (final e in xpLog)
+        if (e.isLesson) e.date,
+      for (final r in results.values) r.completedOn,
+    ];
+    return dates.isEmpty ? null : dates.reduce((a, b) => a.isBefore(b) ? a : b);
+  }
+
+  /// Study minutes, all time.
+  int get totalMinutes => minutesByDay.values.fold(0, (sum, m) => sum + m);
+
+  /// Review items rated, all time.
+  int get reviewCount => reviewsByDay.values.fold(0, (sum, n) => sum + n);
+
+  /// Whether [key] is still in the review queue.
+  bool isInReview(String key) => !removedFromReview.contains(key);
+
+  /// The most consecutive active days ever.
+  int get longestStreak {
+    var best = 0;
+    for (final day in activeDays) {
+      // Count only from the first day of each run.
+      if (activeDays.contains(addDays(day, -1))) continue;
+      var length = 1;
+      while (activeDays.contains(addDays(day, length))) {
+        length++;
+      }
+      if (length > best) best = length;
+    }
+    return best;
+  }
 
   /// Mistakes saved from lesson [lessonId].
   List<SavedMistake> mistakesFor(String lessonId) => [
@@ -163,6 +211,8 @@ class ProgressState {
           if (!oldMistakeKeys.contains(e.key)) e.key: e.value,
       },
       readingAttempts: readingAttempts,
+      reviewsByDay: reviewsByDay,
+      removedFromReview: removedFromReview,
     );
   }
 
@@ -239,8 +289,18 @@ class ProgressState {
           ? null
           : {...minutesByDay, day: minutesOn(day) + r.minutes},
       activeDays: {...activeDays, day},
+      reviewsByDay: {...reviewsByDay, day: (reviewsByDay[day] ?? 0) + 1},
     );
   }
+
+  /// Takes [key] out of the review queue, or puts it back. The item keeps
+  /// its schedule.
+  ProgressState withReviewRemoved(String key, {required bool removed}) =>
+      _copyWith(
+        removedFromReview: removed
+            ? {...removedFromReview, key}
+            : ({...removedFromReview}..remove(key)),
+      );
 
   /// Bumped when the saved format changes; see the progress migration.
   static const schemaVersion = 2;
@@ -256,12 +316,17 @@ class ProgressState {
     'mistakes': [for (final m in mistakes) m.toJson()],
     'reviews': {for (final e in reviews.entries) e.key: e.value.toJson()},
     'readingAttempts': [for (final a in readingAttempts) a.toJson()],
+    'reviewsByDay': {
+      for (final e in reviewsByDay.entries) formatIsoDay(e.key): e.value,
+    },
+    'removedFromReview': [...removedFromReview],
   };
 
   static ProgressState fromJson(Map<String, dynamic> json) {
     final results = json['results'] as Map<String, dynamic>? ?? {};
     final minutes = json['minutesByDay'] as Map<String, dynamic>? ?? {};
     final reviews = json['reviews'] as Map<String, dynamic>? ?? {};
+    final reviewsByDay = json['reviewsByDay'] as Map<String, dynamic>? ?? {};
     return ProgressState(
       results: {
         for (final e in results.entries)
@@ -290,6 +355,14 @@ class ProgressState {
         for (final a in json['readingAttempts'] as List? ?? const [])
           ReadingAttempt.fromJson(a as Map<String, dynamic>),
       ],
+      reviewsByDay: {
+        for (final e in reviewsByDay.entries)
+          parseIsoDay(e.key): e.value as int,
+      },
+      removedFromReview: {
+        for (final k in json['removedFromReview'] as List? ?? const [])
+          k as String,
+      },
     );
   }
 }
@@ -338,8 +411,11 @@ class XpEntry {
   final DateTime date;
   final int amount;
 
-  /// The lesson id, or [reviewSource].
+  /// The lesson id, [reviewSource], or "reading:…" / "writing:…".
   final String source;
+
+  /// Earned by finishing a lesson.
+  bool get isLesson => source != reviewSource && !source.contains(':');
 
   Map<String, dynamic> toJson() => {
     'date': formatIsoDay(date),

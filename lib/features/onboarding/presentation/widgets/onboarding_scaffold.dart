@@ -13,6 +13,10 @@ import '../onboarding_navigation.dart';
 ///
 /// Back (top bar or system) goes to the previous step. Skip clears this
 /// step's answer and moves on.
+///
+/// When [editing] (the plan edited from the Profile) there is no step bar
+/// and no Skip: Cancel or back closes without saving, and the bottom
+/// button is Save.
 class OnboardingScaffold extends ConsumerWidget {
   const OnboardingScaffold({
     super.key,
@@ -28,6 +32,7 @@ class OnboardingScaffold extends ConsumerWidget {
     this.header,
     this.onBack,
     this.bodyKey,
+    this.editing = false,
   });
 
   final OnboardingStep step;
@@ -53,6 +58,9 @@ class OnboardingScaffold extends ConsumerWidget {
   /// Changing this resets the body's scroll position (e.g. per question).
   final Key? bodyKey;
 
+  /// Editing the plan from the Profile; [onContinue] saves.
+  final bool editing;
+
   void _back(BuildContext context, WidgetRef ref) {
     if (onBack != null) return onBack!();
     final previous = step.previous;
@@ -74,23 +82,32 @@ class OnboardingScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PopScope(
-      canPop: false,
+      canPop: editing,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _back(context, ref);
       },
       child: Scaffold(
-        appBar: OnboardingTopBar(
-          step: step.number!,
-          totalSteps: OnboardingStep.totalNumbered,
-          onBack: () => _back(context, ref),
-          trailing: canSkip
-              ? AppButton.ghost(
-                  label: 'Skip',
+        appBar: editing
+            ? TabTopBar(
+                title: 'Edit plan',
+                trailing: AppButton.ghost(
+                  label: 'Cancel',
                   compact: true,
-                  onPressed: () => _skip(context, ref),
-                )
-              : null,
-        ),
+                  onPressed: () => context.pop(),
+                ),
+              )
+            : OnboardingTopBar(
+                step: step.number!,
+                totalSteps: OnboardingStep.totalNumbered,
+                onBack: () => _back(context, ref),
+                trailing: canSkip
+                    ? AppButton.ghost(
+                        label: 'Skip',
+                        compact: true,
+                        onPressed: () => _skip(context, ref),
+                      )
+                    : null,
+              ),
         body: ListView(
           key: bodyKey,
           padding: const EdgeInsetsDirectional.fromSTEB(
@@ -108,8 +125,8 @@ class OnboardingScaffold extends ConsumerWidget {
         ),
         bottomNavigationBar: StickyActionBar(
           child: AppButton.primary(
-            label: continueLabel,
-            trailingIcon: continueIcon,
+            label: editing ? 'Save' : continueLabel,
+            trailingIcon: editing ? null : continueIcon,
             onPressed: onContinue,
           ),
         ),

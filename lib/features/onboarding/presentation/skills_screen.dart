@@ -5,13 +5,16 @@ import '../../../core/models/skill.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../domain/onboarding_state.dart';
-import 'onboarding_controller.dart';
 import 'onboarding_navigation.dart';
+import 'plan_editing.dart';
 import 'widgets/onboarding_scaffold.dart';
 
 /// Step 5: skills to focus on (one or more).
 class SkillsScreen extends ConsumerWidget {
-  const SkillsScreen({super.key});
+  const SkillsScreen({super.key, this.editing = false});
+
+  /// Editing the plan from the Profile (see [OnboardingScaffold.editing]).
+  final bool editing;
 
   static const _step = OnboardingStep.skills;
 
@@ -24,10 +27,8 @@ class SkillsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(
-      onboardingControllerProvider.select((s) => s.requireValue.skills),
-    );
-    final controller = ref.read(onboardingControllerProvider.notifier);
+    final selected = watchPlan(ref, editing: editing).skills;
+    final controller = planEditor(ref, editing: editing);
 
     Widget tile(Skill skill) => SelectionCard(
       mode: SelectionMode.multi,
@@ -48,10 +49,13 @@ class SkillsScreen extends ConsumerWidget {
 
     return OnboardingScaffold(
       step: _step,
+      editing: editing,
       title: 'Which skills need the most focus?',
       subtitle: 'Pick one or more.',
       onContinue: selected.isEmpty
           ? null
+          : editing
+          ? () => savePlanEdit(context, ref)
           : () => goToOnboardingStep(context, ref, _step.next!),
       children: [
         for (var row = 0; row < Skill.values.length; row += 2) ...[
@@ -68,10 +72,11 @@ class SkillsScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.smd),
         ],
         const SizedBox(height: AppSpacing.xs),
-        const InfoBanner(
-          icon: Icons.tune_rounded,
-          message: 'You can change these anytime in your study plan.',
-        ),
+        if (!editing)
+          const InfoBanner(
+            icon: Icons.tune_rounded,
+            message: 'You can change these anytime in your study plan.',
+          ),
       ],
     );
   }

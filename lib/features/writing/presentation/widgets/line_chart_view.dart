@@ -66,21 +66,32 @@ class _ChartViewState extends State<ChartView> {
 
 /// The plotted lines. Years run left to right in every language.
 class LineChartGraphic extends StatelessWidget {
-  const LineChartGraphic({super.key, required this.data});
+  const LineChartGraphic({
+    super.key,
+    required this.data,
+    this.aspectRatio = 1.5,
+    this.semanticLabel,
+  });
 
   final LineChartData data;
+  final double aspectRatio;
+
+  /// What screen readers hear; by default, the title and a pointer to the
+  /// table view.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label:
+          semanticLabel ??
           'Line graph: ${data.title}. Use View as table to hear the '
-          'values.',
+              'values.',
       excludeSemantics: true,
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: AspectRatio(
-          aspectRatio: 1.5,
+          aspectRatio: aspectRatio,
           child: CustomPaint(painter: _LineChartPainter(data)),
         ),
       ),

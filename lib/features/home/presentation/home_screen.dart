@@ -202,16 +202,7 @@ class _Greeting extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Padding(
             padding: const EdgeInsetsDirectional.only(top: AppSpacing.xxs),
-            child: Semantics(
-              label: 'Your goal: $goal',
-              excludeSemantics: true,
-              child: AppPill(
-                label: 'Goal $goal',
-                icon: Icons.flag_rounded,
-                background: AppColors.accent,
-                foreground: AppColors.onAccent,
-              ),
-            ),
+            child: GoalChip(value: goal),
           ),
         ],
       ],

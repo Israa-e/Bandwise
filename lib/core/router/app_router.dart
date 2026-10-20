@@ -25,8 +25,11 @@ import '../../features/practice/presentation/skill_coming_soon_screen.dart';
 import '../../features/reading/domain/reading.dart';
 import '../../features/reading/presentation/reading_hub_screen.dart';
 import '../../features/reading/presentation/reading_session_screen.dart';
+import '../../features/profile/presentation/privacy_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/progress/presentation/mistake_notebook_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
+import '../../features/progress/presentation/vocabulary_notebook_screen.dart';
 import '../../features/review/presentation/review_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/writing/domain/writing.dart';
@@ -38,6 +41,7 @@ import '../../features/writing/presentation/writing_hub_screen.dart';
 import '../../features/writing/presentation/writing_result_screen.dart';
 import '../models/skill.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../widgets/coming_soon_scaffold.dart';
 import 'app_routes.dart';
 
 /// The app router.
@@ -141,6 +145,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.notifications,
         builder: (context, state) => const NotificationsScreen(),
       ),
+      // The study plan edited from the Profile, on the onboarding screens.
+      GoRoute(
+        path: AppRoutes.editTarget,
+        builder: (context, state) => const TargetBandScreen(editing: true),
+      ),
+      GoRoute(
+        path: AppRoutes.editExamDate,
+        builder: (context, state) => const ExamDateScreen(editing: true),
+      ),
+      GoRoute(
+        path: AppRoutes.editDailyTime,
+        builder: (context, state) => const DailyTimeScreen(editing: true),
+      ),
+      GoRoute(
+        path: AppRoutes.editSkills,
+        builder: (context, state) => const SkillsScreen(editing: true),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => _TabShell(shell: shell),
         branches: [
@@ -161,7 +182,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'reading',
-                    builder: (context, state) => const ReadingHubScreen(),
+                    builder: (context, state) => ReadingHubScreen(
+                      initialType: ReadingQuestionType.values
+                          .where(
+                            (t) => t.name == state.uri.queryParameters['type'],
+                          )
+                          .firstOrNull,
+                    ),
                   ),
                   GoRoute(
                     path: 'writing',
@@ -183,8 +210,63 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          _branch(AppRoutes.progress, const ProgressScreen()),
-          _branch(AppRoutes.profile, const ProfileScreen()),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.progress,
+                builder: (context, state) => const ProgressScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'mistakes',
+                    builder: (context, state) => const MistakeNotebookScreen(),
+                  ),
+                  GoRoute(
+                    path: 'vocabulary',
+                    builder: (context, state) =>
+                        const VocabularyNotebookScreen(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                builder: (context, state) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'privacy',
+                    builder: (context, state) => const PrivacyScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'policy',
+                        builder: (context, state) => const ComingSoonScaffold(
+                          title: 'Privacy Policy',
+                          icon: Icons.policy_outlined,
+                          heading: 'Privacy Policy',
+                          message:
+                              'The full Privacy Policy will be published '
+                              'here before accounts and AI review launch.',
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'terms',
+                        builder: (context, state) => const ComingSoonScaffold(
+                          title: 'Terms of Use',
+                          icon: Icons.description_outlined,
+                          heading: 'Terms of Use',
+                          message:
+                              'The Terms of Use will be published here '
+                              'before accounts launch.',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
       if (kDebugMode)
@@ -212,6 +294,7 @@ const _mainPaths = [
   AppRoutes.notifications,
   AppRoutes.reading,
   AppRoutes.writing,
+  AppRoutes.editPlan,
 ];
 
 bool _isMainPath(String location) =>

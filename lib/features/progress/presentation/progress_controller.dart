@@ -65,7 +65,16 @@ class ProgressController extends AsyncNotifier<ProgressState> {
     return xp;
   }
 
-  /// Debug helper: forget all progress.
+  /// Takes a review item out of the queue, or puts it back.
+  Future<void> setRemovedFromReview(String key, {required bool removed}) async {
+    final current = state.value ?? await future;
+    final next = current.withReviewRemoved(key, removed: removed);
+    state = AsyncData(next);
+    await _repository.save(next);
+  }
+
+  /// Forgets all progress: lessons, XP, streak, study time, mistakes,
+  /// reviews and reading attempts.
   Future<void> reset() async {
     await _repository.clear();
     state = const AsyncData(ProgressState());

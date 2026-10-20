@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../domain/onboarding_state.dart';
-import 'onboarding_controller.dart';
 import 'onboarding_navigation.dart';
+import 'plan_editing.dart';
 import 'widgets/onboarding_scaffold.dart';
 
 /// Step 4: daily study time and an optional reminder.
@@ -13,7 +13,10 @@ import 'widgets/onboarding_scaffold.dart';
 /// Only stores the reminder time; notification permission is requested
 /// later, when reminders are actually scheduled.
 class DailyTimeScreen extends ConsumerWidget {
-  const DailyTimeScreen({super.key});
+  const DailyTimeScreen({super.key, this.editing = false});
+
+  /// Editing the plan from the Profile (see [OnboardingScaffold.editing]).
+  final bool editing;
 
   static const _step = OnboardingStep.dailyTime;
 
@@ -27,7 +30,7 @@ class DailyTimeScreen extends ConsumerWidget {
 
   Future<void> _pickTime(
     BuildContext context,
-    OnboardingController controller,
+    PlanEditor controller,
     ReminderTime current,
   ) async {
     final picked = await showTimePicker(
@@ -44,8 +47,8 @@ class DailyTimeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(onboardingControllerProvider).requireValue;
-    final controller = ref.read(onboardingControllerProvider.notifier);
+    final state = watchPlan(ref, editing: editing);
+    final controller = planEditor(ref, editing: editing);
     // Defaults to 20 minutes, so the step is valid from the start. It is only
     // null after a Skip; coming back shows the default again.
     final minutes = state.dailyMinutes ?? OnboardingState.defaultDailyMinutes;
@@ -54,13 +57,17 @@ class DailyTimeScreen extends ConsumerWidget {
 
     return OnboardingScaffold(
       step: _step,
+      editing: editing,
       title: 'How much daily practice works for you?',
       subtitle: 'Small, regular sessions are easier to keep up.',
       onContinue: () async {
         if (state.dailyMinutes == null) {
           await controller.setDailyMinutes(minutes);
         }
-        if (context.mounted) {
+        if (!context.mounted) return;
+        if (editing) {
+          await savePlanEdit(context, ref);
+        } else {
           await goToOnboardingStep(context, ref, _step.next!);
         }
       },

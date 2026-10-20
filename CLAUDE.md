@@ -28,6 +28,8 @@ Independent IELTS Academic prep app. Not affiliated with IELTS, British Council,
 - The user's own chosen target may be shown as "Goal X.X". It is a goal, not a score.
 - A streak day = any day with at least one completed activity. The daily goal is tracked separately and does not affect the streak.
 - Writing XP: 20 XP for each NEW submitted essay. Revisions and resubmissions (the same text again for the same task) earn 0.
+- No overall or "current" band anywhere. Progress shows the user's Goal and, for Writing only, the latest AI practice estimate ranges with their usual label. Demo feedback has no estimate, so it shows "No estimate yet".
+- Recommendations are rule-based and say so ("Based on your recent answers").
 - Writing Task 1 uses Task Achievement; Task 2 uses Task Response.
 - Don't claim AI where logic is rule-based.
 - Consent checkboxes are unchecked by default.

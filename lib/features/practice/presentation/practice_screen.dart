@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/models/skill.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../onboarding/presentation/onboarding_controller.dart';
 
 /// The Practice tab: one card per skill. Reading and Writing open their
 /// hubs; Listening and Speaking are coming soon.
 ///
 /// [initialSkill] comes from the `skill` query parameter, e.g. when a skill
-/// card on Home opens this tab, and is shown highlighted.
-class PracticeScreen extends StatelessWidget {
+/// card on Home opens this tab, and is shown highlighted. The study plan's
+/// focus skills are tagged "Focus".
+class PracticeScreen extends ConsumerWidget {
   const PracticeScreen({super.key, this.initialSkill});
 
   final Skill? initialSkill;
@@ -26,10 +29,13 @@ class PracticeScreen extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final focus =
+        ref.watch(onboardingControllerProvider).value?.skills ?? const {};
     Widget card(Skill skill) => PracticeSkillCard(
       skill: skill,
       selected: skill == initialSkill,
+      focus: focus.contains(skill),
       onTap: () =>
           context.push(hubFor(skill) ?? AppRoutes.practiceSkill(skill)),
     );
@@ -76,11 +82,15 @@ class PracticeSkillCard extends StatelessWidget {
     required this.skill,
     required this.selected,
     required this.onTap,
+    this.focus = false,
   });
 
   final Skill skill;
   final bool selected;
   final VoidCallback onTap;
+
+  /// One of the study plan's focus skills.
+  final bool focus;
 
   @override
   Widget build(BuildContext context) {
@@ -99,20 +109,39 @@ class PracticeSkillCard extends StatelessWidget {
       semanticLabel: [
         skill.label,
         available ? subtitle : 'Coming soon',
+        if (focus) 'Focus skill',
       ].join(', '),
       padding: const EdgeInsetsDirectional.all(AppSpacing.md),
       child: ExcludeSemantics(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: AppColors.card,
-                borderRadius: AppRadii.nestedRadius,
-              ),
-              child: Icon(skill.icon, color: skill.color, size: 22),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: AppRadii.nestedRadius,
+                  ),
+                  child: Icon(skill.icon, color: skill.color, size: 22),
+                ),
+                if (focus)
+                  const Expanded(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: AppPill(
+                        key: ValueKey('focusTag'),
+                        label: 'Focus',
+                        background: AppColors.accent,
+                        foreground: AppColors.onAccent,
+                        size: AppPillSize.small,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: AppSpacing.smd),
             Text(skill.label, style: AppTextStyles.headlineSm),

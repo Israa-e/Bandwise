@@ -92,7 +92,7 @@ class ReviewPlanner {
   final ProgressState progress;
   final List<ReadingPassage> passages;
 
-  /// Every reviewable item in path order: per lesson, mistakes then words;
+  /// Every reviewable item, removed ones included, in path order: per lesson, mistakes then words;
   /// then reading mistakes per passage.
   late final List<ReviewItem> items = _build();
 
@@ -159,12 +159,19 @@ class ReviewPlanner {
     return items;
   }
 
-  /// Items due on or before [today]: the most overdue first, then mistakes
-  /// before words, then path order.
+  /// [items] still in the review queue: everything but what the learner
+  /// removed.
+  late final List<ReviewItem> queued = [
+    for (final item in items)
+      if (progress.isInReview(item.key)) item,
+  ];
+
+  /// Queued items due on or before [today]: the most overdue first, then
+  /// mistakes before words, then path order.
   List<ReviewItem> dueOn(DateTime today) {
     final day = dateOnly(today);
     final due = [
-      for (final (i, item) in items.indexed)
+      for (final (i, item) in queued.indexed)
         if (!item.dueOn.isAfter(day)) (i, item),
     ];
     due.sort((a, b) {
@@ -179,11 +186,11 @@ class ReviewPlanner {
 
   static int _kindOrder(ReviewItem item) => item.isMistake ? 0 : 1;
 
-  /// The first day after [today] with something due, if any.
+  /// The first day after [today] with something queued, if any.
   DateTime? nextReviewAfter(DateTime today) {
     final day = dateOnly(today);
     DateTime? next;
-    for (final item in items) {
+    for (final item in queued) {
       if (!item.dueOn.isAfter(day)) continue;
       if (next == null || item.dueOn.isBefore(next)) next = item.dueOn;
     }

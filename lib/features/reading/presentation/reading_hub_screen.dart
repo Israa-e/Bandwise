@@ -21,8 +21,13 @@ const _padding = EdgeInsetsDirectional.fromSTEB(
 
 /// Reading hub: pick a passage, a mode and optionally one question type;
 /// see recent attempts.
+///
+/// [initialType] (e.g. from a Progress recommendation) opens it in
+/// learning mode on the first passage with that type, filtered to it.
 class ReadingHubScreen extends ConsumerStatefulWidget {
-  const ReadingHubScreen({super.key});
+  const ReadingHubScreen({super.key, this.initialType});
+
+  final ReadingQuestionType? initialType;
 
   @override
   ConsumerState<ReadingHubScreen> createState() => _ReadingHubScreenState();
@@ -31,7 +36,19 @@ class ReadingHubScreen extends ConsumerStatefulWidget {
 class _ReadingHubScreenState extends ConsumerState<ReadingHubScreen> {
   String? _passageId;
   var _mode = ReadingMode.learning;
-  ReadingQuestionType? _type;
+  late ReadingQuestionType? _type = widget.initialType;
+
+  @override
+  void didUpdateWidget(ReadingHubScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Opened again with another type while this hub was kept in the tab.
+    if (widget.initialType != oldWidget.initialType &&
+        widget.initialType != null) {
+      _type = widget.initialType;
+      _mode = ReadingMode.learning;
+      _passageId = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +60,9 @@ class _ReadingHubScreenState extends ConsumerState<ReadingHubScreen> {
     if (passages.hasValue && !passages.hasError) {
       final list = passages.requireValue;
       final passage =
-          list.where((p) => p.id == _passageId).firstOrNull ?? list.first;
+          list.where((p) => p.id == _passageId).firstOrNull ??
+          list.where((p) => p.types.contains(_type)).firstOrNull ??
+          list.first;
       body = _content(list, passage, progress.value?.readingAttempts ?? []);
       bottom = StickyActionBar(
         child: AppButton.primary(

@@ -84,4 +84,11 @@ class PrefsWritingRepository implements WritingRepository {
     }
     await _write(_submissionsKey, [for (final s in all) s.toJson()]);
   }
+
+  @override
+  Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_draftsKey);
+    await prefs.remove(_submissionsKey);
+  }
 }

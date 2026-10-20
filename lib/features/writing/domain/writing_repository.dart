@@ -18,6 +18,9 @@ abstract interface class WritingRepository {
 
   /// Adds [submission], or replaces the one with its id.
   Future<void> saveSubmission(WritingSubmission submission);
+
+  /// Deletes every draft and submitted essay.
+  Future<void> clear();
 }
 
 /// Thrown when feedback can't be produced; the essay stays saved.

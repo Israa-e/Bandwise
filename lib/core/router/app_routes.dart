@@ -24,6 +24,27 @@ abstract final class AppRoutes {
   /// Reading hub, inside the Practice tab.
   static const readingHub = '$practice/reading';
 
+  /// The Reading hub in learning mode with question type [typeName]
+  /// preselected.
+  static String readingHubFor(String typeName) =>
+      Uri(path: readingHub, queryParameters: {'type': typeName}).toString();
+
+  /// Notebooks, inside the Progress tab.
+  static const mistakeNotebook = '$progress/mistakes';
+  static const vocabularyNotebook = '$progress/vocabulary';
+
+  /// Profile screens, inside the Profile tab.
+  static const privacy = '$profile/privacy';
+  static const privacyPolicy = '$profile/privacy/policy';
+  static const terms = '$profile/privacy/terms';
+
+  /// Editing one part of the study plan (no bottom nav).
+  static const editPlan = '/plan';
+  static const editTarget = '$editPlan/target';
+  static const editExamDate = '$editPlan/exam-date';
+  static const editDailyTime = '$editPlan/daily-time';
+  static const editSkills = '$editPlan/skills';
+
   /// Writing hub, inside the Practice tab.
   static const writingHub = '$practice/writing';
 

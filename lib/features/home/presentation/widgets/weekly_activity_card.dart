@@ -14,10 +14,20 @@ const _valueLabelSpace = 20.0;
 
 /// Weekly study minutes as a Monday-first bar chart. Past days and today
 /// come from history; the rest of the week is planned at the daily goal.
+///
+/// With [showGoal], a line marks the daily goal and the days it was met
+/// are always counted, even when there are none yet.
 class WeeklyActivityCard extends StatelessWidget {
-  const WeeklyActivityCard({super.key, required this.week});
+  const WeeklyActivityCard({
+    super.key,
+    required this.week,
+    this.title = 'Weekly activity',
+    this.showGoal = false,
+  });
 
   final WeeklyActivity week;
+  final String title;
+  final bool showGoal;
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +45,7 @@ class WeeklyActivityCard extends StatelessWidget {
                   children: [
                     Semantics(
                       header: true,
-                      child: const Text(
-                        'Weekly activity',
-                        style: AppTextStyles.headlineSm,
-                      ),
+                      child: Text(title, style: AppTextStyles.headlineSm),
                     ),
                     Text(
                       'Minutes studied, Monday to Sunday',
@@ -81,10 +88,14 @@ class WeeklyActivityCard extends StatelessWidget {
           if (week.isEmpty)
             const _EmptyWeek()
           else ...[
-            _Chart(week: week),
-            if (week.goalDays > 0) ...[
+            _Chart(week: week, showGoal: showGoal),
+            if (showGoal) ...[
+              const SizedBox(height: AppSpacing.sm),
+              _GoalLegend(minutes: week.dailyGoal),
+            ],
+            if (showGoal || week.goalDays > 0) ...[
               const SizedBox(height: AppSpacing.smd),
-              _GoalDaysNote(days: week.goalDays),
+              _GoalDaysNote(days: week.goalDays, short: showGoal),
             ],
           ],
         ],
@@ -144,10 +155,40 @@ class _EmptyWeek extends StatelessWidget {
   }
 }
 
+/// Explains the goal line.
+class _GoalLegend extends StatelessWidget {
+  const _GoalLegend({required this.minutes});
+
+  final int minutes;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 20,
+          height: _goalLineWidth,
+          child: ColoredBox(color: AppColors.success),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Text(
+            'Daily goal: $minutes min',
+            style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _GoalDaysNote extends StatelessWidget {
-  const _GoalDaysNote({required this.days});
+  const _GoalDaysNote({required this.days, this.short = false});
 
   final int days;
+
+  /// "Goal met on N days" rather than "Daily goal met on N days".
+  final bool short;
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +211,9 @@ class _GoalDaysNote extends StatelessWidget {
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Text(
-              'Daily goal met on $days ${days == 1 ? 'day' : 'days'}',
+              '${short ? 'Goal' : 'Daily goal'} met on $days '
+              '${days == 1 ? 'day' : 'days'}',
+              key: const ValueKey('goalDays'),
               style: AppTextStyles.labelMd.copyWith(color: AppColors.textMuted),
             ),
           ),
@@ -181,9 +224,10 @@ class _GoalDaysNote extends StatelessWidget {
 }
 
 class _Chart extends StatelessWidget {
-  const _Chart({required this.week});
+  const _Chart({required this.week, required this.showGoal});
 
   final WeeklyActivity week;
+  final bool showGoal;
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +252,10 @@ class _Chart extends StatelessWidget {
                 scale: scale,
                 letter: dayLetter.format(week.bars[i].date),
                 dayName: dayName.format(week.bars[i].date),
+                goal: showGoal ? week.dailyGoal : null,
+                // Reaches into the gaps so the goal line is unbroken.
+                goalLineStart: i == 0 ? 0 : AppSpacing.sm / 2,
+                goalLineEnd: i == week.bars.length - 1 ? 0 : AppSpacing.sm / 2,
               ),
             ),
           ],
@@ -224,12 +272,20 @@ class _BarColumn extends StatelessWidget {
     required this.scale,
     required this.letter,
     required this.dayName,
+    this.goal,
+    this.goalLineStart = 0,
+    this.goalLineEnd = 0,
   });
 
   final DayBar bar;
   final int scale;
   final String letter;
   final String dayName;
+
+  /// Minutes to draw the goal line at, if shown.
+  final int? goal;
+  final double goalLineStart;
+  final double goalLineEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -252,7 +308,8 @@ class _BarColumn extends StatelessWidget {
                 final height = scale == 0
                     ? 0.0
                     : (maxBar * bar.minutes / scale).clamp(4.0, maxBar);
-                return Column(
+                final goal = this.goal;
+                final bars = Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -274,6 +331,22 @@ class _BarColumn extends StatelessWidget {
                     ),
                   ],
                 );
+                if (goal == null || scale == 0) return bars;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(child: bars),
+                    PositionedDirectional(
+                      start: -goalLineStart,
+                      end: -goalLineEnd,
+                      bottom: maxBar * goal / scale - _goalLineWidth / 2,
+                      height: _goalLineWidth,
+                      child: const IgnorePointer(
+                        child: ColoredBox(color: AppColors.success),
+                      ),
+                    ),
+                  ],
+                );
               },
             ),
           ),
@@ -290,6 +363,8 @@ class _BarColumn extends StatelessWidget {
     );
   }
 }
+
+const _goalLineWidth = 2.0;
 
 const _barRadius = BorderRadius.vertical(top: Radius.circular(AppRadii.bar));
 

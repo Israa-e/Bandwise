@@ -4,30 +4,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../domain/onboarding_state.dart';
-import 'onboarding_controller.dart';
 import 'onboarding_navigation.dart';
+import 'plan_editing.dart';
 import 'widgets/onboarding_scaffold.dart';
 
 /// Step 1: the user's target band. No Skip: "Not sure yet" covers it.
 class TargetBandScreen extends ConsumerWidget {
-  const TargetBandScreen({super.key});
+  const TargetBandScreen({super.key, this.editing = false});
+
+  /// Editing the plan from the Profile (see [OnboardingScaffold.editing]).
+  final bool editing;
 
   static const _step = OnboardingStep.targetBand;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(
-      onboardingControllerProvider.select((s) => s.requireValue.targetBand),
-    );
-    final controller = ref.read(onboardingControllerProvider.notifier);
+    final selected = watchPlan(ref, editing: editing).targetBand;
+    final controller = planEditor(ref, editing: editing);
 
     return OnboardingScaffold(
       step: _step,
+      editing: editing,
       canSkip: false,
       title: "What's your target band score?",
       note: 'This is your goal, not a guaranteed result.',
       onContinue: selected == null
           ? null
+          : editing
+          ? () => savePlanEdit(context, ref)
           : () => goToOnboardingStep(context, ref, _step.next!),
       children: [
         for (final band in TargetBand.values) ...[

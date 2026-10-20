@@ -7,6 +7,7 @@ import '../data/prefs_onboarding_repository.dart';
 import '../domain/onboarding_repository.dart';
 import '../domain/onboarding_state.dart';
 import '../domain/placement.dart';
+import 'plan_editing.dart';
 
 final onboardingRepositoryProvider = Provider<OnboardingRepository>(
   (ref) => PrefsOnboardingRepository(),
@@ -48,7 +49,8 @@ final onboardingControllerProvider =
 ///
 /// Loaded once at startup (the splash screen waits for it); after that,
 /// screens can read `requireValue`.
-class OnboardingController extends AsyncNotifier<OnboardingState> {
+class OnboardingController extends AsyncNotifier<OnboardingState>
+    implements PlanEditor {
   OnboardingRepository get _repository =>
       ref.read(onboardingRepositoryProvider);
 
@@ -79,21 +81,26 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
     (s) => s.copyWith(isGuest: asGuest, step: OnboardingStep.targetBand),
   );
 
+  @override
   Future<void> setTargetBand(TargetBand band) =>
       _update((s) => s.copyWith(targetBand: () => band));
 
+  @override
   Future<void> setExamDate(DateTime date) =>
       _update((s) => s.copyWith(examDate: () => dateOnly(date)));
 
+  @override
   Future<void> setExamNotBooked(bool notBooked) =>
       _update((s) => s.copyWith(examNotBooked: notBooked));
 
   Future<void> setLevel(EnglishLevel level) =>
       _update((s) => s.copyWith(level: () => level));
 
+  @override
   Future<void> setDailyMinutes(int minutes) =>
       _update((s) => s.copyWith(dailyMinutes: () => minutes));
 
+  @override
   Future<void> setReminderEnabled(bool enabled) => _update(
     (s) => s.copyWith(
       reminderEnabled: enabled,
@@ -103,9 +110,11 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
     ),
   );
 
+  @override
   Future<void> setReminderTime(ReminderTime time) =>
       _update((s) => s.copyWith(reminderTime: () => time));
 
+  @override
   Future<void> toggleSkill(Skill skill) => _update((s) {
     final skills = {...s.skills};
     if (!skills.remove(skill)) skills.add(skill);
@@ -149,11 +158,27 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
   Future<void> showPlacementQuestion(int index) =>
       _update((s) => s.copyWith(placementIndex: index));
 
+  /// Saves the study plan edited from the Profile: target, exam date,
+  /// daily time with the reminder, and focus skills.
+  Future<void> savePlan(OnboardingState plan) => _update(
+    (s) => s.copyWith(
+      targetBand: () => plan.targetBand,
+      // "Not booked yet" replaces a date picked earlier.
+      examDate: () => plan.examNotBooked ? null : plan.examDate,
+      examNotBooked: plan.examNotBooked,
+      dailyMinutes: () =>
+          plan.dailyMinutes ?? OnboardingState.defaultDailyMinutes,
+      reminderEnabled: plan.reminderEnabled,
+      reminderTime: () => plan.reminderTime,
+      skills: plan.skills,
+    ),
+  );
+
   /// Ends onboarding; the app opens on Home from now on.
   Future<void> complete() =>
       _update((s) => s.copyWith(completed: true, step: OnboardingStep.plan));
 
-  /// Debug helper: forget all answers.
+  /// Forgets all answers; the app starts again at Welcome.
   Future<void> reset() async {
     await _repository.clear();
     state = const AsyncData(OnboardingState());

@@ -22,6 +22,27 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Opens Profile and scrolls to the debug-only gallery link in About.
+  Future<void> openGallery(WidgetTester tester) async {
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppBottomNav),
+        matching: find.text('Profile'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final link = find.text('Component gallery');
+    await tester.scrollUntilVisible(
+      link,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+    await tester.pumpAndSettle();
+    await tester.tap(link);
+    await tester.pumpAndSettle();
+  }
+
   void usePhoneSize(WidgetTester tester) {
     tester.view.physicalSize = const Size(390, 844) * 3;
     tester.view.devicePixelRatio = 3;
@@ -47,10 +68,8 @@ void main() {
         expect(find.byType(HomeTopBar), findsOneWidget);
       } else if (tab == 'Learn') {
         expect(find.byType(LearnScreen), findsOneWidget);
-      } else if (tab == 'Practice') {
-        expect(find.widgetWithText(TabTopBar, tab), findsOneWidget);
       } else {
-        expect(find.widgetWithText(AppBar, tab), findsOneWidget);
+        expect(find.widgetWithText(TabTopBar, tab), findsOneWidget);
       }
     }
   });
@@ -58,16 +77,7 @@ void main() {
   testWidgets('Profile opens the component gallery in debug', (tester) async {
     usePhoneSize(tester);
     await pumpApp(tester);
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(AppBottomNav),
-        matching: find.text('Profile'),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Component gallery'));
-    await tester.pumpAndSettle();
+    await openGallery(tester);
 
     expect(find.byType(ComponentGalleryScreen), findsOneWidget);
   });
@@ -77,15 +87,7 @@ void main() {
         '(${rtl ? 'RTL' : 'LTR'})', (tester) async {
       usePhoneSize(tester);
       await pumpApp(tester);
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AppBottomNav),
-          matching: find.text('Profile'),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Component gallery'));
-      await tester.pumpAndSettle();
+      await openGallery(tester);
 
       if (rtl) {
         await tester.tap(

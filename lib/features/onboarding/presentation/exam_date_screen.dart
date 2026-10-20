@@ -7,19 +7,23 @@ import '../../../core/widgets/widgets.dart';
 import '../domain/onboarding_state.dart';
 import 'onboarding_controller.dart';
 import 'onboarding_navigation.dart';
+import 'plan_editing.dart';
 import 'widgets/month_calendar.dart';
 import 'widgets/onboarding_scaffold.dart';
 
 /// Step 2: exam date, or "not booked yet".
 class ExamDateScreen extends ConsumerWidget {
-  const ExamDateScreen({super.key});
+  const ExamDateScreen({super.key, this.editing = false});
+
+  /// Editing the plan from the Profile (see [OnboardingScaffold.editing]).
+  final bool editing;
 
   static const _step = OnboardingStep.examDate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(onboardingControllerProvider).requireValue;
-    final controller = ref.read(onboardingControllerProvider.notifier);
+    final state = watchPlan(ref, editing: editing);
+    final controller = planEditor(ref, editing: editing);
     final today = ref.watch(todayProvider);
     final date = state.examDate;
     final notBooked = state.examNotBooked;
@@ -27,11 +31,14 @@ class ExamDateScreen extends ConsumerWidget {
 
     return OnboardingScaffold(
       step: _step,
+      editing: editing,
       title: 'When is your IELTS exam?',
       subtitle: "We'll pace your weekly plan around your test day.",
-      onContinue: valid
-          ? () => goToOnboardingStep(context, ref, _step.next!)
-          : null,
+      onContinue: !valid
+          ? null
+          : editing
+          ? () => savePlanEdit(context, ref)
+          : () => goToOnboardingStep(context, ref, _step.next!),
       children: [
         Opacity(
           opacity: notBooked ? 0.4 : 1,
