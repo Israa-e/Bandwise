@@ -251,24 +251,39 @@ void main() {
       await _go(tester, AppRoutes.writingTask(cyclingTask.id, timed: false));
       expect(find.byKey(const ValueKey('taskCard')), findsOneWidget);
       expect(find.text(cyclingTask.prompt), findsOneWidget);
-      expect(find.byKey(const ValueKey('tipsPanel')), findsOneWidget);
+      await _reveal(tester, find.byKey(const ValueKey('tipsPanel')));
       expect(
         find.text(structureTips[WritingTaskType.task1]!.first),
         findsOneWidget,
       );
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 3000));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('timer')), findsNothing);
 
-      // The task card collapses and shows the chart on demand.
-      await _tap(tester, find.byKey(const ValueKey('taskCardToggle')));
-      expect(find.text(cyclingTask.instructions), findsNothing);
-      await _tap(tester, find.text('View chart'));
+      // The chip is short enough to show in full.
+      final chip = tester.widget<Text>(
+        find.descendant(
+          of: find.byType(SkillChip),
+          matching: find.text('Task 1 · 20 min'),
+        ),
+      );
+      expect(chip.data, 'Task 1 · 20 min');
+
+      // The chart is open when the editor opens, and can be read as a table.
+      expect(find.byKey(const ValueKey('taskChart')), findsOneWidget);
       expect(find.text(cyclingChart.title), findsOneWidget);
+      expect(find.text('Hide chart'), findsOneWidget);
       await _tap(tester, find.byKey(const ValueKey('chartViewToggle')));
       expect(find.byKey(const ValueKey('chartTable')), findsOneWidget);
       expect(find.text('18%'), findsOneWidget);
       expect(find.text('View as chart'), findsOneWidget);
-      await tester.tapAt(const Offset(10, 10));
-      await tester.pumpAndSettle();
+      await _tap(tester, find.byKey(const ValueKey('chartViewToggle')));
+
+      // The task card collapses; the chart stays available.
+      await _tap(tester, find.byKey(const ValueKey('taskCardToggle')));
+      expect(find.text(cyclingTask.instructions), findsNothing);
+      expect(find.byKey(const ValueKey('taskChart')), findsOneWidget);
+      await _tap(tester, find.byKey(const ValueKey('taskCardToggle')));
 
       // Plan notes aren't counted.
       await _tap(tester, find.text('Plan your essay'));
@@ -280,6 +295,15 @@ void main() {
       expect(_wordCountText(tester), startsWith('0 words'));
 
       await _write(tester, 'The line graph shows three cities.');
+      // Typing closes the chart to "View chart"; it opens again on tap.
+      expect(find.byKey(const ValueKey('taskChart')), findsNothing);
+      await _tap(tester, find.text('View chart'));
+      expect(find.byKey(const ValueKey('taskChart')), findsOneWidget);
+      expect(find.byType(BottomSheet), findsNothing);
+      // Typing again doesn't close it.
+      await _write(tester, 'The line graph shows three cities.');
+      await _reveal(tester, find.byKey(const ValueKey('chartToggle')));
+      expect(find.text('Hide chart'), findsOneWidget);
       expect(_wordCountText(tester), '6 words · 150 minimum');
       expect(_semantics('6 words, minimum 150'), findsOneWidget);
       await _useSample(tester);
@@ -351,6 +375,9 @@ void main() {
       await _launch(tester);
       await _go(tester, AppRoutes.writingTask(cyclingTask.id, timed: true));
       expect(find.text('20:00'), findsOneWidget);
+      // The chart is open in timed mode too; close it to see the rest.
+      expect(find.byKey(const ValueKey('taskChart')), findsOneWidget);
+      await _tap(tester, find.text('Hide chart'));
       expect(find.byKey(const ValueKey('tipsPanel')), findsNothing);
       expect(find.byKey(const ValueKey('planPanel')), findsNothing);
       expect(find.byType(AppBottomNav), findsNothing);
@@ -461,9 +488,18 @@ void main() {
       await _write(tester, 'A short essay.');
       await _submit(tester);
       await _awaitFeedback(tester);
+      expect(find.text('3 words — Task 1 needs at least 150'), findsOneWidget);
+      expect(find.text('1 paragraph'), findsOneWidget);
+      expect(
+        find.text(
+          'Use an introduction, an overview and one or two body paragraphs.',
+        ),
+        findsOneWidget,
+      );
       final progress = await _savedProgress();
       expect(progress.minutesOn(_today), 12);
       expect(progress.streak(_today), 1);
+      expect(progress.totalXp, XpRules.perNewEssay);
       await _tap(tester, find.byTooltip('Close feedback'));
       expect(find.text('Feedback ready'), findsNothing);
       expect(find.text('Demo feedback'), findsOneWidget);
@@ -547,6 +583,14 @@ void main() {
         find.text("Demo feedback — AI review isn't connected yet"),
         findsOneWidget,
       );
+      // Counted, not estimated: the sample's length and four paragraphs.
+      final words = countWords(edited);
+      expect(find.text('Checked automatically'), findsOneWidget);
+      expect(
+        find.text('$words words — meets the 150-word minimum'),
+        findsOneWidget,
+      );
+      expect(find.text('4 paragraphs'), findsOneWidget);
       expect(find.text(estimateLabel), findsNothing);
       for (final t in _allText(tester)) {
         expect(_range.hasMatch(t), isFalse, reason: t);
@@ -684,7 +728,7 @@ void main() {
       await _submitSample(tester, cyclingTask);
       await _tap(tester, find.widgetWithText(AppButton, 'Revise and resubmit'));
       expect(find.text('Revise · Task 1'), findsOneWidget);
-      expect(find.byKey(const ValueKey('notesToAddress')), findsOneWidget);
+      await _reveal(tester, find.byKey(const ValueKey('notesToAddress')));
       expect(find.text('‘who cycling’'), findsOneWidget);
       await _reveal(tester, _essayField);
       final field = tester.widget<TextField>(_essayField);
@@ -733,6 +777,20 @@ void main() {
       final saved = await _savedSubmissions();
       expect(saved, hasLength(2));
       expect(saved.last.revisionOf, saved.first.id);
+      // Only the new essay earns XP; the revision earns none.
+      expect((await _savedProgress()).totalXp, XpRules.perNewEssay);
+    });
+
+    testWidgets('submitting the same essay again earns no XP; a different '
+        'essay does', (tester) async {
+      await _launch(tester);
+      await _submitSample(tester, universitiesTask);
+      expect((await _savedProgress()).totalXp, 20);
+      await _submitSample(tester, universitiesTask);
+      expect((await _savedProgress()).totalXp, 20);
+      await _submitSample(tester, cyclingTask);
+      expect((await _savedProgress()).totalXp, 40);
+      expect(await _savedSubmissions(), hasLength(3));
     });
   });
 
@@ -759,15 +817,16 @@ void main() {
         expect(tester.takeException(), isNull);
         await _tap(tester, find.byTooltip('Close editor'));
         await _go(tester, AppRoutes.writingTask(cyclingTask.id, timed: false));
-        await _tap(tester, find.byKey(const ValueKey('taskCardToggle')));
-        await _tap(tester, find.byKey(const ValueKey('taskCardToggle')));
-        await _tap(tester, find.text('View chart'));
-        expect(tester.takeException(), isNull);
+        expect(find.byKey(const ValueKey('taskChart')), findsOneWidget);
+        await scroll();
         await _tap(tester, find.byKey(const ValueKey('chartViewToggle')));
         expect(tester.takeException(), isNull);
-        await tester.tapAt(const Offset(10, 10));
-        await tester.pumpAndSettle();
+        await _tap(tester, find.byKey(const ValueKey('taskCardToggle')));
+        await _tap(tester, find.byKey(const ValueKey('taskCardToggle')));
         await _useSample(tester);
+        await _tap(tester, find.text('View chart'));
+        expect(tester.takeException(), isNull);
+        await _tap(tester, find.text('Hide chart'));
         await _submit(tester);
         expect(tester.takeException(), isNull);
         await _awaitFeedback(tester);

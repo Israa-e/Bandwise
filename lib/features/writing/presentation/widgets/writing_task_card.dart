@@ -6,17 +6,22 @@ import '../../../../core/widgets/widgets.dart';
 import '../../domain/writing.dart';
 import 'line_chart_view.dart';
 
-/// The task: its type, time and length, the prompt and, for Task 1,
-/// "View chart". Collapsible, so the editor gets more room. Not animated.
+/// The task: its type and time, the prompt and, for Task 1, the chart.
+/// Collapsible, so the editor gets more room. Not animated.
+///
+/// The chart starts open; it closes to "View chart" when [collapseChart]
+/// turns true (the student started typing), and can be opened again.
 class WritingTaskCard extends StatefulWidget {
   const WritingTaskCard({
     super.key,
     required this.task,
     this.initiallyExpanded = true,
+    this.collapseChart = false,
   });
 
   final WritingTask task;
   final bool initiallyExpanded;
+  final bool collapseChart;
 
   @override
   State<WritingTaskCard> createState() => _WritingTaskCardState();
@@ -24,6 +29,13 @@ class WritingTaskCard extends StatefulWidget {
 
 class _WritingTaskCardState extends State<WritingTaskCard> {
   late var _expanded = widget.initiallyExpanded;
+  late var _chartOpen = !widget.collapseChart;
+
+  @override
+  void didUpdateWidget(WritingTaskCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.collapseChart && !oldWidget.collapseChart) _chartOpen = false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +54,17 @@ class _WritingTaskCardState extends State<WritingTaskCard> {
         children: [
           Row(
             children: [
-              Flexible(
-                child: SkillChip(
-                  skill: Skill.writing,
-                  label: '${task.type.label} · ${task.type.summary}',
-                  size: AppPillSize.small,
+              // Short, and given all the free width, so it isn't cut.
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: SkillChip(
+                    skill: Skill.writing,
+                    label: '${task.type.label} · ${task.type.minutes} min',
+                    size: AppPillSize.small,
+                  ),
                 ),
               ),
-              const Spacer(),
               IconButton(
                 key: const ValueKey('taskCardToggle'),
                 tooltip: _expanded ? 'Hide task' : 'Show task',
@@ -85,16 +100,27 @@ class _WritingTaskCardState extends State<WritingTaskCard> {
                       color: AppColors.textMuted,
                     ),
                   ),
-                if (chart != null)
+                if (chart != null) ...[
+                  if (_chartOpen) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    ChartView(key: const ValueKey('taskChart'), data: chart),
+                  ],
                   TextButton.icon(
-                    onPressed: () => showChartSheet(context, chart),
+                    key: const ValueKey('chartToggle'),
+                    onPressed: () => setState(() => _chartOpen = !_chartOpen),
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: const Size(48, 40),
                     ),
-                    icon: const Icon(Icons.show_chart_rounded, size: 18),
-                    label: const Text('View chart'),
+                    icon: Icon(
+                      _chartOpen
+                          ? Icons.expand_less_rounded
+                          : Icons.show_chart_rounded,
+                      size: 18,
+                    ),
+                    label: Text(_chartOpen ? 'Hide chart' : 'View chart'),
                   ),
+                ],
               ],
             ),
           ),

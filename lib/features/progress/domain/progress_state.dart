@@ -18,6 +18,10 @@ abstract final class XpRules {
   static const perReadingCorrect = 2;
   static const timedPassageBonus = 10;
 
+  /// A new submitted essay. Revisions, and an essay resubmitted unchanged,
+  /// earn nothing.
+  static const perNewEssay = 20;
+
   static int forLesson(int correctFirstTry) =>
       perLesson + perFirstTryCorrect * correctFirstTry;
 
@@ -194,13 +198,22 @@ class ProgressState {
     );
   }
 
-  /// Records a submitted essay: study minutes and a streak day.
+  /// Records a submitted essay: XP (see [XpRules.perNewEssay]), study
+  /// minutes and a streak day.
   ProgressState withWritingSubmission({
     required DateTime date,
     required int minutes,
+    required int xp,
+    required String submissionId,
   }) {
     final day = dateOnly(date);
     return _copyWith(
+      xpLog: xp == 0
+          ? null
+          : [
+              ...xpLog,
+              XpEntry(date: day, amount: xp, source: 'writing:$submissionId'),
+            ],
       minutesByDay: {...minutesByDay, day: minutesOn(day) + minutes},
       activeDays: {...activeDays, day},
     );

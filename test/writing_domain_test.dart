@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:bandwise/features/progress/domain/progress_state.dart';
 import 'package:bandwise/features/writing/data/mock_writing_feedback_service.dart';
 import 'package:bandwise/features/writing/data/writing_content.dart';
+import 'package:bandwise/features/writing/domain/essay_checks.dart';
 import 'package:bandwise/features/writing/domain/essay_diff.dart';
 import 'package:bandwise/features/writing/domain/writing.dart';
 import 'package:bandwise/features/writing/domain/writing_feedback.dart';
@@ -44,6 +46,8 @@ WritingFeedback _withRanges(
 typedef _R = EstimateRange;
 
 void main() {
+  _moreTests();
+
   group('content', () {
     test('word counts are computed and near the targets', () {
       expect(countWords(cyclingTask.sampleEssay), inInclusiveRange(160, 180));
@@ -501,3 +505,107 @@ void main() {
 }
 
 DateTime _clock() => _now;
+
+WritingSubmission _submission(
+  String id,
+  String text, {
+  String taskId = 'task',
+  String? revisionOf,
+}) => WritingSubmission(
+  id: id,
+  taskId: taskId,
+  mode: WritingMode.learning,
+  text: text,
+  timeUsed: Duration.zero,
+  submittedAt: _now,
+  revisionOf: revisionOf,
+);
+
+void _moreTests() {
+  group('essay XP', () {
+    test('a new essay earns 20 XP', () {
+      expect(XpRules.perNewEssay, 20);
+      expect(essayXp(_submission('a', 'First essay.'), const []), 20);
+    });
+
+    test('a revision earns nothing', () {
+      final first = _submission('a', 'First essay.');
+      final revision = _submission('b', 'Better essay.', revisionOf: 'a');
+      expect(essayXp(revision, [first]), 0);
+    });
+
+    test('the same text resubmitted for the same task earns nothing', () {
+      final first = _submission('a', 'First essay.\n\nSecond part.');
+      expect(
+        essayXp(_submission('b', 'First essay. \nSecond part.'), [first]),
+        0,
+      );
+      expect(essayXp(_submission('c', 'Another essay.'), [first]), 20);
+      expect(
+        essayXp(
+          _submission('d', 'First essay.\n\nSecond part.', taskId: 'other'),
+          [first],
+        ),
+        20,
+      );
+    });
+
+    test('the XP is logged once per submission, and 0 XP adds no entry', () {
+      final day = DateTime(2026, 10, 15);
+      final state = const ProgressState()
+          .withWritingSubmission(
+            date: day,
+            minutes: 10,
+            xp: 20,
+            submissionId: 'a',
+          )
+          .withWritingSubmission(
+            date: day,
+            minutes: 5,
+            xp: 0,
+            submissionId: 'b',
+          );
+      expect(state.totalXp, 20);
+      expect(state.xpLog.single.source, 'writing:a');
+      expect(state.minutesOn(day), 15);
+      expect(state.streak(day), 1);
+    });
+  });
+
+  group('essay checks', () {
+    test('Task 2 under the minimum, in fewer than 4 paragraphs', () {
+      const text =
+          'Some people think universities should prepare students for '
+          'work.\n\nI agree with this view in most cases.';
+      final checks = essayChecks(WritingTaskType.task2, text);
+      final words = countWords(text);
+      expect(checks.map((c) => c.passed), [false, false]);
+      expect(checks[0].title, '$words words — Task 2 needs at least 250');
+      expect(checks[1].title, '2 paragraphs');
+      expect(
+        checks[1].suggestion,
+        'Use an introduction, two body paragraphs and a conclusion.',
+      );
+    });
+
+    test('the Task 2 sample passes both checks', () {
+      final checks = essayChecks(
+        WritingTaskType.task2,
+        universitiesTask.sampleEssay,
+      );
+      final words = countWords(universitiesTask.sampleEssay);
+      final paragraphs = paragraphsOf(universitiesTask.sampleEssay).length;
+      expect(paragraphs, greaterThanOrEqualTo(4));
+      expect(checks.map((c) => c.passed), [true, true]);
+      expect(checks[0].title, '$words words — meets the 250-word minimum');
+      expect(checks[1].title, '$paragraphs paragraphs');
+      expect(checks.every((c) => c.suggestion == null), isTrue);
+    });
+
+    test('singular counts', () {
+      final checks = essayChecks(WritingTaskType.task1, 'One');
+      expect(checks[0].title, '1 word — Task 1 needs at least 150');
+      expect(checks[1].title, '1 paragraph');
+    });
+  });
+}

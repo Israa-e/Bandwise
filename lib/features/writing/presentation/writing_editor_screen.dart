@@ -163,6 +163,7 @@ class _WritingEditorState extends ConsumerState<WritingEditor>
     _drafts = ref.read(writingDraftsProvider.notifier);
     _activeSince = _clock();
     WidgetsBinding.instance.addObserver(this);
+    _openingText = _text.text;
     _text.addListener(_changed);
     _notes.addListener(_changed);
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
@@ -189,10 +190,17 @@ class _WritingEditorState extends ConsumerState<WritingEditor>
     super.dispose();
   }
 
+  /// The essay as the editor opened with it.
+  late final String _openingText;
+
+  /// The student has typed since the editor opened; the chart gives way.
+  var _typing = false;
+
   /// Rebuilds for the word count, and marks the draft as unsaved.
-  void _changed() => setState(
-    () => _dirty = _text.text != _draft.text || _notes.text != _draft.notes,
-  );
+  void _changed() => setState(() {
+    _dirty = _text.text != _draft.text || _notes.text != _draft.notes;
+    _typing = _typing || _text.text != _openingText;
+  });
 
   Duration get _activeTime {
     final since = _activeSince;
@@ -346,7 +354,7 @@ class _WritingEditorState extends ConsumerState<WritingEditor>
     _ticker?.cancel();
     final now = _clock();
     final timeUsed = _timeUsed;
-    final existing = ref.read(writingSubmissionsProvider).value ?? const [];
+    final existing = await ref.read(writingSubmissionsProvider.future);
     final submission = WritingSubmission(
       // Unique even if two essays are submitted in the same instant.
       id: 'ws-${now.microsecondsSinceEpoch}-${existing.length + 1}',
@@ -366,6 +374,8 @@ class _WritingEditorState extends ConsumerState<WritingEditor>
         .completeWriting(
           date: ref.read(todayProvider),
           minutes: LessonCompletion.minutesFor(timeUsed, _type.minutes),
+          xp: essayXp(submission, existing),
+          submissionId: submission.id,
         );
     if (!mounted) return;
     context.pushReplacement(
@@ -449,7 +459,7 @@ class _WritingEditorState extends ConsumerState<WritingEditor>
   );
 
   List<Widget> _sidePanels(WritingSubmission? revising) => [
-    WritingTaskCard(task: widget.task),
+    WritingTaskCard(task: widget.task, collapseChart: _typing),
     const SizedBox(height: AppSpacing.smd),
     if (revising != null) ...[
       _NotesToAddress(submission: revising, type: _type),

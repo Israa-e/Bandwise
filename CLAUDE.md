@@ -27,6 +27,7 @@ Independent IELTS Academic prep app. Not affiliated with IELTS, British Council,
 - Official band descriptors: 6 Competent, 7 Good, 8 Very good, 9 Expert.
 - The user's own chosen target may be shown as "Goal X.X". It is a goal, not a score.
 - A streak day = any day with at least one completed activity. The daily goal is tracked separately and does not affect the streak.
+- Writing XP: 20 XP for each NEW submitted essay. Revisions and resubmissions (the same text again for the same task) earn 0.
 - Writing Task 1 uses Task Achievement; Task 2 uses Task Response.
 - Don't claim AI where logic is rule-based.
 - Consent checkboxes are unchecked by default.

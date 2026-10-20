@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../domain/essay_checks.dart';
 import '../domain/writing.dart';
 import '../domain/writing_feedback.dart';
 import '../domain/writing_repository.dart';
@@ -528,6 +529,8 @@ class DemoFeedbackView extends StatelessWidget {
       children: [
         _EssayHeader(task: task, submission: submission),
         const SizedBox(height: AppSpacing.smd),
+        _AutoChecksCard(checks: essayChecks(task.type, submission.text)),
+        const SizedBox(height: AppSpacing.smd),
         InfoBanner(
           key: const ValueKey('demoBanner'),
           type: InfoBannerType.warning,
@@ -582,6 +585,68 @@ class DemoFeedbackView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Word and paragraph counts, worked out without AI.
+class _AutoChecksCard extends StatelessWidget {
+  const _AutoChecksCard({required this.checks});
+
+  final List<EssayCheck> checks;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      key: const ValueKey('autoChecks'),
+      padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            header: true,
+            child: const Text(
+              'Checked automatically',
+              style: AppTextStyles.labelLg,
+            ),
+          ),
+          for (final check in checks)
+            Padding(
+              key: ValueKey('autoCheck-${check.id}'),
+              padding: const EdgeInsetsDirectional.only(top: AppSpacing.smd),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    check.passed
+                        ? Icons.check_circle_rounded
+                        : Icons.error_outline_rounded,
+                    size: 20,
+                    color: check.passed ? AppColors.success : AppColors.warning,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(check.title, style: AppTextStyles.bodyMd),
+                        if (check.suggestion case final s?) ...[
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            s,
+                            style: AppTextStyles.bodySm.copyWith(
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

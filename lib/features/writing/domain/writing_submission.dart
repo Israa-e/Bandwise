@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../progress/domain/progress_state.dart';
+
 import 'writing.dart';
 import 'writing_feedback.dart';
 
@@ -118,6 +120,21 @@ class WritingSubmission {
           _ => null,
         },
       );
+}
+
+/// XP for submitting [submission] after [earlier]: [XpRules.perNewEssay]
+/// for a new essay, nothing for a revision or for an essay already
+/// submitted for the same task with the same text.
+int essayXp(WritingSubmission submission, Iterable<WritingSubmission> earlier) {
+  if (submission.revisionOf != null) return 0;
+  final text = normalizeEssay(submission.text);
+  final resubmitted = earlier.any(
+    (s) =>
+        s.id != submission.id &&
+        s.taskId == submission.taskId &&
+        normalizeEssay(s.text) == text,
+  );
+  return resubmitted ? 0 : XpRules.perNewEssay;
 }
 
 /// An essay being written, saved as the learner types.

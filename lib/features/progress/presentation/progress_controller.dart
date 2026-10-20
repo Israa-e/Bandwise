@@ -40,9 +40,16 @@ class ProgressController extends AsyncNotifier<ProgressState> {
   Future<void> completeWriting({
     required DateTime date,
     required int minutes,
+    required int xp,
+    required String submissionId,
   }) async {
     final current = state.value ?? await future;
-    final next = current.withWritingSubmission(date: date, minutes: minutes);
+    final next = current.withWritingSubmission(
+      date: date,
+      minutes: minutes,
+      xp: xp,
+      submissionId: submissionId,
+    );
     state = AsyncData(next);
     await _repository.save(next);
   }
