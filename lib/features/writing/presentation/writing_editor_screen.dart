@@ -459,7 +459,11 @@ class _WritingEditorState extends ConsumerState<WritingEditor>
   );
 
   List<Widget> _sidePanels(WritingSubmission? revising) => [
-    WritingTaskCard(task: widget.task, collapseChart: _typing),
+    // A revision starts with the chart closed, so the notes come first.
+    WritingTaskCard(
+      task: widget.task,
+      collapseChart: _typing || revising != null,
+    ),
     const SizedBox(height: AppSpacing.smd),
     if (revising != null) ...[
       _NotesToAddress(submission: revising, type: _type),

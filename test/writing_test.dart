@@ -728,7 +728,13 @@ void main() {
       await _submitSample(tester, cyclingTask);
       await _tap(tester, find.widgetWithText(AppButton, 'Revise and resubmit'));
       expect(find.text('Revise · Task 1'), findsOneWidget);
-      await _reveal(tester, find.byKey(const ValueKey('notesToAddress')));
+      // The chart starts closed, so the notes are visible first.
+      expect(find.byKey(const ValueKey('taskChart')), findsNothing);
+      expect(find.text('View chart'), findsOneWidget);
+      expect(find.byKey(const ValueKey('notesToAddress')), findsOneWidget);
+      await _tap(tester, find.text('View chart'));
+      expect(find.byKey(const ValueKey('taskChart')), findsOneWidget);
+      await _tap(tester, find.text('Hide chart'));
       expect(find.text('‘who cycling’'), findsOneWidget);
       await _reveal(tester, _essayField);
       final field = tester.widget<TextField>(_essayField);
