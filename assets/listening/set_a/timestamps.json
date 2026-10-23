@@ -1,0 +1,252 @@
+{
+  "setId": "set_a",
+  "audio": "listening.mp3",
+  "durationMs": 263867,
+  "lines": [
+    {
+      "id": "a001",
+      "startMs": 0,
+      "endMs": 10047
+    },
+    {
+      "id": "a002",
+      "startMs": 11547,
+      "endMs": 15083
+    },
+    {
+      "id": "a003",
+      "startMs": 16583,
+      "endMs": 22600
+    },
+    {
+      "id": "a004",
+      "startMs": 23100,
+      "endMs": 33109
+    },
+    {
+      "id": "a005",
+      "startMs": 33609,
+      "endMs": 37003
+    },
+    {
+      "id": "a006",
+      "startMs": 37503,
+      "endMs": 40957
+    },
+    {
+      "id": "a007",
+      "startMs": 41457,
+      "endMs": 48223
+    },
+    {
+      "id": "a008",
+      "startMs": 48723,
+      "endMs": 52708
+    },
+    {
+      "id": "a009",
+      "startMs": 53208,
+      "endMs": 59450
+    },
+    {
+      "id": "a010",
+      "startMs": 59950,
+      "endMs": 66268
+    },
+    {
+      "id": "a011",
+      "startMs": 66768,
+      "endMs": 73048
+    },
+    {
+      "id": "a012",
+      "startMs": 73548,
+      "endMs": 75241
+    },
+    {
+      "id": "a013",
+      "startMs": 75741,
+      "endMs": 79906
+    },
+    {
+      "id": "a014",
+      "startMs": 80406,
+      "endMs": 85592
+    },
+    {
+      "id": "a015",
+      "startMs": 86092,
+      "endMs": 90609
+    },
+    {
+      "id": "a016",
+      "startMs": 91109,
+      "endMs": 96196
+    },
+    {
+      "id": "a017",
+      "startMs": 96596,
+      "endMs": 99987
+    },
+    {
+      "id": "a018",
+      "startMs": 100587,
+      "endMs": 105769
+    },
+    {
+      "id": "a019",
+      "startMs": 106269,
+      "endMs": 114256
+    },
+    {
+      "id": "a020",
+      "startMs": 114756,
+      "endMs": 119587
+    },
+    {
+      "id": "a021",
+      "startMs": 120087,
+      "endMs": 126093
+    },
+    {
+      "id": "a022",
+      "startMs": 126593,
+      "endMs": 128557
+    },
+    {
+      "id": "a023",
+      "startMs": 129057,
+      "endMs": 133098
+    },
+    {
+      "id": "a024",
+      "startMs": 133598,
+      "endMs": 135714
+    },
+    {
+      "id": "a025",
+      "startMs": 136214,
+      "endMs": 142759
+    },
+    {
+      "id": "a026",
+      "startMs": 143759,
+      "endMs": 149377
+    },
+    {
+      "id": "a027",
+      "startMs": 150877,
+      "endMs": 153781
+    },
+    {
+      "id": "a028",
+      "startMs": 155281,
+      "endMs": 157390
+    },
+    {
+      "id": "a029",
+      "startMs": 157890,
+      "endMs": 161965
+    },
+    {
+      "id": "a030",
+      "startMs": 162465,
+      "endMs": 165368
+    },
+    {
+      "id": "a031",
+      "startMs": 165868,
+      "endMs": 167214
+    },
+    {
+      "id": "a032",
+      "startMs": 167714,
+      "endMs": 170826
+    },
+    {
+      "id": "a033",
+      "startMs": 171326,
+      "endMs": 180003
+    },
+    {
+      "id": "a034",
+      "startMs": 180503,
+      "endMs": 184018
+    },
+    {
+      "id": "a035",
+      "startMs": 184518,
+      "endMs": 189140
+    },
+    {
+      "id": "a036",
+      "startMs": 189640,
+      "endMs": 193348
+    },
+    {
+      "id": "a037",
+      "startMs": 193848,
+      "endMs": 200440
+    },
+    {
+      "id": "a038",
+      "startMs": 200940,
+      "endMs": 205364
+    },
+    {
+      "id": "a039",
+      "startMs": 205864,
+      "endMs": 211737
+    },
+    {
+      "id": "a040",
+      "startMs": 212237,
+      "endMs": 217564
+    },
+    {
+      "id": "a041",
+      "startMs": 218064,
+      "endMs": 219548
+    },
+    {
+      "id": "a042",
+      "startMs": 220048,
+      "endMs": 223620
+    },
+    {
+      "id": "a043",
+      "startMs": 224120,
+      "endMs": 229960
+    },
+    {
+      "id": "a044",
+      "startMs": 230360,
+      "endMs": 234215
+    },
+    {
+      "id": "a045",
+      "startMs": 234715,
+      "endMs": 240422
+    },
+    {
+      "id": "a046",
+      "startMs": 240922,
+      "endMs": 244698
+    },
+    {
+      "id": "a047",
+      "startMs": 245198,
+      "endMs": 253470
+    },
+    {
+      "id": "a048",
+      "startMs": 253970,
+      "endMs": 257346
+    },
+    {
+      "id": "a049",
+      "startMs": 258346,
+      "endMs": 263867
+    }
+  ]
+}

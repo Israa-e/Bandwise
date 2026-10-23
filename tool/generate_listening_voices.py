@@ -18,7 +18,8 @@ bundled environment has them all:
   best take is kept and listed for checking by ear.
 - Resume-safe: progress is saved after each line to
   build/listening_voices/<set>.json and finished lines are skipped. --redo
-  generates the given line ids again.
+  generates the given line ids again; --recheck re-scores the saved
+  transcripts without generating.
 """
 
 import json
@@ -92,7 +93,15 @@ def words(text, o_is_zero=False):
             continue
         out.append("0" if o_is_zero and w == "o" else NUMBER_WORDS.get(w, w))
         i += 1
-    return out
+    # Digit groups count as one number however they were spaced:
+    # "07723 418590" and "07723418590" match.
+    merged = []
+    for w in out:
+        if merged and w.isdigit() and merged[-1].isdigit():
+            merged[-1] += w
+        else:
+            merged.append(w)
+    return merged
 
 
 def squashed(text, o_is_zero=False):
@@ -198,6 +207,23 @@ def generate_set(set_id, redo, tts, asr):
            else "Every line passed."))
 
 
+def recheck(set_id):
+    """Scores the saved transcripts again (after a change to the checks)
+    without generating anything."""
+    folder = ROOT / set_id
+    script = json.loads((folder / "script.json").read_text())
+    texts = {line["id"]: line["text"] for line in script["lines"]}
+    status_file = WORK / f"{set_id}.json"
+    status = json.loads(status_file.read_text())
+    for line_id, s in status.items():
+        s["match"] = round(match(texts[line_id], s["transcript"]), 2)
+        s["ok"] = s["match"] >= MIN_MATCH and not s["missing"]
+    status_file.write_text(json.dumps(status, indent=2) + "\n")
+    review = [k for k, v in status.items() if not v["ok"]]
+    log(f"{set_id}: " + (f"check by ear: {', '.join(review)}" if review
+                         else "every line passed."))
+
+
 def main(args):
     redo, sets = set(), []
     it = iter(args)
@@ -206,6 +232,10 @@ def main(args):
             redo |= set(next(it).split(","))
         elif not a.startswith("--"):
             sets.append(a)
+    if "--recheck" in args:
+        for set_id in sets or ["set_a", "set_b"]:
+            recheck(set_id)
+        return
     from faster_whisper import WhisperModel
     from kittentts import KittenTTS
 

@@ -1,0 +1,237 @@
+{
+  "setId": "set_b",
+  "audio": "listening.mp3",
+  "durationMs": 302293,
+  "lines": [
+    {
+      "id": "b001",
+      "startMs": 0,
+      "endMs": 15854
+    },
+    {
+      "id": "b002",
+      "startMs": 17354,
+      "endMs": 21418
+    },
+    {
+      "id": "b003",
+      "startMs": 22918,
+      "endMs": 28444
+    },
+    {
+      "id": "b004",
+      "startMs": 28944,
+      "endMs": 33336
+    },
+    {
+      "id": "b005",
+      "startMs": 33836,
+      "endMs": 42660
+    },
+    {
+      "id": "b006",
+      "startMs": 43160,
+      "endMs": 46716
+    },
+    {
+      "id": "b007",
+      "startMs": 47216,
+      "endMs": 54137
+    },
+    {
+      "id": "b008",
+      "startMs": 54637,
+      "endMs": 63159
+    },
+    {
+      "id": "b009",
+      "startMs": 63659,
+      "endMs": 70246
+    },
+    {
+      "id": "b010",
+      "startMs": 70746,
+      "endMs": 77402
+    },
+    {
+      "id": "b011",
+      "startMs": 77902,
+      "endMs": 83863
+    },
+    {
+      "id": "b012",
+      "startMs": 84363,
+      "endMs": 95290
+    },
+    {
+      "id": "b013",
+      "startMs": 95790,
+      "endMs": 103247
+    },
+    {
+      "id": "b014",
+      "startMs": 103747,
+      "endMs": 108439
+    },
+    {
+      "id": "b015",
+      "startMs": 108939,
+      "endMs": 113072
+    },
+    {
+      "id": "b016",
+      "startMs": 113572,
+      "endMs": 128543
+    },
+    {
+      "id": "b017",
+      "startMs": 129043,
+      "endMs": 134569
+    },
+    {
+      "id": "b018",
+      "startMs": 135069,
+      "endMs": 139760
+    },
+    {
+      "id": "b019",
+      "startMs": 140260,
+      "endMs": 147934
+    },
+    {
+      "id": "b020",
+      "startMs": 148434,
+      "endMs": 160015
+    },
+    {
+      "id": "b021",
+      "startMs": 160515,
+      "endMs": 165460
+    },
+    {
+      "id": "b022",
+      "startMs": 165960,
+      "endMs": 169807
+    },
+    {
+      "id": "b023",
+      "startMs": 170307,
+      "endMs": 172412
+    },
+    {
+      "id": "b024",
+      "startMs": 172912,
+      "endMs": 177938
+    },
+    {
+      "id": "b025",
+      "startMs": 178438,
+      "endMs": 183276
+    },
+    {
+      "id": "b026",
+      "startMs": 183776,
+      "endMs": 191595
+    },
+    {
+      "id": "b027",
+      "startMs": 192595,
+      "endMs": 198005
+    },
+    {
+      "id": "b028",
+      "startMs": 199505,
+      "endMs": 202825
+    },
+    {
+      "id": "b029",
+      "startMs": 204325,
+      "endMs": 210953
+    },
+    {
+      "id": "b030",
+      "startMs": 211453,
+      "endMs": 218726
+    },
+    {
+      "id": "b031",
+      "startMs": 219226,
+      "endMs": 223213
+    },
+    {
+      "id": "b032",
+      "startMs": 223713,
+      "endMs": 228929
+    },
+    {
+      "id": "b033",
+      "startMs": 229429,
+      "endMs": 232440
+    },
+    {
+      "id": "b034",
+      "startMs": 232940,
+      "endMs": 235497
+    },
+    {
+      "id": "b035",
+      "startMs": 235997,
+      "endMs": 240598
+    },
+    {
+      "id": "b036",
+      "startMs": 241098,
+      "endMs": 247313
+    },
+    {
+      "id": "b037",
+      "startMs": 247813,
+      "endMs": 250265
+    },
+    {
+      "id": "b038",
+      "startMs": 250765,
+      "endMs": 256548
+    },
+    {
+      "id": "b039",
+      "startMs": 257048,
+      "endMs": 260887
+    },
+    {
+      "id": "b040",
+      "startMs": 261387,
+      "endMs": 267202
+    },
+    {
+      "id": "b041",
+      "startMs": 267702,
+      "endMs": 275159
+    },
+    {
+      "id": "b042",
+      "startMs": 275659,
+      "endMs": 281103
+    },
+    {
+      "id": "b043",
+      "startMs": 281603,
+      "endMs": 286916
+    },
+    {
+      "id": "b044",
+      "startMs": 287416,
+      "endMs": 292803
+    },
+    {
+      "id": "b045",
+      "startMs": 293303,
+      "endMs": 295763
+    },
+    {
+      "id": "b046",
+      "startMs": 296763,
+      "endMs": 302293
+    }
+  ]
+}
