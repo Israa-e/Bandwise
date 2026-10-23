@@ -13,9 +13,11 @@
         "age": "40s",
         "tone": "Neutral, measured, unhurried; no emotion."
       },
-      "voiceDesign": {
-        "instruct": "male, middle-aged, moderate pitch, british accent",
-        "seed": 1101
+      "voice": {
+        "engine": "kittentts",
+        "model": "KittenML/kitten-tts-mini-0.8",
+        "preset": "expr-voice-3-m",
+        "speed": 1.0
       }
     },
     {
@@ -27,9 +29,11 @@
         "age": "50s",
         "tone": "Calm, warm and thoughtful; asks probing questions."
       },
-      "voiceDesign": {
-        "instruct": "female, middle-aged, low pitch, british accent",
-        "seed": 2202
+      "voice": {
+        "engine": "kittentts",
+        "model": "KittenML/kitten-tts-mini-0.8",
+        "preset": "expr-voice-3-f",
+        "speed": 1.0
       }
     },
     {
@@ -41,9 +45,11 @@
         "age": "early 20s",
         "tone": "Energetic and confident; speaks a little faster."
       },
-      "voiceDesign": {
-        "instruct": "female, young adult, high pitch, american accent",
-        "seed": 2303
+      "voice": {
+        "engine": "kittentts",
+        "model": "KittenML/kitten-tts-mini-0.8",
+        "preset": "expr-voice-5-f",
+        "speed": 1.0
       }
     },
     {
@@ -55,9 +61,11 @@
         "age": "early 20s",
         "tone": "Thoughtful and relaxed; slightly lower energy than Maya."
       },
-      "voiceDesign": {
-        "instruct": "male, young adult, moderate pitch, australian accent",
-        "seed": 2404
+      "voice": {
+        "engine": "kittentts",
+        "model": "KittenML/kitten-tts-mini-0.8",
+        "preset": "expr-voice-4-m",
+        "speed": 1.0
       }
     }
   ],

@@ -13,9 +13,11 @@
         "age": "40s",
         "tone": "Neutral, measured, unhurried; no emotion."
       },
-      "voiceDesign": {
-        "instruct": "male, middle-aged, moderate pitch, british accent",
-        "seed": 1101
+      "voice": {
+        "engine": "kittentts",
+        "model": "KittenML/kitten-tts-mini-0.8",
+        "preset": "expr-voice-3-m",
+        "speed": 1.0
       }
     },
     {
@@ -27,9 +29,11 @@
         "age": "30s",
         "tone": "Friendly, efficient and professional; clear on details."
       },
-      "voiceDesign": {
-        "instruct": "female, young adult, moderate pitch, british accent",
-        "seed": 1202
+      "voice": {
+        "engine": "kittentts",
+        "model": "KittenML/kitten-tts-mini-0.8",
+        "preset": "expr-voice-4-f",
+        "speed": 1.0
       }
     },
     {
@@ -41,9 +45,11 @@
         "age": "late 20s",
         "tone": "Relaxed and chatty; slightly unsure when giving his number."
       },
-      "voiceDesign": {
-        "instruct": "male, young adult, low pitch, australian accent",
-        "seed": 1303
+      "voice": {
+        "engine": "kittentts",
+        "model": "KittenML/kitten-tts-mini-0.8",
+        "preset": "expr-voice-2-m",
+        "speed": 1.0
       }
     }
   ],
