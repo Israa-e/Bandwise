@@ -30,6 +30,7 @@ abstract final class AppRoutes {
   static const review = '/review';
   static const notifications = '/notifications';
   static const reading = '/reading';
+  static const listening = '/listening';
   static const writing = '/writing';
 
   /// Reading hub, inside the Practice tab.
@@ -39,6 +40,20 @@ abstract final class AppRoutes {
   /// preselected.
   static String readingHubFor(String typeName) =>
       Uri(path: readingHub, queryParameters: {'type': typeName}).toString();
+
+  /// Listening hub, inside the Practice tab.
+  static const listeningHub = '$practice/listening';
+
+  /// The Listening hub with a set that has question type [typeName]
+  /// preselected.
+  static String listeningHubFor(String typeName) =>
+      Uri(path: listeningHub, queryParameters: {'type': typeName}).toString();
+
+  /// A listening session.
+  static String listeningSession(String setId, {required bool timed}) => Uri(
+    path: '$listening/$setId',
+    queryParameters: {'mode': timed ? 'timed' : 'learning'},
+  ).toString();
 
   /// Notebooks, inside the Progress tab.
   static const mistakeNotebook = '$progress/mistakes';

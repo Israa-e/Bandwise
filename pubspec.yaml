@@ -19,6 +19,7 @@ dependencies:
   package_info_plus: ^10.2.2
   supabase_flutter: ^2.18.3
   http: ^1.6.0
+  just_audio: ^0.10.6
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +31,11 @@ flutter:
 
   assets:
     - assets/logo.svg
+    # Listening sets: script.json, questions.json, and the built audio
+    # (listening.mp3, timestamps.json). The source recordings in audio/ are
+    # not bundled.
+    - assets/listening/set_a/
+    - assets/listening/set_b/
 
   fonts:
     - family: Inter

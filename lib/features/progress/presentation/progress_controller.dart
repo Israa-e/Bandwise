@@ -37,6 +37,13 @@ class ProgressController extends AsyncNotifier<ProgressState> {
     await _repository.save(next);
   }
 
+  Future<void> completeListening(ListeningCompletion completion) async {
+    final current = state.value ?? await future;
+    final next = current.withListeningAttempt(completion);
+    state = AsyncData(next);
+    await _repository.save(next);
+  }
+
   Future<void> completeWriting({
     required DateTime date,
     required int minutes,
@@ -74,7 +81,7 @@ class ProgressController extends AsyncNotifier<ProgressState> {
   }
 
   /// Forgets all progress: lessons, XP, streak, study time, mistakes,
-  /// reviews and reading attempts.
+  /// reviews and reading and listening attempts.
   Future<void> reset() async {
     await _repository.clear();
     state = const AsyncData(ProgressState());

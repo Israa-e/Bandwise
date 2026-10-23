@@ -331,17 +331,22 @@ String _readme(String setId, Map<String, dynamic> script) {
     ..writeln('## Voices to create in VoiceStudio')
     ..writeln()
     ..writeln(
-      'Create one voice per speaker and use it for every line by that '
-      'speaker.',
+      'One designed voice per speaker (never a clone of a real person), '
+      'used for every line by that speaker. "Voice design" is the OmniVoice '
+      'instruct and seed; `tool/generate_listening_voices.dart` uses them.',
     )
     ..writeln()
-    ..writeln('| Speaker id | Name | Role | Accent | Age | Tone |')
-    ..writeln('| --- | --- | --- | --- | --- | --- |');
+    ..writeln(
+      '| Speaker id | Name | Role | Accent | Age | Tone | Voice design (seed) |',
+    )
+    ..writeln('| --- | --- | --- | --- | --- | --- | --- |');
   for (final s in speakers.values) {
     final notes = s['voiceNotes'] as Map<String, dynamic>;
+    final design = s['voiceDesign'] as Map<String, dynamic>?;
     b.writeln(
       '| `${s['id']}` | ${s['name']} | ${s['role']} | ${s['accent']} '
-      '| ${notes['age']} | ${notes['tone']} |',
+      '| ${notes['age']} | ${notes['tone']} '
+      '| ${design == null ? '' : '${design['instruct']} (${design['seed']})'} |',
     );
   }
   b

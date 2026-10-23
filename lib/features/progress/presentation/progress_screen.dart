@@ -11,8 +11,10 @@ import '../../../core/widgets/widgets.dart';
 import '../../home/domain/weekly_activity.dart';
 import '../../home/presentation/widgets/weekly_activity_card.dart';
 import '../../learn/presentation/learn_providers.dart';
+import '../../listening/domain/listening.dart';
 import '../../onboarding/domain/onboarding_state.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
+import '../../reading/domain/reading.dart';
 import '../../review/domain/review_planner.dart';
 import '../../writing/domain/writing.dart';
 import '../../writing/presentation/widgets/feedback_widgets.dart';
@@ -31,7 +33,8 @@ const _padding = EdgeInsetsDirectional.fromSTEB(
 /// The streak rule, as the app applies it.
 const streakRuleText =
     'A day counts toward your streak when you complete at least one '
-    'activity: a lesson, a review, reading practice or an essay. Your '
+    'activity: a lesson, a review, reading or listening practice, or an '
+    'essay. Your '
     'daily goal is tracked separately and does not affect your streak.';
 
 /// The Progress tab: streaks, study time, skills and the notebooks. Every
@@ -192,7 +195,27 @@ class _ProgressContent extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         const SectionTitle('Skills'),
-        _ReadingCard(insights: data.reading),
+        _PracticeCard(
+          key: const ValueKey('listeningCard'),
+          skill: Skill.listening,
+          insights: data.listening,
+          labelOf: (t) => (t as ListeningQuestionType).label,
+          emptyMessage: 'No listening practice yet.',
+          emptyAction: 'Try a recording',
+          hub: AppRoutes.listeningHub,
+          hubFor: AppRoutes.listeningHubFor,
+        ),
+        const SizedBox(height: AppSpacing.smd),
+        _PracticeCard(
+          key: const ValueKey('readingCard'),
+          skill: Skill.reading,
+          insights: data.reading,
+          labelOf: (t) => (t as ReadingQuestionType).label,
+          emptyMessage: 'No reading practice yet.',
+          emptyAction: 'Try a passage',
+          hub: AppRoutes.readingHub,
+          hubFor: AppRoutes.readingHubFor,
+        ),
         const SizedBox(height: AppSpacing.smd),
         _WritingCard(insights: data.writing),
         const SizedBox(height: AppSpacing.smd),
@@ -356,22 +379,40 @@ class _NothingYet extends StatelessWidget {
   }
 }
 
-class _ReadingCard extends StatelessWidget {
-  const _ReadingCard({required this.insights});
+/// Reading or Listening: recent accuracy, accuracy by question type, and
+/// a rule-based suggestion.
+class _PracticeCard extends StatelessWidget {
+  const _PracticeCard({
+    super.key,
+    required this.skill,
+    required this.insights,
+    required this.labelOf,
+    required this.emptyMessage,
+    required this.emptyAction,
+    required this.hub,
+    required this.hubFor,
+  });
 
-  final ReadingInsights insights;
+  final Skill skill;
+  final PracticeInsights<Enum> insights;
+  final String Function(Enum type) labelOf;
+  final String emptyMessage;
+  final String emptyAction;
+  final String hub;
+
+  /// The hub set up to practise a question type, by name.
+  final String Function(String typeName) hubFor;
 
   @override
   Widget build(BuildContext context) {
     final attempts = insights.attempts;
     return AppCard(
-      key: const ValueKey('readingCard'),
       padding: const EdgeInsetsDirectional.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _SkillHeader(
-            skill: Skill.reading,
+            skill: skill,
             trailing: insights.isEmpty
                 ? null
                 : attempts == 1
@@ -381,12 +422,15 @@ class _ReadingCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.smd),
           if (insights.isEmpty)
             _NothingYet(
-              message: 'No reading practice yet.',
-              action: 'Try a passage',
-              onAction: () => context.go(AppRoutes.readingHub),
+              message: emptyMessage,
+              action: emptyAction,
+              onAction: () => context.go(hub),
             )
           else ...[
-            _RecentAccuracy(points: insights.recent),
+            _RecentAccuracy(
+              points: insights.recent,
+              chartKey: ValueKey('${skill.name}AccuracyChart'),
+            ),
             const SizedBox(height: AppSpacing.md),
             const Text(
               'Accuracy by question type',
@@ -394,17 +438,18 @@ class _ReadingCard extends StatelessWidget {
             ),
             for (final e in insights.byType.entries)
               _TypeRow(
-                type: e.key.label,
+                type: labelOf(e.key),
                 correct: e.value.correct,
                 total: e.value.total,
               ),
             if (insights.weakestType case final weakest?) ...[
               const SizedBox(height: AppSpacing.md),
               _Recommendation(
-                text: '${weakest.label} is your weakest question type lately.',
-                action: 'Practise ${weakest.label}',
-                onAction: () =>
-                    context.go(AppRoutes.readingHubFor(weakest.name)),
+                text:
+                    '${labelOf(weakest)} is your weakest question type '
+                    'lately.',
+                action: 'Practise ${labelOf(weakest)}',
+                onAction: () => context.go(hubFor(weakest.name)),
               ),
             ],
           ],
@@ -416,9 +461,10 @@ class _ReadingCard extends StatelessWidget {
 
 /// Accuracy of the last few attempts as a small line chart.
 class _RecentAccuracy extends StatelessWidget {
-  const _RecentAccuracy({required this.points});
+  const _RecentAccuracy({required this.points, required this.chartKey});
 
   final List<AccuracyPoint> points;
+  final Key chartKey;
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +487,7 @@ class _RecentAccuracy extends StatelessWidget {
           )
         else
           LineChartGraphic(
-            key: const ValueKey('readingAccuracyChart'),
+            key: chartKey,
             aspectRatio: 2.2,
             semanticLabel:
                 '$title: ${points.map((p) => '${p.percent}%').join(', ')}',

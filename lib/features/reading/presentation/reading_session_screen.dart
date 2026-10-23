@@ -46,7 +46,7 @@ class ReadingSessionScreen extends ConsumerWidget {
     void back() =>
         context.canPop() ? context.pop() : context.go(AppRoutes.readingHub);
     if (passages.hasError && !passages.isLoading) {
-      return _Message(
+      return SessionMessageScaffold(
         icon: Icons.error_outline_rounded,
         title: "Couldn't load this passage",
         message: 'Check your connection and try again.',
@@ -60,7 +60,7 @@ class ReadingSessionScreen extends ConsumerWidget {
     }
     final passage = list.where((p) => p.id == passageId).firstOrNull;
     if (passage == null) {
-      return _Message(
+      return SessionMessageScaffold(
         icon: Icons.search_off_rounded,
         title: 'Passage not found',
         message: 'Pick a passage from the Reading hub.',
@@ -365,9 +365,22 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _PaneToggle(
-                  pane: _pane,
-                  secondLabel: _submitted ? 'Results' : 'Questions',
+                PaneToggle(
+                  selected: _pane,
+                  tabs: [
+                    (
+                      value: _Pane.passage,
+                      id: 'passage',
+                      label: 'Passage',
+                      icon: Icons.article_outlined,
+                    ),
+                    (
+                      value: _Pane.questions,
+                      id: 'questions',
+                      label: _submitted ? 'Results' : 'Questions',
+                      icon: Icons.checklist_rounded,
+                    ),
+                  ],
                   onChanged: (p) => setState(() => _pane = p),
                 ),
                 Expanded(
@@ -498,139 +511,6 @@ class _ReadingSessionState extends ConsumerState<ReadingSession>
           ),
         ),
       ],
-    );
-  }
-}
-
-/// The phone toggle between the passage and the questions (or results).
-class _PaneToggle extends StatelessWidget {
-  const _PaneToggle({
-    required this.pane,
-    required this.secondLabel,
-    required this.onChanged,
-  });
-
-  final _Pane pane;
-  final String secondLabel;
-  final ValueChanged<_Pane> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget tab(_Pane p, String label, IconData icon) {
-      final selected = pane == p;
-      return Expanded(
-        child: Semantics(
-          button: true,
-          selected: selected,
-          child: Material(
-            color: selected ? AppColors.card : Colors.transparent,
-            shape: const RoundedRectangleBorder(
-              borderRadius: AppRadii.nestedRadius,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              key: ValueKey('pane-${p.name}'),
-              onTap: () => onChanged(p),
-              child: SizedBox(
-                height: 40,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      icon,
-                      size: 18,
-                      color: selected ? AppColors.primary : AppColors.textMuted,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Flexible(
-                      child: Text(
-                        label,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.labelMd.copyWith(
-                          color: selected
-                              ? AppColors.primary
-                              : AppColors.textMuted,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.page,
-        AppSpacing.sm,
-        AppSpacing.page,
-        0,
-      ),
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.disabledFill,
-          borderRadius: AppRadii.buttonRadius,
-        ),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.all(AppSpacing.xxs),
-          child: Row(
-            children: [
-              tab(_Pane.passage, 'Passage', Icons.article_outlined),
-              const SizedBox(width: AppSpacing.xxs),
-              tab(_Pane.questions, secondLabel, Icons.checklist_rounded),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Message extends StatelessWidget {
-  const _Message({
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.onBack,
-    this.onRetry,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final VoidCallback onBack;
-  final VoidCallback? onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final onRetry = this.onRetry;
-    return Scaffold(
-      appBar: SessionTopBar(onClose: onBack, closeTooltip: 'Close practice'),
-      body: EmptyStateView(
-        icon: icon,
-        title: title,
-        message: message,
-        action: Column(
-          children: [
-            if (onRetry != null) ...[
-              AppButton.primary(
-                label: 'Retry',
-                expand: false,
-                onPressed: onRetry,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            AppButton.outline(
-              label: 'Go back',
-              expand: false,
-              onPressed: onBack,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

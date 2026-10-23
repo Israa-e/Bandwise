@@ -152,7 +152,10 @@ class SelectionCard extends StatelessWidget {
       child: Opacity(
         opacity: state == SelectionCardState.disabled ? 0.6 : 1,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          // No animation with reduced motion or on timed exam screens.
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             color: style.background,
             borderRadius: AppRadii.cardRadius,

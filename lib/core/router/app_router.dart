@@ -24,6 +24,9 @@ import '../../features/onboarding/presentation/target_band_screen.dart';
 import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/practice/presentation/practice_screen.dart';
 import '../../features/practice/presentation/skill_coming_soon_screen.dart';
+import '../../features/listening/domain/listening.dart';
+import '../../features/listening/presentation/listening_hub_screen.dart';
+import '../../features/listening/presentation/listening_session_screen.dart';
 import '../../features/reading/domain/reading.dart';
 import '../../features/reading/presentation/reading_hub_screen.dart';
 import '../../features/reading/presentation/reading_session_screen.dart';
@@ -92,6 +95,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.review,
         builder: (context, state) => const ReviewScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.listening}/:id',
+        builder: (context, state) => ListeningSessionScreen(
+          setId: state.pathParameters['id']!,
+          mode: state.uri.queryParameters['mode'] == 'timed'
+              ? ListeningMode.timed
+              : ListeningMode.learning,
+        ),
       ),
       GoRoute(
         path: '${AppRoutes.reading}/:id',
@@ -193,6 +205,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'reading',
                     builder: (context, state) => ReadingHubScreen(
                       initialType: ReadingQuestionType.values
+                          .where(
+                            (t) => t.name == state.uri.queryParameters['type'],
+                          )
+                          .firstOrNull,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'listening',
+                    builder: (context, state) => ListeningHubScreen(
+                      initialType: ListeningQuestionType.values
                           .where(
                             (t) => t.name == state.uri.queryParameters['type'],
                           )
@@ -302,6 +324,7 @@ const _mainPaths = [
   AppRoutes.review,
   AppRoutes.notifications,
   AppRoutes.reading,
+  AppRoutes.listening,
   AppRoutes.writing,
   AppRoutes.editPlan,
 ];

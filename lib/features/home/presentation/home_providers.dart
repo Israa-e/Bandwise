@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../learn/presentation/learn_providers.dart';
+import '../../listening/presentation/listening_providers.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
 import '../../reading/presentation/reading_providers.dart';
 import '../../writing/presentation/writing_providers.dart';
@@ -33,6 +34,7 @@ final homeRepositoryProvider = Provider<HomeRepository>((ref) {
   return LiveHomeRepository(
     path: ref.watch(learningPathProvider.future),
     passages: ref.watch(readingPassagesProvider.future),
+    listeningSets: ref.watch(listeningSetsProvider.future),
     writing: ref.watch(writingSubmissionsProvider.future),
     today: today,
   );

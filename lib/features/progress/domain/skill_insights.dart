@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../listening/domain/listening.dart';
 import '../../reading/domain/reading.dart';
 import '../../writing/domain/writing.dart';
 import '../../writing/domain/writing_feedback.dart';
@@ -13,37 +14,25 @@ int? percentOf(int correct, int total) =>
 /// One point on the recent accuracy chart.
 typedef AccuracyPoint = ({DateTime date, int percent});
 
-/// Reading practice in numbers. Raw scores and accuracy only, never bands.
+/// Practice with question types (Reading, Listening) in numbers. Raw
+/// scores and accuracy only, never bands.
 @immutable
-class ReadingInsights {
-  const ReadingInsights._({
-    required this.attempts,
-    required this.recent,
-    required this.byType,
-    required this.weakestType,
-  });
+class PracticeInsights<T extends Enum> {
+  PracticeInsights.from(List<PracticeAttempt> attempts, List<T> types)
+    : attempts = attempts.length,
+      recent = [
+        for (final a in _recentOf(attempts))
+          if (percentOf(a.correct, a.total) case final p?)
+            (date: a.date, percent: p),
+      ],
+      byType = _byType(attempts, types),
+      weakestType = _weakest(_byType(_recentOf(attempts), types));
 
   /// Attempts the recent chart and the recommendation look at.
   static const recentCount = 5;
 
   /// A type needs this many recent answers before it can be called weakest.
   static const minAnswersForWeakest = 2;
-
-  factory ReadingInsights.from(List<ReadingAttempt> attempts) {
-    final recentAttempts = attempts.length <= recentCount
-        ? attempts
-        : attempts.sublist(attempts.length - recentCount);
-    return ReadingInsights._(
-      attempts: attempts.length,
-      recent: [
-        for (final a in recentAttempts)
-          if (percentOf(a.correct, a.total) case final p?)
-            (date: a.date, percent: p),
-      ],
-      byType: _byType(attempts),
-      weakestType: _weakest(_byType(recentAttempts)),
-    );
-  }
 
   final int attempts;
 
@@ -52,40 +41,42 @@ class ReadingInsights {
 
   /// Answers by question type over every attempt, in type order. Types
   /// never practised are left out.
-  final Map<ReadingQuestionType, TypeScore> byType;
+  final Map<T, TypeScore> byType;
 
   /// The recently practised type with the lowest accuracy, if any type is
   /// below 100% with at least [minAnswersForWeakest] answers. Rule-based.
-  final ReadingQuestionType? weakestType;
+  final T? weakestType;
 
   bool get isEmpty => attempts == 0;
 
-  static Map<ReadingQuestionType, TypeScore> _byType(
-    List<ReadingAttempt> attempts,
+  static List<PracticeAttempt> _recentOf(List<PracticeAttempt> attempts) =>
+      attempts.length <= recentCount
+      ? attempts
+      : attempts.sublist(attempts.length - recentCount);
+
+  static Map<T, TypeScore> _byType<T extends Enum>(
+    List<PracticeAttempt> attempts,
+    List<T> types,
   ) {
-    final correct = <ReadingQuestionType, int>{};
-    final total = <ReadingQuestionType, int>{};
+    final correct = <T, int>{};
+    final total = <T, int>{};
     for (final a in attempts) {
       for (final e in a.byType.entries) {
-        final type = ReadingQuestionType.values
-            .where((t) => t.name == e.key)
-            .firstOrNull;
+        final type = types.where((t) => t.name == e.key).firstOrNull;
         if (type == null) continue;
         correct[type] = (correct[type] ?? 0) + e.value.correct;
         total[type] = (total[type] ?? 0) + e.value.total;
       }
     }
     return {
-      for (final t in ReadingQuestionType.values)
+      for (final t in types)
         if ((total[t] ?? 0) > 0)
           t: TypeScore(correct: correct[t]!, total: total[t]!),
     };
   }
 
-  static ReadingQuestionType? _weakest(
-    Map<ReadingQuestionType, TypeScore> byType,
-  ) {
-    ReadingQuestionType? weakest;
+  static T? _weakest<T>(Map<T, TypeScore> byType) {
+    T? weakest;
     double? lowest;
     for (final e in byType.entries) {
       final score = e.value;
@@ -101,6 +92,18 @@ class ReadingInsights {
     }
     return weakest;
   }
+}
+
+/// Reading practice in numbers.
+class ReadingInsights extends PracticeInsights<ReadingQuestionType> {
+  ReadingInsights.from(List<ReadingAttempt> attempts)
+    : super.from(attempts, ReadingQuestionType.values);
+}
+
+/// Listening practice in numbers.
+class ListeningInsights extends PracticeInsights<ListeningQuestionType> {
+  ListeningInsights.from(List<ListeningAttempt> attempts)
+    : super.from(attempts, ListeningQuestionType.values);
 }
 
 /// Essays and estimates for one task type.

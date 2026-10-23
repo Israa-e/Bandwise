@@ -482,43 +482,44 @@ void main() {
   });
 
   group('practice tab', () {
-    testWidgets('four skill cards; Reading and Writing open their hubs, '
-        'the others are coming soon', (tester) async {
-      await _launchApp(tester);
-      await _tapTab(tester, 'Practice');
-      expect(find.byType(PracticeSkillCard), findsNWidgets(4));
-      expect(find.text('Coming soon'), findsNWidgets(2));
-      for (final skill in ['listening', 'speaking']) {
+    testWidgets(
+      'four skill cards; Listening, Reading and Writing open their hubs, '
+      'Speaking is coming soon',
+      (tester) async {
+        await _launchApp(tester);
+        await _tapTab(tester, 'Practice');
+        expect(find.byType(PracticeSkillCard), findsNWidgets(4));
+        expect(find.text('Coming soon'), findsOneWidget);
         expect(
           find.descendant(
-            of: find.byKey(ValueKey('practice-$skill')),
+            of: find.byKey(const ValueKey('practice-speaking')),
             matching: find.text('Coming soon'),
           ),
           findsOneWidget,
         );
-      }
 
-      await _tap(tester, find.byKey(const ValueKey('practice-listening')));
-      expect(find.byType(SkillComingSoonScreen), findsOneWidget);
-      expect(find.text('Listening practice is coming soon'), findsOneWidget);
-      await _tap(tester, find.byTooltip('Go back'));
+        await _tap(tester, find.byKey(const ValueKey('practice-speaking')));
+        expect(find.byType(SkillComingSoonScreen), findsOneWidget);
+        expect(find.text('Speaking practice is coming soon'), findsOneWidget);
+        await _tap(tester, find.byTooltip('Go back'));
 
-      await _tap(tester, find.byKey(const ValueKey('practice-reading')));
-      expect(find.byType(ReadingHubScreen), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Recent attempts'),
-        300,
-        scrollable: find.byType(Scrollable).last,
-      );
-      await tester.drag(find.byType(Scrollable).last, const Offset(0, -400));
-      await tester.pumpAndSettle();
-      expect(find.byType(AppBottomNav), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('No attempts yet. Your scores will appear here.'),
-        200,
-        scrollable: find.byType(Scrollable).last,
-      );
-    });
+        await _tap(tester, find.byKey(const ValueKey('practice-reading')));
+        expect(find.byType(ReadingHubScreen), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.text('Recent attempts'),
+          300,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await tester.drag(find.byType(Scrollable).last, const Offset(0, -400));
+        await tester.pumpAndSettle();
+        expect(find.byType(AppBottomNav), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.text('No attempts yet. Your scores will appear here.'),
+          200,
+          scrollable: find.byType(Scrollable).last,
+        );
+      },
+    );
 
     testWidgets('a type filter limits learning practice to that type', (
       tester,

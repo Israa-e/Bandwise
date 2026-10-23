@@ -12,6 +12,10 @@
       "voiceNotes": {
         "age": "40s",
         "tone": "Neutral, measured, unhurried; no emotion."
+      },
+      "voiceDesign": {
+        "instruct": "male, middle-aged, moderate pitch, british accent",
+        "seed": 1101
       }
     },
     {
@@ -22,6 +26,10 @@
       "voiceNotes": {
         "age": "30s",
         "tone": "Friendly, efficient and professional; clear on details."
+      },
+      "voiceDesign": {
+        "instruct": "female, young adult, moderate pitch, british accent",
+        "seed": 1202
       }
     },
     {
@@ -32,6 +40,10 @@
       "voiceNotes": {
         "age": "late 20s",
         "tone": "Relaxed and chatty; slightly unsure when giving his number."
+      },
+      "voiceDesign": {
+        "instruct": "male, young adult, low pitch, australian accent",
+        "seed": 1303
       }
     }
   ],
@@ -40,7 +52,7 @@
       "id": "a001",
       "speaker": "narrator",
       "text": "Part 1. You will hear a man phoning a community centre to book a place on an evening course. First, you have some time to look at questions 1 to 5.",
-      "pauseAfterMs": 30000
+      "pauseAfterMs": 1500
     },
     {
       "id": "a002",
@@ -194,7 +206,7 @@
       "id": "a026",
       "speaker": "narrator",
       "text": "Before you hear the rest of the conversation, you have some time to look at questions 6 to 10.",
-      "pauseAfterMs": 30000
+      "pauseAfterMs": 1500
     },
     {
       "id": "a027",

@@ -11,7 +11,7 @@ const resetProgressItems = [
   'Lessons completed and their results',
   'XP, streak and study time',
   'Saved mistakes, vocabulary reviews and review dates',
-  'Reading practice attempts',
+  'Reading and listening practice attempts',
   'Essays, drafts and their feedback',
   'Achievements (they are worked out from the above)',
 ];

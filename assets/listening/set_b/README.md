@@ -6,14 +6,14 @@ Original practice material written for Bandwise. It is not an IELTS recording or
 
 ## Voices to create in VoiceStudio
 
-Create one voice per speaker and use it for every line by that speaker.
+One designed voice per speaker (never a clone of a real person), used for every line by that speaker. "Voice design" is the OmniVoice instruct and seed; `tool/generate_listening_voices.dart` uses them.
 
-| Speaker id | Name | Role | Accent | Age | Tone |
-| --- | --- | --- | --- | --- | --- |
-| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. |
-| `price` | Dr Price | Tutor | British | 50s | Calm, warm and thoughtful; asks probing questions. |
-| `maya` | Maya | Student | North American | early 20s | Energetic and confident; speaks a little faster. |
-| `liam` | Liam | Student | Irish | early 20s | Thoughtful and relaxed; slightly lower energy than Maya. |
+| Speaker id | Name | Role | Accent | Age | Tone | Voice design (seed) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. | male, middle-aged, moderate pitch, british accent (1101) |
+| `price` | Dr Price | Tutor | British | 50s | Calm, warm and thoughtful; asks probing questions. | female, middle-aged, low pitch, british accent (2202) |
+| `maya` | Maya | Student | North American | early 20s | Energetic and confident; speaks a little faster. | female, young adult, high pitch, american accent (2303) |
+| `liam` | Liam | Student | Australian | early 20s | Thoughtful and relaxed; slightly lower energy than Maya. | male, young adult, moderate pitch, australian accent (2404) |
 
 ## Files to generate, in this order
 
@@ -23,7 +23,7 @@ Numbers are written as digits. Phone numbers are read digit by digit ("0" as "oh
 
 | # | File | Speaker | Text | Pause after |
 | --- | --- | --- | --- | --- |
-| 1 | `audio/b001.wav` | Narrator | Part 3. You will hear two students, Maya and Liam, talking to their tutor, Dr Price, about their research project on food waste in the university dining hall. First, you have some time to look at questions 21 to 25. | 30000 ms |
+| 1 | `audio/b001.wav` | Narrator | Part 3. You will hear two students, Maya and Liam, talking to their tutor, Dr Price, about their research project on food waste in the university dining hall. First, you have some time to look at questions 21 to 25. | 1500 ms |
 | 2 | `audio/b002.wav` | Narrator | Now listen carefully and answer questions 21 to 25. | 1500 ms |
 | 3 | `audio/b003.wav` | Dr Price | Come in, both of you. So, how's the food waste project going? | 500 ms |
 | 4 | `audio/b004.wav` | Maya | Pretty well, I think. We've got a lot more data than we expected. | 500 ms |
@@ -49,7 +49,7 @@ Numbers are written as digits. Phone numbers are read digit by digit ("0" as "oh
 | 24 | `audio/b024.wav` | Maya | We did think about smaller plates, but the research suggests that mainly works in buffets. | 500 ms |
 | 25 | `audio/b025.wav` | Liam | And charging extra for side dishes would just make the dining hall unpopular. | 500 ms |
 | 26 | `audio/b026.wav` | Maya | So we're going to suggest that sides stop coming automatically. Students would just ask for one at the counter if they actually want it. | 1000 ms |
-| 27 | `audio/b027.wav` | Narrator | Before you hear the rest of the discussion, you have some time to look at questions 26 to 30. | 30000 ms |
+| 27 | `audio/b027.wav` | Narrator | Before you hear the rest of the discussion, you have some time to look at questions 26 to 30. | 1500 ms |
 | 28 | `audio/b028.wav` | Narrator | Now listen and answer questions 26 to 30. | 1500 ms |
 | 29 | `audio/b029.wav` | Dr Price | Right, let's think about how you'll use each set of data in the final report. Start with the bin weights. | 500 ms |
 | 30 | `audio/b030.wav` | Maya | Now that the kitchen waste will be separate, they're the most reliable thing we have, so the whole argument is going to be built on them. | 500 ms |

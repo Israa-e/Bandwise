@@ -6,13 +6,13 @@ Original practice material written for Bandwise. It is not an IELTS recording or
 
 ## Voices to create in VoiceStudio
 
-Create one voice per speaker and use it for every line by that speaker.
+One designed voice per speaker (never a clone of a real person), used for every line by that speaker. "Voice design" is the OmniVoice instruct and seed; `tool/generate_listening_voices.dart` uses them.
 
-| Speaker id | Name | Role | Accent | Age | Tone |
-| --- | --- | --- | --- | --- | --- |
-| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. |
-| `joanna` | Joanna | Receptionist at Riverside Community Centre | British | 30s | Friendly, efficient and professional; clear on details. |
-| `daniel` | Daniel Halloran | Caller booking a course | Australian | late 20s | Relaxed and chatty; slightly unsure when giving his number. |
+| Speaker id | Name | Role | Accent | Age | Tone | Voice design (seed) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. | male, middle-aged, moderate pitch, british accent (1101) |
+| `joanna` | Joanna | Receptionist at Riverside Community Centre | British | 30s | Friendly, efficient and professional; clear on details. | female, young adult, moderate pitch, british accent (1202) |
+| `daniel` | Daniel Halloran | Caller booking a course | Australian | late 20s | Relaxed and chatty; slightly unsure when giving his number. | male, young adult, low pitch, australian accent (1303) |
 
 ## Files to generate, in this order
 
@@ -22,7 +22,7 @@ Numbers are written as digits. Phone numbers are read digit by digit ("0" as "oh
 
 | # | File | Speaker | Text | Pause after |
 | --- | --- | --- | --- | --- |
-| 1 | `audio/a001.wav` | Narrator | Part 1. You will hear a man phoning a community centre to book a place on an evening course. First, you have some time to look at questions 1 to 5. | 30000 ms |
+| 1 | `audio/a001.wav` | Narrator | Part 1. You will hear a man phoning a community centre to book a place on an evening course. First, you have some time to look at questions 1 to 5. | 1500 ms |
 | 2 | `audio/a002.wav` | Narrator | Now listen carefully and answer questions 1 to 5. | 1500 ms |
 | 3 | `audio/a003.wav` | Joanna | Good morning, Riverside Community Centre, Joanna speaking. How can I help? | 500 ms |
 | 4 | `audio/a004.wav` | Daniel Halloran | Oh, hi there. I'm ringing about your evening courses. I saw a few are starting soon, and I'd like to book a place on one if there's still room. | 500 ms |
@@ -47,7 +47,7 @@ Numbers are written as digits. Phone numbers are read digit by digit ("0" as "oh
 | 23 | `audio/a023.wav` | Joanna | The course was originally going to start on the 30th of October. | 500 ms |
 | 24 | `audio/a024.wav` | Daniel Halloran | Oh, so that would be next week, then? | 500 ms |
 | 25 | `audio/a025.wav` | Joanna | Well, no. The tutor's away that week, so the first class has been moved to the 6th of November. | 1000 ms |
-| 26 | `audio/a026.wav` | Narrator | Before you hear the rest of the conversation, you have some time to look at questions 6 to 10. | 30000 ms |
+| 26 | `audio/a026.wav` | Narrator | Before you hear the rest of the conversation, you have some time to look at questions 6 to 10. | 1500 ms |
 | 27 | `audio/a027.wav` | Narrator | Now listen and answer questions 6 to 10. | 1500 ms |
 | 28 | `audio/a028.wav` | Daniel Halloran | So, how much does the course cost? | 500 ms |
 | 29 | `audio/a029.wav` | Joanna | The full price for the ten weeks is 120 pounds. | 500 ms |

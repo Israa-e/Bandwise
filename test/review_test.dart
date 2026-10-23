@@ -231,6 +231,8 @@ void main() {
         WordReviewItem(:final lesson, :final card) =>
           'word ${lesson.id} ${card.word}',
         ReadingMistakeReviewItem(:final question) => 'reading ${question.id}',
+        ListeningMistakeReviewItem(:final question) =>
+          'listening ${question.id}',
       };
       expect(due.map(describe), [
         // Due Oct 12: u2-l1 mistakes in exercise order.

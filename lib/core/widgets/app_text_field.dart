@@ -27,6 +27,7 @@ class AppTextField extends StatefulWidget {
     this.onSubmitted,
     this.prefixIcon,
     this.visualStateOverride,
+    this.autocorrect = true,
   });
 
   final String label;
@@ -51,6 +52,10 @@ class AppTextField extends StatefulWidget {
 
   /// Forces a look regardless of focus. Only for the component gallery.
   final AppTextFieldVisualState? visualStateOverride;
+
+  /// False turns off autocorrect, suggestions and spell check, e.g. for
+  /// timed exam answers.
+  final bool autocorrect;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -157,7 +162,10 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
         const SizedBox(height: AppSpacing.xs),
         AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          // No animation with reduced motion or on timed exam screens.
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 150),
           height: 52,
           decoration: BoxDecoration(
             color: background,
@@ -194,6 +202,11 @@ class _AppTextFieldState extends State<AppTextField> {
                     inputFormatters: widget.inputFormatters,
                     onChanged: widget.onChanged,
                     onSubmitted: widget.onSubmitted,
+                    autocorrect: widget.autocorrect,
+                    enableSuggestions: widget.autocorrect,
+                    spellCheckConfiguration: widget.autocorrect
+                        ? null
+                        : const SpellCheckConfiguration.disabled(),
                     style: AppTextStyles.bodyLg.copyWith(
                       color: isDisabled
                           ? AppColors.textDisabled

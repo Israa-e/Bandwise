@@ -12,6 +12,10 @@
       "voiceNotes": {
         "age": "40s",
         "tone": "Neutral, measured, unhurried; no emotion."
+      },
+      "voiceDesign": {
+        "instruct": "male, middle-aged, moderate pitch, british accent",
+        "seed": 1101
       }
     },
     {
@@ -22,6 +26,10 @@
       "voiceNotes": {
         "age": "50s",
         "tone": "Calm, warm and thoughtful; asks probing questions."
+      },
+      "voiceDesign": {
+        "instruct": "female, middle-aged, low pitch, british accent",
+        "seed": 2202
       }
     },
     {
@@ -32,16 +40,24 @@
       "voiceNotes": {
         "age": "early 20s",
         "tone": "Energetic and confident; speaks a little faster."
+      },
+      "voiceDesign": {
+        "instruct": "female, young adult, high pitch, american accent",
+        "seed": 2303
       }
     },
     {
       "id": "liam",
       "name": "Liam",
       "role": "Student",
-      "accent": "Irish",
+      "accent": "Australian",
       "voiceNotes": {
         "age": "early 20s",
         "tone": "Thoughtful and relaxed; slightly lower energy than Maya."
+      },
+      "voiceDesign": {
+        "instruct": "male, young adult, moderate pitch, australian accent",
+        "seed": 2404
       }
     }
   ],
@@ -50,7 +66,7 @@
       "id": "b001",
       "speaker": "narrator",
       "text": "Part 3. You will hear two students, Maya and Liam, talking to their tutor, Dr Price, about their research project on food waste in the university dining hall. First, you have some time to look at questions 21 to 25.",
-      "pauseAfterMs": 30000
+      "pauseAfterMs": 1500
     },
     {
       "id": "b002",
@@ -206,7 +222,7 @@
       "id": "b027",
       "speaker": "narrator",
       "text": "Before you hear the rest of the discussion, you have some time to look at questions 26 to 30.",
-      "pauseAfterMs": 30000
+      "pauseAfterMs": 1500
     },
     {
       "id": "b028",

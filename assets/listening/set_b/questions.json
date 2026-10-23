@@ -6,13 +6,17 @@
       "from": 21,
       "to": 25,
       "instructions": "Choose the correct letter, A, B or C.",
-      "heading": "Food waste research project"
+      "heading": "Food waste research project",
+      "readingTimeAfterLineId": "b001",
+      "readingTimeMs": 30000
     },
     {
       "from": 26,
       "to": 30,
       "instructions": "What do the students decide to do with each source of data? Choose FIVE answers from the box and write the correct letter, A–F, next to questions 26–30.",
-      "heading": "Sources of data"
+      "heading": "Sources of data",
+      "readingTimeAfterLineId": "b027",
+      "readingTimeMs": 30000
     }
   ],
   "questions": [

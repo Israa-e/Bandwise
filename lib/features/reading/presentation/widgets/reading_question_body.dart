@@ -174,9 +174,10 @@ class _HeadingChips extends StatelessWidget {
           runSpacing: AppSpacing.sm,
           children: [
             for (var i = 0; i < question.options.length; i++)
-              _NumeralChip(
+              AnswerChip(
                 label: HeadingQuestion.numeral(i),
-                tooltip: question.options[i],
+                semanticLabel:
+                    'Heading ${HeadingQuestion.numeral(i)}: ${question.options[i]}',
                 state: _stateFor(
                   i,
                   picked: picked,
@@ -266,82 +267,6 @@ class _HeadingChips extends StatelessWidget {
       ),
     );
     if (chosen != null) onPick?.call(chosen);
-  }
-}
-
-class _NumeralChip extends StatelessWidget {
-  const _NumeralChip({
-    required this.label,
-    required this.tooltip,
-    required this.state,
-    required this.onTap,
-  });
-
-  final String label;
-  final String tooltip;
-  final SelectionCardState state;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final (background, border, foreground) = switch (state) {
-      SelectionCardState.selected => (
-        AppColors.selectedSurface,
-        AppColors.primary,
-        AppColors.primary,
-      ),
-      SelectionCardState.correct => (
-        AppColors.successTint,
-        AppColors.success,
-        AppColors.text,
-      ),
-      SelectionCardState.incorrect => (
-        AppColors.errorTint,
-        AppColors.error,
-        AppColors.errorText,
-      ),
-      SelectionCardState.disabled => (
-        AppColors.card,
-        AppColors.border,
-        AppColors.textDisabled,
-      ),
-      SelectionCardState.idle => (
-        AppColors.card,
-        AppColors.border,
-        AppColors.text,
-      ),
-    };
-    final selected =
-        state == SelectionCardState.selected ||
-        state == SelectionCardState.correct ||
-        state == SelectionCardState.incorrect;
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: 'Heading $label: $tooltip',
-      excludeSemantics: true,
-      child: Material(
-        color: background,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadii.buttonRadius,
-          side: BorderSide(color: border, width: selected ? 2 : 1.5),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: SizedBox(
-            width: 48,
-            height: 44,
-            child: Center(
-              child: Text(
-                label,
-                style: AppTextStyles.labelLg.copyWith(color: foreground),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 

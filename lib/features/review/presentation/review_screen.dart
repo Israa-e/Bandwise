@@ -7,6 +7,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/dates.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../lesson/presentation/widgets/exercise_views.dart';
+import '../../listening/presentation/widgets/listening_clip.dart';
+import '../../listening/presentation/widgets/listening_question_body.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
 import '../../progress/domain/progress_state.dart';
 import '../../progress/domain/review_schedule.dart';
@@ -146,6 +148,9 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
 
   /// The answer to a reading question.
   ReadingResponse? _response;
+
+  /// The answer to a listening question: an option key or typed words.
+  String? _listeningResponse;
   var _checked = false;
   var _revealed = false;
   var _saving = false;
@@ -191,6 +196,7 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
       _xp += xp;
       _picked = null;
       _response = null;
+      _listeningResponse = null;
       _checked = false;
       _revealed = false;
       _saving = false;
@@ -282,6 +288,28 @@ class _ReviewSessionState extends ConsumerState<_ReviewSession> {
         bottom = _mistakeBottom(
           answered: question.isAnswered(_response),
           correct: question.isCorrect(_response),
+          correctAnswer: question.correctAnswer,
+          explanation: question.explanation,
+          rating: rating,
+        );
+      case ListeningMistakeReviewItem(:final set, :final question):
+        body = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ListeningClip(set: set, question: question, revealed: _checked),
+            const SizedBox(height: AppSpacing.md),
+            ListeningQuestionBody(
+              question: question,
+              response: _listeningResponse,
+              revealed: _checked,
+              showMatchingOptions: true,
+              onChanged: (r) => setState(() => _listeningResponse = r),
+            ),
+          ],
+        );
+        bottom = _mistakeBottom(
+          answered: question.isAnswered(_listeningResponse),
+          correct: question.isCorrect(_listeningResponse),
           correctAnswer: question.correctAnswer,
           explanation: question.explanation,
           rating: rating,
@@ -406,6 +434,11 @@ class _Source extends StatelessWidget {
         'Saved mistake',
         Icons.bookmark_rounded,
         'Reading: ${passage.title}',
+      ),
+      ListeningMistakeReviewItem(:final set) => (
+        'Saved mistake',
+        Icons.bookmark_rounded,
+        'Listening: ${set.title}',
       ),
       WordReviewItem(:final lesson) => (
         'Saved word',

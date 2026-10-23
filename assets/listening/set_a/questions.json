@@ -4,9 +4,19 @@
   "groups": [
     {
       "from": 1,
+      "to": 5,
+      "instructions": "Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.",
+      "heading": "Riverside Community Centre: evening course booking",
+      "readingTimeAfterLineId": "a001",
+      "readingTimeMs": 30000
+    },
+    {
+      "from": 6,
       "to": 10,
       "instructions": "Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.",
-      "heading": "Riverside Community Centre: evening course booking"
+      "heading": "Riverside Community Centre: evening course booking",
+      "readingTimeAfterLineId": "a026",
+      "readingTimeMs": 30000
     }
   ],
   "questions": [

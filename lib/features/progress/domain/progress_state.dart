@@ -18,6 +18,11 @@ abstract final class XpRules {
   static const perReadingCorrect = 2;
   static const timedPassageBonus = 10;
 
+  /// Listening practice: per correct answer, plus a bonus for a whole set
+  /// in timed mode.
+  static const perListeningCorrect = 2;
+  static const timedSetBonus = 10;
+
   /// A new submitted essay. Revisions, and an essay resubmitted unchanged,
   /// earn nothing.
   static const perNewEssay = 20;
@@ -27,6 +32,9 @@ abstract final class XpRules {
 
   static int forReading({required int correct, required bool timedPassage}) =>
       perReadingCorrect * correct + (timedPassage ? timedPassageBonus : 0);
+
+  static int forListening({required int correct, required bool timedSet}) =>
+      perListeningCorrect * correct + (timedSet ? timedSetBonus : 0);
 }
 
 /// The learner's saved history. Dates are local, date-only.
@@ -40,6 +48,7 @@ class ProgressState {
     this.mistakes = const [],
     this.reviews = const {},
     this.readingAttempts = const [],
+    this.listeningAttempts = const [],
     this.reviewsByDay = const {},
     this.removedFromReview = const {},
   });
@@ -63,6 +72,9 @@ class ProgressState {
   /// Finished reading practice, oldest first.
   final List<ReadingAttempt> readingAttempts;
 
+  /// Finished listening practice, oldest first.
+  final List<ListeningAttempt> listeningAttempts;
+
   /// Review items rated per local day, "Again" included.
   final Map<DateTime, int> reviewsByDay;
 
@@ -78,6 +90,7 @@ class ProgressState {
     List<SavedMistake>? mistakes,
     Map<String, ReviewSchedule>? reviews,
     List<ReadingAttempt>? readingAttempts,
+    List<ListeningAttempt>? listeningAttempts,
     Map<DateTime, int>? reviewsByDay,
     Set<String>? removedFromReview,
   }) => ProgressState(
@@ -88,6 +101,7 @@ class ProgressState {
     mistakes: mistakes ?? this.mistakes,
     reviews: reviews ?? this.reviews,
     readingAttempts: readingAttempts ?? this.readingAttempts,
+    listeningAttempts: listeningAttempts ?? this.listeningAttempts,
     reviewsByDay: reviewsByDay ?? this.reviewsByDay,
     removedFromReview: removedFromReview ?? this.removedFromReview,
   );
@@ -211,6 +225,7 @@ class ProgressState {
           if (!oldMistakeKeys.contains(e.key)) e.key: e.value,
       },
       readingAttempts: readingAttempts,
+      listeningAttempts: listeningAttempts,
       reviewsByDay: reviewsByDay,
       removedFromReview: removedFromReview,
     );
@@ -233,6 +248,35 @@ class ProgressState {
                 date: day,
                 amount: c.attempt.xp,
                 source: 'reading:${c.attempt.passageId}',
+              ),
+            ],
+      minutesByDay: {...minutesByDay, day: minutesOn(day) + c.attempt.minutes},
+      activeDays: {...activeDays, day},
+      mistakes: [
+        ...mistakes.where((m) => !replaced.contains(m.reviewKey)),
+        ...c.mistakes,
+      ],
+      reviews: {
+        for (final e in reviews.entries)
+          if (!replaced.contains(e.key)) e.key: e.value,
+      },
+    );
+  }
+
+  /// Records finished listening practice, like [withReadingAttempt].
+  ProgressState withListeningAttempt(ListeningCompletion c) {
+    final day = dateOnly(c.attempt.date);
+    final replaced = {for (final id in c.questionIds) mistakeReviewKey(id)};
+    return _copyWith(
+      listeningAttempts: [...listeningAttempts, c.attempt],
+      xpLog: c.attempt.xp == 0
+          ? null
+          : [
+              ...xpLog,
+              XpEntry(
+                date: day,
+                amount: c.attempt.xp,
+                source: 'listening:${c.attempt.setId}',
               ),
             ],
       minutesByDay: {...minutesByDay, day: minutesOn(day) + c.attempt.minutes},
@@ -316,6 +360,7 @@ class ProgressState {
     'mistakes': [for (final m in mistakes) m.toJson()],
     'reviews': {for (final e in reviews.entries) e.key: e.value.toJson()},
     'readingAttempts': [for (final a in readingAttempts) a.toJson()],
+    'listeningAttempts': [for (final a in listeningAttempts) a.toJson()],
     'reviewsByDay': {
       for (final e in reviewsByDay.entries) formatIsoDay(e.key): e.value,
     },
@@ -354,6 +399,10 @@ class ProgressState {
       readingAttempts: [
         for (final a in json['readingAttempts'] as List? ?? const [])
           ReadingAttempt.fromJson(a as Map<String, dynamic>),
+      ],
+      listeningAttempts: [
+        for (final a in json['listeningAttempts'] as List? ?? const [])
+          ListeningAttempt.fromJson(a as Map<String, dynamic>),
       ],
       reviewsByDay: {
         for (final e in reviewsByDay.entries)
@@ -411,7 +460,8 @@ class XpEntry {
   final DateTime date;
   final int amount;
 
-  /// The lesson id, [reviewSource], or "reading:…" / "writing:…".
+  /// The lesson id, [reviewSource], or "reading:…" / "listening:…" /
+  /// "writing:…".
   final String source;
 
   /// Earned by finishing a lesson.
@@ -431,7 +481,7 @@ class XpEntry {
 }
 
 /// Where a saved mistake was made.
-enum MistakeSource { lesson, reading }
+enum MistakeSource { lesson, reading, listening }
 
 /// A wrong answer kept for later review.
 @immutable
@@ -449,10 +499,11 @@ class SavedMistake {
 
   final MistakeSource source;
 
-  /// The lesson or reading passage id.
+  /// The lesson, reading passage or listening set id.
   final String sourceId;
 
-  /// The exercise or reading question id. Unique across the app.
+  /// The exercise, reading or listening question id. Unique across the
+  /// app.
   final String itemId;
 
   /// The question as it was asked, with its sentence or passage if it has
@@ -562,9 +613,19 @@ class TypeScore {
       TypeScore(correct: json['correct'] as int, total: json['total'] as int);
 }
 
+/// A finished practice with raw scores per question type.
+abstract interface class PracticeAttempt {
+  DateTime get date;
+  int get correct;
+  int get total;
+
+  /// Scores by question type name.
+  Map<String, TypeScore> get byType;
+}
+
 /// One finished reading practice. Raw scores only, never a band.
 @immutable
-class ReadingAttempt {
+class ReadingAttempt implements PracticeAttempt {
   const ReadingAttempt({
     required this.passageId,
     required this.timed,
@@ -581,8 +642,11 @@ class ReadingAttempt {
 
   /// Timed mode (the full passage) rather than learning mode.
   final bool timed;
+  @override
   final DateTime date;
+  @override
   final int correct;
+  @override
   final int total;
   final int minutes;
   final int xp;
@@ -590,7 +654,7 @@ class ReadingAttempt {
   /// The one question type practised, by name; null for all types.
   final String? questionType;
 
-  /// Scores by question type name.
+  @override
   final Map<String, TypeScore> byType;
 
   Map<String, dynamic> toJson() => {
@@ -631,6 +695,84 @@ class ReadingCompletion {
   });
 
   final ReadingAttempt attempt;
+
+  /// Every question practised, answered or not.
+  final List<String> questionIds;
+
+  /// Wrong answers, saved for review. Unanswered questions are scored as
+  /// wrong but not saved.
+  final List<SavedMistake> mistakes;
+}
+
+/// One finished listening practice: a whole set. Raw scores only, never a
+/// band.
+@immutable
+class ListeningAttempt implements PracticeAttempt {
+  const ListeningAttempt({
+    required this.setId,
+    required this.timed,
+    required this.date,
+    required this.correct,
+    required this.total,
+    required this.minutes,
+    required this.xp,
+    this.byType = const {},
+  });
+
+  final String setId;
+
+  /// Timed mode (played once, like the exam) rather than learning mode.
+  final bool timed;
+  @override
+  final DateTime date;
+  @override
+  final int correct;
+  @override
+  final int total;
+  final int minutes;
+  final int xp;
+
+  @override
+  final Map<String, TypeScore> byType;
+
+  Map<String, dynamic> toJson() => {
+    'setId': setId,
+    'timed': timed,
+    'date': formatIsoDay(date),
+    'correct': correct,
+    'total': total,
+    'minutes': minutes,
+    'xp': xp,
+    'byType': {for (final e in byType.entries) e.key: e.value.toJson()},
+  };
+
+  static ListeningAttempt fromJson(Map<String, dynamic> json) =>
+      ListeningAttempt(
+        setId: json['setId'] as String,
+        timed: json['timed'] as bool,
+        date: parseIsoDay(json['date'] as String),
+        correct: json['correct'] as int,
+        total: json['total'] as int,
+        minutes: json['minutes'] as int,
+        xp: json['xp'] as int,
+        byType: {
+          for (final e
+              in (json['byType'] as Map<String, dynamic>? ?? {}).entries)
+            e.key: TypeScore.fromJson(e.value as Map<String, dynamic>),
+        },
+      );
+}
+
+/// Everything recorded when listening practice is submitted.
+@immutable
+class ListeningCompletion {
+  const ListeningCompletion({
+    required this.attempt,
+    required this.questionIds,
+    required this.mistakes,
+  });
+
+  final ListeningAttempt attempt;
 
   /// Every question practised, answered or not.
   final List<String> questionIds;

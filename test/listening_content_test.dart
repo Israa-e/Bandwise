@@ -139,6 +139,34 @@ void main() {
         expect(covered, numbers);
       });
 
+      test('every group has reading time, announced before its answers', () {
+        final groups = _list(questionsDoc, 'groups');
+        var previousEvidence = -1;
+        for (final g in groups) {
+          final marker = g['readingTimeAfterLineId'] as String;
+          expect(lineIndex, contains(marker), reason: 'group ${g['from']}');
+          expect(
+            lineText(marker),
+            contains('look at questions ${g['from']} to ${g['to']}'),
+          );
+          expect(g['readingTimeMs'], isA<int>().having((t) => t, 'ms', 30000));
+          final evidence = [
+            for (final q in questions)
+              if ((q['number'] as int) >= (g['from'] as int) &&
+                  (q['number'] as int) <= (g['to'] as int))
+                lineIndex[q['evidenceLineId']]!,
+          ];
+          expect(lineIndex[marker]!, greaterThan(previousEvidence));
+          expect(lineIndex[marker]!, lessThan(evidence.first));
+          previousEvidence = evidence.last;
+        }
+        // The app gives the reading time; the recording only pauses briefly.
+        expect(
+          lines.map((l) => l['pauseAfterMs'] as int),
+          everyElement(lessThanOrEqualTo(2000)),
+        );
+      });
+
       test('every evidence line exists', () {
         for (final q in questions) {
           expect(

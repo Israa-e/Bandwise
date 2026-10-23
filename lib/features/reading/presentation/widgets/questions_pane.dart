@@ -336,7 +336,8 @@ class _InlineFeedback extends StatelessWidget {
 }
 
 /// Right or wrong, the correct answer, the explanation and a link to the
-/// evidence. Used under checked questions and in results.
+/// evidence. Used under checked questions and in results, for Reading and
+/// Listening.
 ///
 /// A Not Given answer has no evidence, so it says so and links to the
 /// related part of the passage instead.
@@ -350,6 +351,8 @@ class AnswerExplanation extends StatelessWidget {
     this.yourAnswer,
     this.showYourAnswer = false,
     this.notGiven = false,
+    this.evidenceLabel,
+    this.evidenceIcon = Icons.find_in_page_outlined,
   });
 
   static const notGivenNote = "This information isn't in the passage.";
@@ -365,6 +368,10 @@ class AnswerExplanation extends StatelessWidget {
 
   /// The correct answer is Not Given.
   final bool notGiven;
+
+  /// The evidence link; defaults to "Show in passage".
+  final String? evidenceLabel;
+  final IconData evidenceIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -440,8 +447,11 @@ class AnswerExplanation extends StatelessWidget {
               alignment: AlignmentDirectional.centerStart,
               child: TextButton.icon(
                 onPressed: onShowEvidence,
-                icon: const Icon(Icons.find_in_page_outlined, size: 18),
-                label: Text(notGiven ? 'Show related part' : 'Show in passage'),
+                icon: Icon(evidenceIcon, size: 18),
+                label: Text(
+                  evidenceLabel ??
+                      (notGiven ? 'Show related part' : 'Show in passage'),
+                ),
               ),
             ),
           ],

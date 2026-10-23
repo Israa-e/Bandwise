@@ -17,11 +17,12 @@ const _padding = EdgeInsetsDirectional.fromSTEB(
   AppSpacing.xxl,
 );
 
-/// Skill filter for reading mistakes; lesson mistakes use their unit's
-/// focus ("Vocabulary", "Grammar", …).
+/// Skill filters for reading and listening mistakes; lesson mistakes use
+/// their unit's focus ("Vocabulary", "Grammar", …).
 const _readingSkill = 'Reading';
+const _listeningSkill = 'Listening';
 
-/// Saved mistakes from one lesson or passage.
+/// Saved mistakes from one lesson, passage or recording.
 class _MistakeGroup {
   _MistakeGroup(this.title, this.skill);
 
@@ -58,6 +59,15 @@ class _MistakeNotebookScreenState extends ConsumerState<MistakeNotebookScreen> {
             _readingSkill,
           );
         }
+        if (m.source == MistakeSource.listening) {
+          final set = data.listeningSets
+              .where((s) => s.id == m.sourceId)
+              .firstOrNull;
+          return _MistakeGroup(
+            set?.title ?? 'Listening practice',
+            _listeningSkill,
+          );
+        }
         final lesson = course.lessonById(m.sourceId);
         if (lesson == null) return _MistakeGroup('Lesson', 'Lessons');
         final unit = course.unit(lesson.unit);
@@ -68,10 +78,12 @@ class _MistakeNotebookScreenState extends ConsumerState<MistakeNotebookScreen> {
       });
       group.mistakes.add(m);
     }
-    // Lessons in path order, then passages in hub order.
+    // Lessons in path order, then passages and recordings in hub order.
     final order = [
       for (final l in course.lessons) '${MistakeSource.lesson.name}:${l.id}',
       for (final p in data.passages) '${MistakeSource.reading.name}:${p.id}',
+      for (final s in data.listeningSets)
+        '${MistakeSource.listening.name}:${s.id}',
     ];
     int rank(String key) {
       final i = order.indexOf(key);
@@ -119,8 +131,8 @@ class _MistakeNotebookScreenState extends ConsumerState<MistakeNotebookScreen> {
         icon: Icons.error_outline_rounded,
         title: 'No mistakes saved yet',
         message:
-            'Wrong answers from lessons and reading practice are saved '
-            'here, so you can review them.',
+            'Wrong answers from lessons and reading and listening practice '
+            'are saved here, so you can review them.',
       );
     }
     final today = ref.watch(todayProvider);

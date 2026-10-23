@@ -31,7 +31,7 @@ class PrivacyScreen extends StatelessWidget {
               'Your study plan: goal, exam date, daily time, focus skills '
                   'and level.',
               'Your progress: lessons, XP, streak, study time, mistakes, '
-                  'reviews and reading attempts.',
+                  'reviews, and reading and listening attempts.',
               'Essays you write, with their drafts and feedback.',
               'Settings such as the daily reminder time.',
             ],

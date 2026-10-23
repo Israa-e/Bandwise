@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../learn/domain/learning_path.dart';
 import '../../learn/presentation/learn_providers.dart';
+import '../../listening/domain/listening.dart';
+import '../../listening/presentation/listening_providers.dart';
 import '../../reading/domain/reading.dart';
 import '../../reading/presentation/reading_providers.dart';
 import '../../review/domain/review_planner.dart';
@@ -21,6 +23,7 @@ class ProgressPageData {
     required this.path,
     required this.planner,
     required this.passages,
+    this.listeningSets = const [],
     required this.essays,
     required this.tasks,
   });
@@ -31,12 +34,14 @@ class ProgressPageData {
   /// Every review item, with its next review date.
   final ReviewPlanner planner;
   final List<ReadingPassage> passages;
+  final List<ListeningSet> listeningSets;
   final List<WritingSubmission> essays;
   final List<WritingTask> tasks;
 
   ProgressState get progress => path.progress;
 
   late final reading = ReadingInsights.from(progress.readingAttempts);
+  late final listening = ListeningInsights.from(progress.listeningAttempts);
   late final writing = WritingInsights.from(essays, tasks);
 
   /// Nothing done yet: no lessons, practice, reviews or essays.
@@ -44,6 +49,7 @@ class ProgressPageData {
       progress.activeDays.isEmpty &&
       progress.results.isEmpty &&
       progress.readingAttempts.isEmpty &&
+      progress.listeningAttempts.isEmpty &&
       essays.isEmpty;
 }
 
@@ -51,12 +57,14 @@ final progressPageProvider = FutureProvider<ProgressPageData>((ref) async {
   final path = await ref.watch(learningPathProvider.future);
   final planner = await ref.watch(reviewPlannerProvider.future);
   final passages = await ref.watch(readingPassagesProvider.future);
+  final listeningSets = await ref.watch(listeningSetsProvider.future);
   final essays = await ref.watch(writingSubmissionsProvider.future);
   final tasks = await ref.watch(writingTasksProvider.future);
   return ProgressPageData(
     path: path,
     planner: planner,
     passages: passages,
+    listeningSets: listeningSets,
     essays: essays,
     tasks: tasks,
   );

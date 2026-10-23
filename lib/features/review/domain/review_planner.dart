@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/dates.dart';
 import '../../learn/domain/course.dart';
+import '../../listening/domain/listening.dart';
 import '../../progress/domain/progress_state.dart';
 import '../../progress/domain/review_schedule.dart';
 import '../../reading/domain/reading.dart';
@@ -58,6 +59,23 @@ class ReadingMistakeReviewItem extends ReviewItem {
   final ReadingQuestion question;
 }
 
+/// A listening question answered wrongly, asked again with a clip of the
+/// recording.
+class ListeningMistakeReviewItem extends ReviewItem {
+  const ListeningMistakeReviewItem({
+    required super.key,
+    required super.dueOn,
+    required super.schedule,
+    required this.set,
+    required this.mistake,
+    required this.question,
+  });
+
+  final ListeningSet set;
+  final SavedMistake mistake;
+  final ListeningQuestion question;
+}
+
 /// A flashcard word from a finished lesson.
 class WordReviewItem extends ReviewItem {
   const WordReviewItem({
@@ -72,8 +90,8 @@ class WordReviewItem extends ReviewItem {
   final FlashcardExercise card;
 }
 
-/// Builds the review queue from the course, reading passages and the
-/// learner's progress.
+/// Builds the review queue from the course, reading passages, listening
+/// sets and the learner's progress.
 ///
 /// - Mistakes are due on the day they were made, until first reviewed.
 /// - Words from a finished lesson are first due the day after it.
@@ -86,14 +104,17 @@ class ReviewPlanner {
     required this.course,
     required this.progress,
     this.passages = const [],
+    this.listeningSets = const [],
   });
 
   final Course course;
   final ProgressState progress;
   final List<ReadingPassage> passages;
+  final List<ListeningSet> listeningSets;
 
-  /// Every reviewable item, removed ones included, in path order: per lesson, mistakes then words;
-  /// then reading mistakes per passage.
+  /// Every reviewable item, removed ones included, in path order: per
+  /// lesson, mistakes then words; then reading mistakes per passage, then
+  /// listening mistakes per set.
   late final List<ReviewItem> items = _build();
 
   List<ReviewItem> _build() {
@@ -150,6 +171,31 @@ class ReviewPlanner {
             dueOn: schedule?.dueOn ?? savedOn,
             schedule: schedule,
             passage: passage,
+            mistake: mistake,
+            question: question,
+          ),
+        );
+      }
+    }
+
+    final listeningMistakes = {
+      for (final m in progress.mistakes)
+        if (m.source == MistakeSource.listening) m.itemId: m,
+    };
+    for (final set in listeningSets) {
+      // Without audio there is nothing to listen to again.
+      if (!set.hasAudio) continue;
+      for (final question in set.questions) {
+        final mistake = listeningMistakes[question.id];
+        final savedOn = mistake?.savedOn;
+        if (mistake == null || savedOn == null) continue;
+        final schedule = progress.reviews[mistake.reviewKey];
+        items.add(
+          ListeningMistakeReviewItem(
+            key: mistake.reviewKey,
+            dueOn: schedule?.dueOn ?? savedOn,
+            schedule: schedule,
+            set: set,
             mistake: mistake,
             question: question,
           ),

@@ -2,8 +2,10 @@ import '../../../core/models/skill.dart';
 import '../../../core/utils/dates.dart';
 import '../../learn/domain/course.dart';
 import '../../learn/domain/learning_path.dart';
+import '../../listening/domain/listening.dart';
 import '../../progress/domain/progress_state.dart';
 import '../../reading/domain/reading.dart';
+
 import '../../review/domain/review_planner.dart';
 import '../../writing/domain/writing_submission.dart';
 import '../domain/home_repository.dart';
@@ -14,6 +16,7 @@ class LiveHomeRepository implements HomeRepository {
   const LiveHomeRepository({
     required this.path,
     required this.passages,
+    required this.listeningSets,
     required this.writing,
     required this.today,
   });
@@ -23,6 +26,9 @@ class LiveHomeRepository implements HomeRepository {
 
   /// Reading passages, for reading mistakes due for review.
   final Future<List<ReadingPassage>> passages;
+
+  /// Listening sets, for listening mistakes due for review.
+  final Future<List<ListeningSet>> listeningSets;
 
   /// Submitted essays, for the Writing card.
   final Future<List<WritingSubmission>> writing;
@@ -37,6 +43,7 @@ class LiveHomeRepository implements HomeRepository {
       course: path.course,
       progress: progress,
       passages: await passages,
+      listeningSets: await listeningSets,
     ).dueOn(today);
     return HomeSummary(
       // No accounts yet, so there is no name to greet.
@@ -49,10 +56,12 @@ class LiveHomeRepository implements HomeRepository {
       nextLesson: next == null ? null : _nextLesson(path, next),
       mistakesDue: due.where((i) => i.isMistake).length,
       wordsDue: due.whereType<WordReviewItem>().length,
-      // Listening and Speaking have no practice yet.
+      // Speaking has no practice yet.
       skills: {
+        if (progress.listeningAttempts.isNotEmpty)
+          Skill.listening: practiceActivity(progress.listeningAttempts, today),
         if (progress.readingAttempts.isNotEmpty)
-          Skill.reading: readingActivity(progress.readingAttempts, today),
+          Skill.reading: practiceActivity(progress.readingAttempts, today),
         if (await writing case final essays when essays.isNotEmpty)
           Skill.writing: writingActivity(essays, today),
       },
@@ -60,9 +69,10 @@ class LiveHomeRepository implements HomeRepository {
     );
   }
 
-  /// Reading practice as Home shows it: accuracy over every attempt.
-  static SkillActivity readingActivity(
-    List<ReadingAttempt> attempts,
+  /// Reading or Listening practice as Home shows it: accuracy over every
+  /// attempt.
+  static SkillActivity practiceActivity(
+    List<PracticeAttempt> attempts,
     DateTime today,
   ) {
     final day = dateOnly(today);
