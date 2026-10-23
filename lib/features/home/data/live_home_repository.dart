@@ -4,6 +4,7 @@ import '../../learn/domain/course.dart';
 import '../../learn/domain/learning_path.dart';
 import '../../listening/domain/listening.dart';
 import '../../progress/domain/progress_state.dart';
+import '../../progress/domain/skill_insights.dart';
 import '../../reading/domain/reading.dart';
 
 import '../../review/domain/review_planner.dart';
@@ -64,6 +65,8 @@ class LiveHomeRepository implements HomeRepository {
           Skill.reading: practiceActivity(progress.readingAttempts, today),
         if (await writing case final essays when essays.isNotEmpty)
           Skill.writing: writingActivity(essays, today),
+        if (progress.speakingSessions.isNotEmpty)
+          Skill.speaking: speakingActivity(progress.speakingSessions, today),
       },
       minutesByDay: progress.minutesByDay,
     );
@@ -85,6 +88,26 @@ class LiveHomeRepository implements HomeRepository {
       lastPracticed: attempts
           .map((a) => a.date)
           .reduce((a, b) => a.isAfter(b) ? a : b),
+    );
+  }
+
+  /// Speaking as Home shows it: sessions, speaking time and the latest
+  /// automatic checks. Never a score.
+  static SkillActivity speakingActivity(
+    List<SpeakingSession> sessions,
+    DateTime today,
+  ) {
+    final day = dateOnly(today);
+    final monday = addDays(day, -(day.weekday - DateTime.monday));
+    final insights = SpeakingInsights.from(sessions);
+    return SkillActivity(
+      attempts: sessions.length,
+      thisWeek: sessions.where((s) => !s.date.isBefore(monday)).length,
+      lastPracticed: sessions
+          .map((s) => s.date)
+          .reduce((a, b) => a.isAfter(b) ? a : b),
+      speakingTime: insights.speakingTime,
+      latestChecks: insights.latestChecks,
     );
   }
 

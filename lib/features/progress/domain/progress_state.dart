@@ -23,6 +23,11 @@ abstract final class XpRules {
   static const perListeningCorrect = 2;
   static const timedSetBonus = 10;
 
+  /// Speaking: per question answered in Practice or Confidence mode, the
+  /// first time each day; and a completed Timed test.
+  static const perSpeakingAnswer = 5;
+  static const completedSpeakingTest = 20;
+
   /// A new submitted essay. Revisions, and an essay resubmitted unchanged,
   /// earn nothing.
   static const perNewEssay = 20;
@@ -49,6 +54,7 @@ class ProgressState {
     this.reviews = const {},
     this.readingAttempts = const [],
     this.listeningAttempts = const [],
+    this.speakingSessions = const [],
     this.reviewsByDay = const {},
     this.removedFromReview = const {},
   });
@@ -75,6 +81,10 @@ class ProgressState {
   /// Finished listening practice, oldest first.
   final List<ListeningAttempt> listeningAttempts;
 
+  /// Finished speaking sessions, oldest first: times and automatic checks
+  /// only. The recordings stay on the device and are never synced.
+  final List<SpeakingSession> speakingSessions;
+
   /// Review items rated per local day, "Again" included.
   final Map<DateTime, int> reviewsByDay;
 
@@ -91,6 +101,7 @@ class ProgressState {
     Map<String, ReviewSchedule>? reviews,
     List<ReadingAttempt>? readingAttempts,
     List<ListeningAttempt>? listeningAttempts,
+    List<SpeakingSession>? speakingSessions,
     Map<DateTime, int>? reviewsByDay,
     Set<String>? removedFromReview,
   }) => ProgressState(
@@ -102,6 +113,7 @@ class ProgressState {
     reviews: reviews ?? this.reviews,
     readingAttempts: readingAttempts ?? this.readingAttempts,
     listeningAttempts: listeningAttempts ?? this.listeningAttempts,
+    speakingSessions: speakingSessions ?? this.speakingSessions,
     reviewsByDay: reviewsByDay ?? this.reviewsByDay,
     removedFromReview: removedFromReview ?? this.removedFromReview,
   );
@@ -226,6 +238,7 @@ class ProgressState {
       },
       readingAttempts: readingAttempts,
       listeningAttempts: listeningAttempts,
+      speakingSessions: speakingSessions,
       reviewsByDay: reviewsByDay,
       removedFromReview: removedFromReview,
     );
@@ -289,6 +302,50 @@ class ProgressState {
         for (final e in reviews.entries)
           if (!replaced.contains(e.key)) e.key: e.value,
       },
+    );
+  }
+
+  /// XP for a speaking session in [mode] on [date] that answered
+  /// [questionIds]: a completed Timed test earns
+  /// [XpRules.completedSpeakingTest]; Practice and Confidence earn
+  /// [XpRules.perSpeakingAnswer] per question not already answered in
+  /// those modes that day.
+  int speakingXpFor({
+    required String mode,
+    required DateTime date,
+    required Iterable<String> questionIds,
+  }) {
+    if (mode == SpeakingSession.timedMode) {
+      return XpRules.completedSpeakingTest;
+    }
+    final day = dateOnly(date);
+    final earlier = {
+      for (final s in speakingSessions)
+        if (s.date == day && s.mode != SpeakingSession.timedMode)
+          for (final a in s.answers) a.questionId,
+    };
+    return XpRules.perSpeakingAnswer *
+        questionIds.toSet().difference(earlier).length;
+  }
+
+  /// Records a finished speaking session: its summary, XP, minutes and a
+  /// streak day.
+  ProgressState withSpeakingSession(SpeakingSession session) {
+    final day = dateOnly(session.date);
+    return _copyWith(
+      speakingSessions: [...speakingSessions, session],
+      xpLog: session.xp == 0
+          ? null
+          : [
+              ...xpLog,
+              XpEntry(
+                date: day,
+                amount: session.xp,
+                source: 'speaking:${session.id}',
+              ),
+            ],
+      minutesByDay: {...minutesByDay, day: minutesOn(day) + session.minutes},
+      activeDays: {...activeDays, day},
     );
   }
 
@@ -361,6 +418,7 @@ class ProgressState {
     'reviews': {for (final e in reviews.entries) e.key: e.value.toJson()},
     'readingAttempts': [for (final a in readingAttempts) a.toJson()],
     'listeningAttempts': [for (final a in listeningAttempts) a.toJson()],
+    'speakingSessions': [for (final s in speakingSessions) s.toJson()],
     'reviewsByDay': {
       for (final e in reviewsByDay.entries) formatIsoDay(e.key): e.value,
     },
@@ -403,6 +461,10 @@ class ProgressState {
       listeningAttempts: [
         for (final a in json['listeningAttempts'] as List? ?? const [])
           ListeningAttempt.fromJson(a as Map<String, dynamic>),
+      ],
+      speakingSessions: [
+        for (final s in json['speakingSessions'] as List? ?? const [])
+          SpeakingSession.fromJson(s as Map<String, dynamic>),
       ],
       reviewsByDay: {
         for (final e in reviewsByDay.entries)
@@ -461,7 +523,7 @@ class XpEntry {
   final int amount;
 
   /// The lesson id, [reviewSource], or "reading:…" / "listening:…" /
-  /// "writing:…".
+  /// "speaking:…" / "writing:…".
   final String source;
 
   /// Earned by finishing a lesson.
@@ -780,4 +842,101 @@ class ListeningCompletion {
   /// Wrong answers, saved for review. Unanswered questions are scored as
   /// wrong but not saved.
   final List<SavedMistake> mistakes;
+}
+
+/// One answer of a speaking session, as measured automatically. No audio
+/// and no words: only times.
+@immutable
+class SpeakingAnswerSummary {
+  const SpeakingAnswerSummary({
+    required this.questionId,
+    required this.part,
+    required this.duration,
+    this.isLongTurn = false,
+    this.longSilences = 0,
+    this.cutShort = false,
+  });
+
+  final String questionId;
+
+  /// 1, 2 or 3.
+  final int part;
+  final Duration duration;
+
+  /// The Part 2 long turn.
+  final bool isLongTurn;
+
+  /// Pauses longer than 3 seconds.
+  final int longSilences;
+
+  /// Stopped by the time limit or an interruption.
+  final bool cutShort;
+
+  Map<String, dynamic> toJson() => {
+    'questionId': questionId,
+    'part': part,
+    'durationMs': duration.inMilliseconds,
+    if (isLongTurn) 'longTurn': true,
+    'longSilences': longSilences,
+    'cutShort': cutShort,
+  };
+
+  static SpeakingAnswerSummary fromJson(Map<String, dynamic> json) =>
+      SpeakingAnswerSummary(
+        questionId: json['questionId'] as String,
+        part: json['part'] as int,
+        duration: Duration(milliseconds: json['durationMs'] as int),
+        isLongTurn: json['longTurn'] as bool? ?? false,
+        longSilences: json['longSilences'] as int? ?? 0,
+        cutShort: json['cutShort'] as bool? ?? false,
+      );
+}
+
+/// A finished speaking session. Never scored.
+@immutable
+class SpeakingSession {
+  const SpeakingSession({
+    required this.id,
+    required this.mode,
+    required this.date,
+    required this.minutes,
+    required this.xp,
+    required this.answers,
+  });
+
+  static const timedMode = 'timed';
+  static const confidenceMode = 'confidence';
+
+  final String id;
+
+  /// "practice", "confidence" or "timed".
+  final String mode;
+  final DateTime date;
+  final int minutes;
+  final int xp;
+  final List<SpeakingAnswerSummary> answers;
+
+  Duration get speakingTime =>
+      answers.fold(Duration.zero, (sum, a) => sum + a.duration);
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'mode': mode,
+    'date': formatIsoDay(date),
+    'minutes': minutes,
+    'xp': xp,
+    'answers': [for (final a in answers) a.toJson()],
+  };
+
+  static SpeakingSession fromJson(Map<String, dynamic> json) => SpeakingSession(
+    id: json['id'] as String,
+    mode: json['mode'] as String,
+    date: parseIsoDay(json['date'] as String),
+    minutes: json['minutes'] as int,
+    xp: json['xp'] as int,
+    answers: [
+      for (final a in json['answers'] as List? ?? const [])
+        SpeakingAnswerSummary.fromJson(a as Map<String, dynamic>),
+    ],
+  );
 }

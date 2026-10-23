@@ -52,3 +52,6 @@ env.json
 
 # Listening voice recordings (source for tool/build_listening_audio.dart)
 assets/listening/*/audio/
+
+# Speaking examiner recordings (source for tool/build_speaking_audio.dart)
+assets/speaking/audio/

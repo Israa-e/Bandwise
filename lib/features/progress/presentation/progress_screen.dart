@@ -219,6 +219,8 @@ class _ProgressContent extends ConsumerWidget {
         const SizedBox(height: AppSpacing.smd),
         _WritingCard(insights: data.writing),
         const SizedBox(height: AppSpacing.smd),
+        _SpeakingCard(insights: data.speaking),
+        const SizedBox(height: AppSpacing.smd),
         _LessonsCard(data: data),
         const SizedBox(height: AppSpacing.smd),
         GroupCard(
@@ -597,6 +599,80 @@ class _Recommendation extends StatelessWidget {
           Text(text, style: AppTextStyles.bodyMd),
           const SizedBox(height: AppSpacing.smd),
           AppButton.secondary(label: action, onPressed: onAction),
+        ],
+      ),
+    );
+  }
+}
+
+/// Speaking: sessions, time spent speaking and the latest automatic checks.
+/// No score: speaking is only reviewed by the learner for now.
+class _SpeakingCard extends StatelessWidget {
+  const _SpeakingCard({required this.insights});
+
+  final SpeakingInsights insights;
+
+  @override
+  Widget build(BuildContext context) {
+    final n = insights.sessions;
+    final muted = AppTextStyles.bodySm.copyWith(color: AppColors.textMuted);
+    return AppCard(
+      key: const ValueKey('speakingCard'),
+      padding: const EdgeInsetsDirectional.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SkillHeader(
+            skill: Skill.speaking,
+            trailing: insights.isEmpty
+                ? null
+                : n == 1
+                ? '1 session'
+                : '$n sessions',
+          ),
+          const SizedBox(height: AppSpacing.smd),
+          if (insights.isEmpty)
+            _NothingYet(
+              message: 'No speaking practice yet.',
+              action: 'Record an answer',
+              onAction: () => context.go(AppRoutes.speakingHub),
+            )
+          else ...[
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Time spent speaking',
+                    style: AppTextStyles.bodyMd,
+                  ),
+                ),
+                Text(
+                  SpeakingInsights.formatDuration(insights.speakingTime),
+                  key: const ValueKey('speakingTime'),
+                  style: AppTextStyles.tabular(AppTextStyles.labelLg),
+                ),
+              ],
+            ),
+            if (insights.latestChecks case final checks?) ...[
+              const SizedBox(height: AppSpacing.smd),
+              const Text(
+                'Latest automatic checks',
+                style: AppTextStyles.labelLg,
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                checks,
+                key: const ValueKey('speakingChecks'),
+                style: AppTextStyles.bodyMd,
+              ),
+            ],
+            const SizedBox(height: AppSpacing.smd),
+            Text(
+              'Measured from your recordings, not scored. The recordings '
+              'stay on this device.',
+              style: muted,
+            ),
+          ],
         ],
       ),
     );

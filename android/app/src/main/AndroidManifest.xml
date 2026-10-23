@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Accounts and sync (Supabase) in release builds. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Speaking practice: recording answers, and the optional automatic
+         transcript (the phone's speech recognition). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="Bandwise"
         android:name="${applicationName}"
@@ -42,6 +45,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- The optional automatic transcript uses the phone's speech
+             recognition service (speech_to_text). -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

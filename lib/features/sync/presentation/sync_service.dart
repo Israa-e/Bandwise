@@ -185,6 +185,7 @@ class SyncService extends Notifier<SyncState> {
         progress.results.isNotEmpty ||
         progress.readingAttempts.isNotEmpty ||
         progress.listeningAttempts.isNotEmpty ||
+        progress.speakingSessions.isNotEmpty ||
         essays.isNotEmpty;
   }
 

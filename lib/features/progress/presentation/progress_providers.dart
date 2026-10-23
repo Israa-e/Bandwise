@@ -42,6 +42,7 @@ class ProgressPageData {
 
   late final reading = ReadingInsights.from(progress.readingAttempts);
   late final listening = ListeningInsights.from(progress.listeningAttempts);
+  late final speaking = SpeakingInsights.from(progress.speakingSessions);
   late final writing = WritingInsights.from(essays, tasks);
 
   /// Nothing done yet: no lessons, practice, reviews or essays.
@@ -50,6 +51,7 @@ class ProgressPageData {
       progress.results.isEmpty &&
       progress.readingAttempts.isEmpty &&
       progress.listeningAttempts.isEmpty &&
+      progress.speakingSessions.isEmpty &&
       essays.isEmpty;
 }
 

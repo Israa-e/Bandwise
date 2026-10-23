@@ -17,6 +17,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'src/ffmpeg_tools.dart';
+
 const _root = 'assets/listening';
 const _sampleRate = 44100;
 const _bitrate = '64k';
@@ -26,13 +28,11 @@ const _truePeak = -1.5;
 const _maxLineGainDb = 20.0;
 const _trimThreshold = '-50dB';
 
-final String _ffmpeg = Platform.environment['FFMPEG'] ?? 'ffmpeg';
-
 Future<void> main(List<String> args) async {
   final readme = args.contains('--readme');
   final setIds = args.where((a) => !a.startsWith('--')).toList();
   final sets = setIds.isEmpty ? _allSets() : setIds;
-  if (sets.isEmpty) _fail('No sets found in $_root.');
+  if (sets.isEmpty) fail('No sets found in $_root.');
 
   if (readme) {
     for (final id in sets) {
@@ -43,7 +43,7 @@ Future<void> main(List<String> args) async {
     return;
   }
 
-  await _checkFfmpeg();
+  await checkFfmpeg();
   for (final id in sets) {
     await _buildSet(id);
   }
@@ -61,70 +61,12 @@ List<String> _allSets() {
 
 Map<String, dynamic> _loadScript(String setId) {
   final file = File('$_root/$setId/script.json');
-  if (!file.existsSync()) _fail('Missing ${file.path}.');
+  if (!file.existsSync()) fail('Missing ${file.path}.');
   return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
 }
 
 List<Map<String, dynamic>> _lines(Map<String, dynamic> script) =>
     (script['lines'] as List).cast<Map<String, dynamic>>();
-
-Never _fail(String message) {
-  stderr.writeln(message);
-  exit(1);
-}
-
-// ---------------------------------------------------------------- ffmpeg
-
-Future<void> _checkFfmpeg() async {
-  ProcessResult result;
-  try {
-    result = await Process.run(_ffmpeg, ['-hide_banner', '-encoders']);
-  } on ProcessException {
-    _fail(
-      'ffmpeg was not found ($_ffmpeg).\n'
-      'Install it first:\n'
-      '  Ubuntu/Debian: sudo apt install ffmpeg\n'
-      '  macOS:         brew install ffmpeg\n'
-      'or point FFMPEG at an ffmpeg binary.',
-    );
-  }
-  if (result.exitCode != 0) _fail('ffmpeg failed to start:\n${result.stderr}');
-  if (!(result.stdout as String).contains('libmp3lame')) {
-    _fail('This ffmpeg build has no MP3 encoder (libmp3lame).');
-  }
-}
-
-Future<String> _run(List<String> args) async {
-  final result = await Process.run(_ffmpeg, [
-    '-hide_banner',
-    '-nostdin',
-    '-y',
-    ...args,
-  ]);
-  if (result.exitCode != 0) {
-    _fail('ffmpeg ${args.join(' ')}\n${result.stderr}');
-  }
-  return result.stderr as String;
-}
-
-/// Runs a loudnorm analysis pass and returns its measurements.
-Future<Map<String, dynamic>> _measure(String input, String filters) async {
-  final log = await _run([
-    '-nostats',
-    '-i',
-    input,
-    '-af',
-    '$filters${filters.isEmpty ? '' : ','}'
-        'loudnorm=I=$_targetLoudness:TP=$_truePeak:LRA=20:print_format=json',
-    '-f',
-    'null',
-    '-',
-  ]);
-  final start = log.lastIndexOf('{');
-  final end = log.lastIndexOf('}');
-  if (start < 0 || end < start) _fail('No loudness data for $input.');
-  return jsonDecode(log.substring(start, end + 1)) as Map<String, dynamic>;
-}
 
 /// Number of sample frames in a PCM WAV file written by ffmpeg.
 int _wavFrames(String path) {
@@ -143,7 +85,7 @@ int _wavFrames(String path) {
     }
     offset += 8 + size + (size.isOdd ? 1 : 0);
   }
-  _fail('No data chunk in $path.');
+  fail('No data chunk in $path.');
 }
 
 int _framesToMs(int frames) => (frames * 1000 / _sampleRate).round();
@@ -161,7 +103,7 @@ Future<void> _buildSet(String setId) async {
         'audio/${line['id']}.wav',
   ];
   if (missing.isNotEmpty) {
-    _fail(
+    fail(
       '$setId: ${missing.length} audio file(s) missing:\n  '
       '${missing.join('\n  ')}',
     );
@@ -190,7 +132,12 @@ Future<void> _buildSet(String setId) async {
     for (final line in lines) {
       final id = line['id'] as String;
       final source = '$dir/audio/$id.wav';
-      final measured = await _measure(source, trimBothEnds);
+      final measured = await measureLoudness(
+        source,
+        trimBothEnds,
+        target: _targetLoudness,
+        truePeak: _truePeak,
+      );
       final input = double.tryParse('${measured['input_i']}');
       var gain = 0.0;
       if (input != null && input.isFinite && input > -70) {
@@ -200,7 +147,7 @@ Future<void> _buildSet(String setId) async {
       }
 
       final clip = '${tmp.path}/$id.wav';
-      await _run([
+      await runFfmpeg([
         '-i',
         source,
         '-af',
@@ -209,7 +156,7 @@ Future<void> _buildSet(String setId) async {
         clip,
       ]);
       final frames = _wavFrames(clip);
-      if (frames == 0) _fail('$setId: $id is empty after trimming silence.');
+      if (frames == 0) fail('$setId: $id is empty after trimming silence.');
       parts.add(clip);
       timestamps.add({
         'id': id,
@@ -229,7 +176,7 @@ Future<void> _buildSet(String setId) async {
     final list = File('${tmp.path}/list.txt')
       ..writeAsStringSync(parts.map((p) => "file '$p'\n").join());
     final joined = '${tmp.path}/joined.wav';
-    await _run([
+    await runFfmpeg([
       '-f',
       'concat',
       '-safe',
@@ -242,16 +189,18 @@ Future<void> _buildSet(String setId) async {
     ]);
 
     stdout.writeln('$setId: normalising loudness and encoding MP3…');
-    final m = await _measure(joined, '');
+    final m = await measureLoudness(
+      joined,
+      '',
+      target: _targetLoudness,
+      truePeak: _truePeak,
+    );
     final out = '$dir/listening.mp3';
-    await _run([
+    await runFfmpeg([
       '-i',
       joined,
       '-af',
-      'loudnorm=I=$_targetLoudness:TP=$_truePeak:LRA=20'
-          ':measured_I=${m['input_i']}:measured_TP=${m['input_tp']}'
-          ':measured_LRA=${m['input_lra']}:measured_thresh=${m['input_thresh']}'
-          ':offset=${m['target_offset']}:linear=true',
+      loudnormFilter(m, target: _targetLoudness, truePeak: _truePeak),
       '-ar',
       '$_sampleRate',
       '-ac',
@@ -293,7 +242,7 @@ const _pcmOut = [
 Future<String> _silence(String tmp, int ms) async {
   final path = '$tmp/silence_$ms.wav';
   final frames = (ms * _sampleRate / 1000).round();
-  await _run([
+  await runFfmpeg([
     '-f',
     'lavfi',
     '-i',

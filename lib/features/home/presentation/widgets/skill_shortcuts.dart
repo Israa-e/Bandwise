@@ -4,6 +4,7 @@ import '../../../../core/models/skill.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/dates.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../progress/domain/skill_insights.dart';
 import '../../domain/home_summary.dart';
 
 /// 2x2 grid of skill cards. Badges show accuracy or recent activity, never a
@@ -31,6 +32,7 @@ class SkillShortcuts extends StatelessWidget {
     Widget card(Skill skill) => _SkillCard(
       skill: skill,
       badge: skillBadgeLabel(skill, summary.activityFor(skill), today),
+      detail: skillDetail(skill, summary.activityFor(skill)),
       focus: focusSkills.contains(skill),
       onTap: () => onOpen(skill),
     );
@@ -97,6 +99,17 @@ String? skillBadgeLabel(Skill skill, SkillActivity activity, DateTime today) {
   }
 }
 
+/// A line in place of the card's subtitle once there is something to show:
+/// for Speaking, the time spent speaking and the latest automatic checks.
+String? skillDetail(Skill skill, SkillActivity activity) {
+  final time = activity.speakingTime;
+  if (skill != Skill.speaking || time == null) return null;
+  return [
+    '${SpeakingInsights.formatDuration(time)} speaking',
+    ?activity.latestChecks,
+  ].join(' · ');
+}
+
 /// Fixed shortcut content per skill, until practice sets come from data.
 (String, String) _shortcutContent(Skill skill) => switch (skill) {
   Skill.listening => ('Section 3 prep', 'Multi-speaker discussions'),
@@ -111,9 +124,13 @@ class _SkillCard extends StatelessWidget {
     required this.badge,
     required this.focus,
     required this.onTap,
+    this.detail,
   });
 
   final Skill skill;
+
+  /// Replaces the fixed subtitle.
+  final String? detail;
 
   /// Null shows "Start".
   final String? badge;
@@ -128,6 +145,7 @@ class _SkillCard extends StatelessWidget {
       semanticLabel: [
         skill.label,
         title,
+        ?detail,
         badge ?? 'Not started',
         if (focus) 'Focus skill',
       ].join(', '),
@@ -171,7 +189,8 @@ class _SkillCard extends StatelessWidget {
             Text(title, style: AppTextStyles.labelLg),
             const SizedBox(height: 2),
             Text(
-              subtitle,
+              detail ?? subtitle,
+              key: ValueKey('skillDetail-${skill.name}'),
               style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
             ),
             const Spacer(),

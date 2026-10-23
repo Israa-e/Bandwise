@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Bandwise records your answers in Speaking practice so you can play them back. Recordings stay on this device.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>If you turn on the automatic transcript in Speaking practice, your phone's speech recognition writes down what you say. It may contain mistakes and is never used as a score.</string>
 </dict>
 </plist>

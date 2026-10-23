@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "examiner": [
+    {
+      "id": "ex_intro",
+      "text": "Hello, and welcome to this practice speaking test. It has three parts. To begin, I'd like to ask you some questions about yourself."
+    },
+    {
+      "id": "ex_part2_intro",
+      "text": "Now we'll move on to Part 2. I'm going to give you a topic, and I'd like you to talk about it for one to two minutes. You have one minute to think about it first, and you can make some notes if you like."
+    },
+    {
+      "id": "ex_part2_start",
+      "text": "Your minute is up. Please begin speaking now. You can talk for up to two minutes, and I'll stop you when the time is up."
+    },
+    {
+      "id": "ex_part2_stop",
+      "text": "Thank you."
+    },
+    {
+      "id": "ex_end",
+      "text": "Thank you. That is the end of the speaking test."
+    }
+  ],
+  "part1": [
+    {
+      "id": "p1_home",
+      "title": "Your hometown",
+      "intro": {
+        "id": "p1_home_intro",
+        "text": "First, let's talk about your hometown."
+      },
+      "questions": [
+        { "id": "p1_home_q1", "text": "Where is your hometown?" },
+        { "id": "p1_home_q2", "text": "What do you like most about living there?" },
+        { "id": "p1_home_q3", "text": "How has your hometown changed since you were a child?" },
+        { "id": "p1_home_q4", "text": "Would you like to live somewhere else in the future? Why?" }
+      ]
+    },
+    {
+      "id": "p1_work",
+      "title": "Study or work",
+      "intro": {
+        "id": "p1_work_intro",
+        "text": "Now let's talk about what you do."
+      },
+      "questions": [
+        { "id": "p1_work_q1", "text": "Do you work, or are you a student?" },
+        { "id": "p1_work_q2", "text": "What do you enjoy most about it?" },
+        { "id": "p1_work_q3", "text": "Is there anything about it you would like to change?" },
+        { "id": "p1_work_q4", "text": "What would you like to be doing in five years' time?" }
+      ]
+    },
+    {
+      "id": "p1_free",
+      "title": "Free time",
+      "intro": {
+        "id": "p1_free_intro",
+        "text": "Now I'd like to ask you about your free time."
+      },
+      "questions": [
+        { "id": "p1_free_q1", "text": "What do you usually do when you have some free time?" },
+        { "id": "p1_free_q2", "text": "Do you prefer to spend your free time alone or with other people?" },
+        { "id": "p1_free_q3", "text": "Is there a hobby you would like to try one day?" },
+        { "id": "p1_free_q4", "text": "Do you think people have less free time than they used to?" }
+      ]
+    }
+  ],
+  "part2": [
+    {
+      "id": "p2_skill",
+      "title": "A skill you learned",
+      "topic": {
+        "id": "p2_skill_topic",
+        "text": "Here is your topic. I'd like you to describe a skill you learned outside school or work."
+      },
+      "prompt": "Describe a skill you learned outside school or work.",
+      "bullets": [
+        "what the skill is",
+        "who helped you learn it",
+        "how long it took you to learn"
+      ],
+      "explain": "and explain how this skill has been useful to you.",
+      "roundingOff": {
+        "id": "p2_skill_follow",
+        "text": "Do you still use this skill often?"
+      },
+      "part3": {
+        "title": "Learning new skills",
+        "intro": {
+          "id": "p3_skill_intro",
+          "text": "We've been talking about a skill you learned. Now I'd like to ask you some more general questions about learning."
+        },
+        "questions": [
+          { "id": "p3_skill_q1", "text": "Which skills do you think are most important for young people to learn today?" },
+          { "id": "p3_skill_q2", "text": "Is it better to learn a new skill from a teacher or on your own? Why?" },
+          { "id": "p3_skill_q3", "text": "Why do some adults find it hard to learn new things?" },
+          { "id": "p3_skill_q4", "text": "How might the skills people need for work change in the future?" },
+          { "id": "p3_skill_q5", "text": "Should governments pay for adults to retrain for new jobs? Why or why not?" }
+        ]
+      }
+    },
+    {
+      "id": "p2_place",
+      "title": "A quiet place",
+      "topic": {
+        "id": "p2_place_topic",
+        "text": "Here is your topic. I'd like you to describe a quiet place you like to go to."
+      },
+      "prompt": "Describe a quiet place you like to go to.",
+      "bullets": [
+        "where it is",
+        "how often you go there",
+        "what you do there"
+      ],
+      "explain": "and explain why you like spending time there.",
+      "roundingOff": {
+        "id": "p2_place_follow",
+        "text": "Would you recommend this place to your friends?"
+      },
+      "part3": {
+        "title": "Public spaces",
+        "intro": {
+          "id": "p3_place_intro",
+          "text": "We've been talking about a quiet place you like. Now let's consider some more general questions about public spaces."
+        },
+        "questions": [
+          { "id": "p3_place_q1", "text": "Why do you think some people prefer quiet places to busy ones?" },
+          { "id": "p3_place_q2", "text": "Do cities today have enough parks and green spaces?" },
+          { "id": "p3_place_q3", "text": "How has technology changed the way people relax?" },
+          { "id": "p3_place_q4", "text": "Who should be responsible for keeping public places clean and pleasant?" }
+        ]
+      }
+    }
+  ]
+}

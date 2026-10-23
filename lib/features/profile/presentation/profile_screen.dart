@@ -695,6 +695,26 @@ class _DataAndPrivacy extends ConsumerWidget {
       ..showSnackBar(const SnackBar(content: Text('Progress reset.')));
   }
 
+  Future<void> _deleteRecordings(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Delete your recordings?',
+      message:
+          'This deletes every speaking recording and automatic transcript '
+          'on this device.',
+      footnote:
+          'Your speaking times, automatic checks and self-review ticks are '
+          'kept. Recordings are never synced, so there is no other copy.',
+      confirmLabel: 'Delete recordings',
+    );
+    if (!confirmed) return;
+    await deleteRecordings(ref);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Recordings deleted.')));
+  }
+
   Future<void> _deleteAll(BuildContext context, WidgetRef ref) async {
     final confirmed = await showConfirmDialog(
       context,
@@ -718,6 +738,16 @@ class _DataAndPrivacy extends ConsumerWidget {
           title: 'Privacy and AI',
           subtitle: 'What is stored and how AI review will work',
           onTap: () => context.push(AppRoutes.privacy),
+        ),
+        AppListRow(
+          key: const ValueKey('deleteRecordings'),
+          icon: Icons.mic_off_outlined,
+          iconColor: AppColors.errorText,
+          iconBackground: AppColors.errorTint,
+          title: 'Delete my recordings',
+          titleColor: AppColors.errorText,
+          subtitle: 'Speaking recordings and transcripts on this device',
+          onTap: () => _deleteRecordings(context, ref),
         ),
         AppListRow(
           key: const ValueKey('resetProgress'),

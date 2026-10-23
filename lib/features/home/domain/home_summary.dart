@@ -88,6 +88,8 @@ class SkillActivity {
     this.totalAnswers = 0,
     this.thisWeek = 0,
     this.lastPracticed,
+    this.speakingTime,
+    this.latestChecks,
   });
 
   /// Completed practice sets, essays or speaking sessions, all time.
@@ -100,6 +102,11 @@ class SkillActivity {
   /// Attempts in the current week.
   final int thisWeek;
   final DateTime? lastPracticed;
+
+  /// For Speaking: total time spent speaking, and the latest session's
+  /// automatic checks in a line.
+  final Duration? speakingTime;
+  final String? latestChecks;
 
   bool get hasAttempts => attempts > 0;
 

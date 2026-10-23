@@ -31,6 +31,7 @@ abstract final class AppRoutes {
   static const notifications = '/notifications';
   static const reading = '/reading';
   static const listening = '/listening';
+  static const speaking = '/speaking';
   static const writing = '/writing';
 
   /// Reading hub, inside the Practice tab.
@@ -54,6 +55,35 @@ abstract final class AppRoutes {
     path: '$listening/$setId',
     queryParameters: {'mode': timed ? 'timed' : 'learning'},
   ).toString();
+
+  /// Speaking hub, inside the Practice tab.
+  static const speakingHub = '$practice/speaking';
+
+  /// Practice or Confidence mode ([mode] by name) on one Part 1 topic or
+  /// one cue card ([setId]) for [part] 1–3.
+  static String speakingPractice({
+    required String mode,
+    required int part,
+    required String setId,
+    bool transcript = false,
+  }) => Uri(
+    path: '$speaking/$mode',
+    queryParameters: {
+      'part': '$part',
+      'set': setId,
+      if (transcript) 'transcript': '1',
+    },
+  ).toString();
+
+  /// The Timed test.
+  static String speakingTest({bool transcript = false}) => Uri(
+    path: '$speaking/test',
+    queryParameters: transcript ? {'transcript': '1'} : null,
+  ).toString();
+
+  /// The self-review of a finished attempt.
+  static String speakingReview(String attemptId) =>
+      '$speaking/review/$attemptId';
 
   /// Notebooks, inside the Progress tab.
   static const mistakeNotebook = '$progress/mistakes';

@@ -20,6 +20,10 @@ dependencies:
   supabase_flutter: ^2.18.3
   http: ^1.6.0
   just_audio: ^0.10.6
+  record: ^7.1.2
+  permission_handler: ^13.0.2
+  path_provider: ^2.1.6
+  speech_to_text: ^7.5.0
 
 dev_dependencies:
   flutter_test:
@@ -36,6 +40,10 @@ flutter:
     # not bundled.
     - assets/listening/set_a/
     - assets/listening/set_b/
+    # Speaking: questions and the examiner's recordings (mp3/<id>.mp3). The
+    # source WAVs in audio/ are not bundled.
+    - assets/speaking/content.json
+    - assets/speaking/mp3/
 
   fonts:
     - family: Inter

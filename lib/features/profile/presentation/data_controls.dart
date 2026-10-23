@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
 import '../../progress/presentation/progress_controller.dart';
 import '../../settings/presentation/settings_controller.dart';
+import '../../speaking/presentation/speaking_providers.dart';
 import '../../writing/presentation/writing_providers.dart';
 
 /// What "Reset progress" deletes. The study plan and settings stay.
@@ -12,6 +13,8 @@ const resetProgressItems = [
   'XP, streak and study time',
   'Saved mistakes, vocabulary reviews and review dates',
   'Reading and listening practice attempts',
+  'Speaking sessions, and the recordings, transcripts and self-reviews '
+      'kept on this device',
   'Essays, drafts and their feedback',
   'Achievements (they are worked out from the above)',
 ];
@@ -36,9 +39,26 @@ final appVersionProvider = FutureProvider<String>((ref) async {
 Future<void> resetProgress(WidgetRef ref) async {
   await ref.read(progressControllerProvider.notifier).reset();
   await ref.read(writingRepositoryProvider).clear();
+  await ref.read(recordingStoreProvider).deleteAll();
+  await ref.read(speakingAttemptRepositoryProvider).clear();
   ref
     ..invalidate(writingSubmissionsProvider)
-    ..invalidate(writingDraftsProvider);
+    ..invalidate(writingDraftsProvider)
+    ..invalidate(speakingAttemptsProvider);
+}
+
+/// Deletes every speaking recording and automatic transcript from this
+/// device. Sessions keep their times, automatic checks and self-review
+/// ticks.
+Future<void> deleteRecordings(WidgetRef ref) async {
+  await ref.read(recordingStoreProvider).deleteAll();
+  final repository = ref.read(speakingAttemptRepositoryProvider);
+  for (final a in await repository.loadAttempts()) {
+    await repository.saveAttempt(
+      a.copyWith(answers: [for (final x in a.answers) x.withoutRecording()]),
+    );
+  }
+  ref.invalidate(speakingAttemptsProvider);
 }
 
 /// Deletes everything stored on this device. The app starts again at

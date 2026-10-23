@@ -190,3 +190,46 @@ String noteTypeSentence(AnnotationType type) =>
       AnnotationType.cohesion => 'cohesion',
       AnnotationType.task => 'answering the task',
     }}';
+
+/// Speaking practice in numbers: sessions, time spent speaking and the
+/// latest automatic checks. Never a score.
+@immutable
+class SpeakingInsights {
+  SpeakingInsights.from(List<SpeakingSession> sessions)
+    : sessions = sessions.length,
+      speakingTime = sessions.fold(
+        Duration.zero,
+        (sum, s) => sum + s.speakingTime,
+      ),
+      latest = sessions.lastOrNull;
+
+  final int sessions;
+  final Duration speakingTime;
+
+  /// The most recent session, for its automatic checks.
+  final SpeakingSession? latest;
+
+  bool get isEmpty => sessions == 0;
+
+  /// The latest session's checks in a line: "Part 2 talk 1:42 · 2 long
+  /// pauses · 1 answer cut short".
+  String? get latestChecks {
+    final s = latest;
+    if (s == null) return null;
+    final longTurn = s.answers.where((a) => a.isLongTurn).firstOrNull;
+    final pauses = s.answers.fold(0, (sum, a) => sum + a.longSilences);
+    final cut = s.answers.where((a) => a.cutShort).length;
+    return [
+      if (longTurn != null)
+        'Part 2 talk ${formatDuration(longTurn.duration)}'
+      else
+        '${s.answers.length} ${s.answers.length == 1 ? 'answer' : 'answers'}',
+      pauses == 1 ? '1 long pause' : '$pauses long pauses',
+      if (cut > 0) cut == 1 ? '1 answer cut short' : '$cut answers cut short',
+    ].join(' · ');
+  }
+
+  /// "1:05"; hours become minutes.
+  static String formatDuration(Duration d) =>
+      '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+}

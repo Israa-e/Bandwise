@@ -10,7 +10,6 @@ import 'package:bandwise/features/lesson/presentation/widgets/exercise_views.dar
 import 'package:bandwise/features/onboarding/domain/onboarding_state.dart';
 import 'package:bandwise/features/onboarding/presentation/onboarding_controller.dart';
 import 'package:bandwise/features/practice/presentation/practice_screen.dart';
-import 'package:bandwise/features/practice/presentation/skill_coming_soon_screen.dart';
 import 'package:bandwise/features/progress/domain/progress_state.dart';
 import 'package:bandwise/features/reading/data/reading_content.dart';
 import 'package:bandwise/features/reading/domain/reading.dart';
@@ -20,6 +19,7 @@ import 'package:bandwise/features/reading/presentation/widgets/passage_view.dart
 import 'package:bandwise/features/reading/presentation/widgets/results_pane.dart';
 import 'package:bandwise/features/review/domain/review_planner.dart';
 import 'package:bandwise/features/review/presentation/review_screen.dart';
+import 'package:bandwise/features/speaking/presentation/speaking_hub_screen.dart';
 import 'package:bandwise/features/learn/data/course_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -482,44 +482,32 @@ void main() {
   });
 
   group('practice tab', () {
-    testWidgets(
-      'four skill cards; Listening, Reading and Writing open their hubs, '
-      'Speaking is coming soon',
-      (tester) async {
-        await _launchApp(tester);
-        await _tapTab(tester, 'Practice');
-        expect(find.byType(PracticeSkillCard), findsNWidgets(4));
-        expect(find.text('Coming soon'), findsOneWidget);
-        expect(
-          find.descendant(
-            of: find.byKey(const ValueKey('practice-speaking')),
-            matching: find.text('Coming soon'),
-          ),
-          findsOneWidget,
-        );
+    testWidgets('four skill cards, each opening its hub', (tester) async {
+      await _launchApp(tester);
+      await _tapTab(tester, 'Practice');
+      expect(find.byType(PracticeSkillCard), findsNWidgets(4));
+      expect(find.text('Coming soon'), findsNothing);
 
-        await _tap(tester, find.byKey(const ValueKey('practice-speaking')));
-        expect(find.byType(SkillComingSoonScreen), findsOneWidget);
-        expect(find.text('Speaking practice is coming soon'), findsOneWidget);
-        await _tap(tester, find.byTooltip('Go back'));
+      await _tap(tester, find.byKey(const ValueKey('practice-speaking')));
+      expect(find.byType(SpeakingHubScreen), findsOneWidget);
+      await _tap(tester, find.byTooltip('Go back'));
 
-        await _tap(tester, find.byKey(const ValueKey('practice-reading')));
-        expect(find.byType(ReadingHubScreen), findsOneWidget);
-        await tester.scrollUntilVisible(
-          find.text('Recent attempts'),
-          300,
-          scrollable: find.byType(Scrollable).last,
-        );
-        await tester.drag(find.byType(Scrollable).last, const Offset(0, -400));
-        await tester.pumpAndSettle();
-        expect(find.byType(AppBottomNav), findsOneWidget);
-        await tester.scrollUntilVisible(
-          find.text('No attempts yet. Your scores will appear here.'),
-          200,
-          scrollable: find.byType(Scrollable).last,
-        );
-      },
-    );
+      await _tap(tester, find.byKey(const ValueKey('practice-reading')));
+      expect(find.byType(ReadingHubScreen), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Recent attempts'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -400));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppBottomNav), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('No attempts yet. Your scores will appear here.'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+    });
 
     testWidgets('a type filter limits learning practice to that type', (
       tester,

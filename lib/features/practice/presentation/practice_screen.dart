@@ -8,8 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../onboarding/presentation/onboarding_controller.dart';
 
-/// The Practice tab: one card per skill. Listening, Reading and Writing
-/// open their hubs; Speaking is coming soon.
+/// The Practice tab: one card per skill, each opening its hub.
 ///
 /// [initialSkill] comes from the `skill` query parameter, e.g. when a skill
 /// card on Home opens this tab, and is shown highlighted. The study plan's
@@ -26,7 +25,7 @@ class PracticeScreen extends ConsumerWidget {
     Skill.listening => AppRoutes.listeningHub,
     Skill.reading => AppRoutes.readingHub,
     Skill.writing => AppRoutes.writingHub,
-    Skill.speaking => null,
+    Skill.speaking => AppRoutes.speakingHub,
   };
 
   @override
@@ -103,7 +102,8 @@ class PracticeSkillCard extends StatelessWidget {
         'Conversations and discussions with form, choice and matching '
             'questions',
       Skill.writing => 'Task 1 reports and Task 2 essays, with feedback',
-      Skill.speaking => 'Practice sets on the way',
+      Skill.speaking =>
+        'Record answers to all three parts, then review them yourself',
     };
     return AppCard(
       key: ValueKey('practice-${skill.name}'),

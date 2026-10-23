@@ -28,6 +28,11 @@ import '../../features/listening/domain/listening.dart';
 import '../../features/listening/presentation/listening_hub_screen.dart';
 import '../../features/listening/presentation/listening_session_screen.dart';
 import '../../features/reading/domain/reading.dart';
+import '../../features/speaking/domain/speaking.dart';
+import '../../features/speaking/presentation/speaking_hub_screen.dart';
+import '../../features/speaking/presentation/speaking_practice_screen.dart';
+import '../../features/speaking/presentation/speaking_review_screen.dart';
+import '../../features/speaking/presentation/speaking_test_screen.dart';
 import '../../features/reading/presentation/reading_hub_screen.dart';
 import '../../features/reading/presentation/reading_session_screen.dart';
 import '../../features/profile/presentation/privacy_screen.dart';
@@ -95,6 +100,32 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.review,
         builder: (context, state) => const ReviewScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.speaking}/test',
+        builder: (context, state) => SpeakingTestScreen(
+          transcript: state.uri.queryParameters['transcript'] == '1',
+        ),
+      ),
+      GoRoute(
+        path: '${AppRoutes.speaking}/review/:id',
+        builder: (context, state) =>
+            SpeakingReviewScreen(attemptId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '${AppRoutes.speaking}/:mode',
+        builder: (context, state) {
+          final query = state.uri.queryParameters;
+          final part = int.tryParse(query['part'] ?? '') ?? 1;
+          return SpeakingPracticeScreen(
+            mode: state.pathParameters['mode'] == 'confidence'
+                ? SpeakingMode.confidence
+                : SpeakingMode.practice,
+            part: SpeakingPart.values[(part - 1).clamp(0, 2)],
+            setId: query['set'] ?? '',
+            transcript: query['transcript'] == '1',
+          );
+        },
       ),
       GoRoute(
         path: '${AppRoutes.listening}/:id',
@@ -222,6 +253,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                     ),
                   ),
                   GoRoute(
+                    path: 'speaking',
+                    builder: (context, state) => const SpeakingHubScreen(),
+                  ),
+                  GoRoute(
                     path: 'writing',
                     builder: (context, state) => const WritingHubScreen(),
                   ),
@@ -325,6 +360,7 @@ const _mainPaths = [
   AppRoutes.notifications,
   AppRoutes.reading,
   AppRoutes.listening,
+  AppRoutes.speaking,
   AppRoutes.writing,
   AppRoutes.editPlan,
 ];

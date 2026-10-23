@@ -31,13 +31,17 @@ class PrivacyScreen extends StatelessWidget {
               'Your study plan: goal, exam date, daily time, focus skills '
                   'and level.',
               'Your progress: lessons, XP, streak, study time, mistakes, '
-                  'reviews, and reading and listening attempts.',
+                  'reviews, reading and listening attempts, and speaking '
+                  'session times.',
               'Essays you write, with their drafts and feedback.',
+              'Speaking recordings, with their automatic checks, notes, '
+                  'transcripts and your self-review ticks.',
               'Settings such as the daily reminder time.',
             ],
             footer:
                 'As a guest, all of this stays on this device only. You can '
-                'delete it from Profile › Delete all data.',
+                'delete it from Profile › Delete all data, or just the '
+                'recordings from Profile › Delete my recordings.',
           ),
           const SizedBox(height: AppSpacing.md),
           const _Section(
@@ -46,6 +50,10 @@ class PrivacyScreen extends StatelessWidget {
             points: [
               'Your plan, progress, settings and essays are synced to our '
                   'server, so you can sign in on another device.',
+              'Speaking recordings are never synced: they, their '
+                  'transcripts and your self-reviews stay on this device. '
+                  'Only session times and automatic checks (how long you '
+                  'spoke, long pauses) are part of your synced progress.',
               'Only you can read your synced data.',
               'Signing out removes it from this device; it stays in your '
                   'account.',
@@ -60,6 +68,13 @@ class PrivacyScreen extends StatelessWidget {
             points: [
               "AI review isn't connected yet. Your own essays get general "
                   'demo feedback with no estimate.',
+              'Speaking has no AI feedback yet: you review your own '
+                  'recordings, and no estimate is given.',
+              'The optional automatic transcript in Speaking is off by '
+                  "default. If you turn it on, your phone's speech "
+                  'recognition writes down what you say, and its recognition '
+                  'service may process the audio. It may contain mistakes '
+                  'and is never used as an assessment.',
               'The sample essays show feedback prepared in advance, to '
                   'demonstrate how a review will look.',
             ],
@@ -70,8 +85,8 @@ class PrivacyScreen extends StatelessWidget {
             icon: Icons.cloud_outlined,
             badge: 'Planned policy',
             points: [
-              'Essays, and recordings once Speaking practice arrives, will '
-                  'be sent to our server to generate feedback.',
+              'Essays, and speaking recordings if you choose to send them, '
+                  'will be sent to our server to generate feedback.',
               'The app will never contact an AI service directly; requests '
                   'go through our server.',
               'Your essays and recordings will never be used to train AI '
