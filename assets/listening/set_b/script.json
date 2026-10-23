@@ -1,0 +1,326 @@
+{
+  "setId": "set_b",
+  "title": "Food waste research project",
+  "part": 3,
+  "context": "Two students discuss their research project on food waste with their tutor.",
+  "speakers": [
+    {
+      "id": "narrator",
+      "name": "Narrator",
+      "role": "Test announcer",
+      "accent": "British",
+      "voiceNotes": {
+        "age": "40s",
+        "tone": "Neutral, measured, unhurried; no emotion."
+      }
+    },
+    {
+      "id": "price",
+      "name": "Dr Price",
+      "role": "Tutor",
+      "accent": "British",
+      "voiceNotes": {
+        "age": "50s",
+        "tone": "Calm, warm and thoughtful; asks probing questions."
+      }
+    },
+    {
+      "id": "maya",
+      "name": "Maya",
+      "role": "Student",
+      "accent": "North American",
+      "voiceNotes": {
+        "age": "early 20s",
+        "tone": "Energetic and confident; speaks a little faster."
+      }
+    },
+    {
+      "id": "liam",
+      "name": "Liam",
+      "role": "Student",
+      "accent": "Irish",
+      "voiceNotes": {
+        "age": "early 20s",
+        "tone": "Thoughtful and relaxed; slightly lower energy than Maya."
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "b001",
+      "speaker": "narrator",
+      "text": "Part 3. You will hear two students, Maya and Liam, talking to their tutor, Dr Price, about their research project on food waste in the university dining hall. First, you have some time to look at questions 21 to 25.",
+      "pauseAfterMs": 30000
+    },
+    {
+      "id": "b002",
+      "speaker": "narrator",
+      "text": "Now listen carefully and answer questions 21 to 25.",
+      "pauseAfterMs": 1500
+    },
+    {
+      "id": "b003",
+      "speaker": "price",
+      "text": "Come in, both of you. So, how's the food waste project going?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b004",
+      "speaker": "maya",
+      "text": "Pretty well, I think. We've got a lot more data than we expected.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b005",
+      "speaker": "price",
+      "text": "Good. Before we get into it, remind me why you chose this topic. I'd assumed Professor Hanley had suggested it.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b006",
+      "speaker": "maya",
+      "text": "He did mention it in a lecture, but we'd already decided by then.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b007",
+      "speaker": "liam",
+      "text": "And it wasn't because there's lots of research on it, either. There's hardly anything on universities specifically.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b008",
+      "speaker": "maya",
+      "text": "Right. It was really because we both work part-time in the dining hall, and we couldn't believe how much food we were scraping into the bins every evening.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b009",
+      "speaker": "price",
+      "text": "That sort of first-hand experience is a good starting point. And how did your first survey go?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b010",
+      "speaker": "liam",
+      "text": "Not that well, to be honest. We actually got over two hundred responses, so the numbers were fine.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b011",
+      "speaker": "maya",
+      "text": "And the timing was OK too. We sent it out in the middle of the semester, not during exams.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b012",
+      "speaker": "liam",
+      "text": "The trouble was the wording. We asked how much food people usually leave, and nobody knew if we meant at each meal or across the whole week, so the answers were all over the place.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b013",
+      "speaker": "price",
+      "text": "Ah, yes, that's a classic problem. Now, I see you're planning to weigh the dining hall bins every night.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b014",
+      "speaker": "liam",
+      "text": "We were worried it would take too long, but it's only about ten minutes at the end of each shift.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b015",
+      "speaker": "maya",
+      "text": "And the catering manager has already said yes, so permission is fine.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b016",
+      "speaker": "price",
+      "text": "My concern is a different one. Those bins hold kitchen waste as well as what's left on plates, things like vegetable peelings. So the totals could give you a misleading picture of what students actually throw away.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b017",
+      "speaker": "maya",
+      "text": "Oh, we hadn't thought of that. We could ask the kitchen to use a separate bin for their waste.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b018",
+      "speaker": "price",
+      "text": "That would solve it. So, has anything surprised you so far?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b019",
+      "speaker": "liam",
+      "text": "We expected Fridays to be the worst, because a lot of people head home for the weekend, but it's actually fairly even across the week.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b020",
+      "speaker": "maya",
+      "text": "What really surprised us was where the waste comes from. It isn't the main dishes at all. Nearly half of it is side dishes, like the rice and chips that come automatically with every meal.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b021",
+      "speaker": "price",
+      "text": "Interesting. Did you look at the self-service salad bar as well?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b022",
+      "speaker": "liam",
+      "text": "Not yet. We haven't got enough data on that to say anything.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b023",
+      "speaker": "price",
+      "text": "So, what are you going to recommend?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b024",
+      "speaker": "maya",
+      "text": "We did think about smaller plates, but the research suggests that mainly works in buffets.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b025",
+      "speaker": "liam",
+      "text": "And charging extra for side dishes would just make the dining hall unpopular.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b026",
+      "speaker": "maya",
+      "text": "So we're going to suggest that sides stop coming automatically. Students would just ask for one at the counter if they actually want it.",
+      "pauseAfterMs": 1000
+    },
+    {
+      "id": "b027",
+      "speaker": "narrator",
+      "text": "Before you hear the rest of the discussion, you have some time to look at questions 26 to 30.",
+      "pauseAfterMs": 30000
+    },
+    {
+      "id": "b028",
+      "speaker": "narrator",
+      "text": "Now listen and answer questions 26 to 30.",
+      "pauseAfterMs": 1500
+    },
+    {
+      "id": "b029",
+      "speaker": "price",
+      "text": "Right, let's think about how you'll use each set of data in the final report. Start with the bin weights.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b030",
+      "speaker": "maya",
+      "text": "Now that the kitchen waste will be separate, they're the most reliable thing we have, so the whole argument is going to be built on them.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b031",
+      "speaker": "price",
+      "text": "And the first survey? I know you were disappointed with it.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b032",
+      "speaker": "liam",
+      "text": "We did think about running it again with a bigger group, but more people wouldn't fix the wording.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b033",
+      "speaker": "maya",
+      "text": "So we've agreed it isn't going in the report at all.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b034",
+      "speaker": "price",
+      "text": "What about the photos you took of people's trays?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b035",
+      "speaker": "liam",
+      "text": "They're really striking, so I wanted them in the main text, but they take up loads of space.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b036",
+      "speaker": "maya",
+      "text": "So we'll put them all together at the very end, after the references, and point readers to them when they're relevant.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b037",
+      "speaker": "price",
+      "text": "And the interviews with the kitchen staff?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b038",
+      "speaker": "liam",
+      "text": "Some of what they told us was quite surprising, like the claim that a third of the bread is thrown away unopened.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b039",
+      "speaker": "price",
+      "text": "That's a big claim. I wouldn't put it in as it stands.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b040",
+      "speaker": "liam",
+      "text": "Fair enough. We'll go through those figures with the catering manager before we write that section.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b041",
+      "speaker": "price",
+      "text": "Finally, there's last year's student report on canteen waste. Will you compare your results with theirs?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b042",
+      "speaker": "maya",
+      "text": "We'd planned to, but they measured things completely differently, so a direct comparison wouldn't be fair.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b043",
+      "speaker": "liam",
+      "text": "So it will just get a mention in the introduction, to show the problem has been raised before.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b044",
+      "speaker": "price",
+      "text": "Sounds sensible. Send me a draft by the end of the month, and we'll talk again then.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "b045",
+      "speaker": "maya",
+      "text": "We will. Thanks, Dr Price.",
+      "pauseAfterMs": 1000
+    },
+    {
+      "id": "b046",
+      "speaker": "narrator",
+      "text": "That is the end of Part 3. You now have one minute to check your answers to Part 3.",
+      "pauseAfterMs": 0
+    }
+  ]
+}

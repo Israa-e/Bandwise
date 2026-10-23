@@ -1,0 +1,188 @@
+{
+  "setId": "set_a",
+  "part": 1,
+  "groups": [
+    {
+      "from": 1,
+      "to": 10,
+      "instructions": "Complete the form below. Write ONE WORD AND/OR A NUMBER for each answer.",
+      "heading": "Riverside Community Centre: evening course booking"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "number": 1,
+      "type": "formCompletion",
+      "prompt": "Course: Introduction to ______",
+      "answer": "Pottery",
+      "acceptedVariants": [],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "Daniel wanted watercolour painting, but that class is full. Joanna says there is still space on Introduction to Pottery.",
+      "evidence": "Introduction to Pottery",
+      "evidenceLineId": "a009"
+    },
+    {
+      "id": "q2",
+      "number": 2,
+      "type": "formCompletion",
+      "prompt": "Surname: ______",
+      "answer": "Halloran",
+      "acceptedVariants": [],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "Joanna suggests H-O-L-L-O-R-A-N, but Daniel corrects the first letters and spells it H-A-L-L-O-R-A-N.",
+      "evidence": "H-A-L-L-O-R-A-N",
+      "evidenceLineId": "a014"
+    },
+    {
+      "id": "q3",
+      "number": 3,
+      "type": "formCompletion",
+      "prompt": "Phone number: ______",
+      "answer": "07723 418590",
+      "acceptedVariants": [
+        "07723418590",
+        "07723 418 590"
+      ],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "Daniel first says 418950, then corrects himself: the number ends 418590.",
+      "evidence": "07723 418590",
+      "evidenceLineId": "a018"
+    },
+    {
+      "id": "q4",
+      "number": 4,
+      "type": "formCompletion",
+      "prompt": "Class day: ______ evenings",
+      "answer": "Thursday",
+      "acceptedVariants": [
+        "Thursdays",
+        "Thurs"
+      ],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "The Tuesday group has places, but Daniel has football training that night, so he takes the Thursday group.",
+      "evidence": "Thursday evenings",
+      "evidenceLineId": "a021"
+    },
+    {
+      "id": "q5",
+      "number": 5,
+      "type": "formCompletion",
+      "prompt": "First class: ______ November",
+      "answer": "6th",
+      "acceptedVariants": [
+        "6",
+        "sixth"
+      ],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "The course was going to start on 30 October, but the first class has been moved to 6 November.",
+      "evidence": "the 6th of November",
+      "evidenceLineId": "a025"
+    },
+    {
+      "id": "q6",
+      "number": 6,
+      "type": "formCompletion",
+      "prompt": "Course fee: £______",
+      "answer": "96",
+      "acceptedVariants": [
+        "£96",
+        "96.00"
+      ],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "The full price is £120, but Daniel lives in the borough, so he pays the residents' rate of £96.",
+      "evidence": "96 pounds",
+      "evidenceLineId": "a033"
+    },
+    {
+      "id": "q7",
+      "number": 7,
+      "type": "formCompletion",
+      "prompt": "Students must bring: an ______",
+      "answer": "apron",
+      "acceptedVariants": [
+        "aprons"
+      ],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "Tools, glazes and gloves are provided. The only thing students bring is an apron.",
+      "evidence": "an apron",
+      "evidenceLineId": "a037"
+    },
+    {
+      "id": "q8",
+      "number": 8,
+      "type": "formCompletion",
+      "prompt": "Parking: free car park behind the ______",
+      "answer": "library",
+      "acceptedVariants": [],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "The supermarket car park next door gives fines. The free car park is behind the library.",
+      "evidence": "behind the library",
+      "evidenceLineId": "a040"
+    },
+    {
+      "id": "q9",
+      "number": 9,
+      "type": "formCompletion",
+      "prompt": "Heard about the course from: an advert on the ______",
+      "answer": "radio",
+      "acceptedVariants": [],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "He saw a leaflet and a neighbour mentioned it, but the advert on the radio is what made him call.",
+      "evidence": "an advert on the radio",
+      "evidenceLineId": "a044"
+    },
+    {
+      "id": "q10",
+      "number": 10,
+      "type": "formCompletion",
+      "prompt": "Allergy: ______",
+      "answer": "latex",
+      "acceptedVariants": [],
+      "wordLimit": {
+        "maxWords": 1,
+        "maxNumbers": 1,
+        "label": "ONE WORD AND/OR A NUMBER"
+      },
+      "explanation": "Daniel has no food allergies but reacts badly to latex.",
+      "evidence": "react quite badly to latex",
+      "evidenceLineId": "a046"
+    }
+  ]
+}

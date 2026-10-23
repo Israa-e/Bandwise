@@ -1,0 +1,338 @@
+{
+  "setId": "set_a",
+  "title": "Booking a community course",
+  "part": 1,
+  "context": "A man phones a community centre to book a place on an evening course.",
+  "speakers": [
+    {
+      "id": "narrator",
+      "name": "Narrator",
+      "role": "Test announcer",
+      "accent": "British",
+      "voiceNotes": {
+        "age": "40s",
+        "tone": "Neutral, measured, unhurried; no emotion."
+      }
+    },
+    {
+      "id": "joanna",
+      "name": "Joanna",
+      "role": "Receptionist at Riverside Community Centre",
+      "accent": "British",
+      "voiceNotes": {
+        "age": "30s",
+        "tone": "Friendly, efficient and professional; clear on details."
+      }
+    },
+    {
+      "id": "daniel",
+      "name": "Daniel Halloran",
+      "role": "Caller booking a course",
+      "accent": "Australian",
+      "voiceNotes": {
+        "age": "late 20s",
+        "tone": "Relaxed and chatty; slightly unsure when giving his number."
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "a001",
+      "speaker": "narrator",
+      "text": "Part 1. You will hear a man phoning a community centre to book a place on an evening course. First, you have some time to look at questions 1 to 5.",
+      "pauseAfterMs": 30000
+    },
+    {
+      "id": "a002",
+      "speaker": "narrator",
+      "text": "Now listen carefully and answer questions 1 to 5.",
+      "pauseAfterMs": 1500
+    },
+    {
+      "id": "a003",
+      "speaker": "joanna",
+      "text": "Good morning, Riverside Community Centre, Joanna speaking. How can I help?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a004",
+      "speaker": "daniel",
+      "text": "Oh, hi there. I'm ringing about your evening courses. I saw a few are starting soon, and I'd like to book a place on one if there's still room.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a005",
+      "speaker": "joanna",
+      "text": "Of course. Which course were you interested in?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a006",
+      "speaker": "daniel",
+      "text": "Well, I was really hoping to do the watercolour painting class.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a007",
+      "speaker": "joanna",
+      "text": "Ah, I'm afraid that one's completely full. We've already got a waiting list of about ten people.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a008",
+      "speaker": "daniel",
+      "text": "Oh, that's a shame. Are there any other art courses?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a009",
+      "speaker": "joanna",
+      "text": "There's still space on Introduction to Pottery. It's very popular with complete beginners.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a010",
+      "speaker": "daniel",
+      "text": "Actually, that sounds great. I've always wanted to have a go at working with clay. Let's do that one.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a011",
+      "speaker": "joanna",
+      "text": "Lovely. I'll just take a few details, then. Could I have your name, please?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a012",
+      "speaker": "daniel",
+      "text": "Yes, it's Daniel Halloran.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a013",
+      "speaker": "joanna",
+      "text": "And is that H-O-L-L-O-R-A-N?",
+      "pauseAfterMs": 500,
+      "direction": "Spell the letters one at a time."
+    },
+    {
+      "id": "a014",
+      "speaker": "daniel",
+      "text": "No, it starts with H-A. So, H-A-L-L-O-R-A-N.",
+      "pauseAfterMs": 500,
+      "direction": "Spell the letters one at a time, slowly and clearly."
+    },
+    {
+      "id": "a015",
+      "speaker": "joanna",
+      "text": "Got it, thanks. And what is the best number to contact you on?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a016",
+      "speaker": "daniel",
+      "text": "It's my mobile. It's 07723 418950.",
+      "pauseAfterMs": 400,
+      "direction": "Read the number digit by digit: oh-seven-seven-two-three, four-one-eight-nine-five-oh."
+    },
+    {
+      "id": "a017",
+      "speaker": "daniel",
+      "text": "Oh, hang on, no, I always get the end of it mixed up.",
+      "pauseAfterMs": 600
+    },
+    {
+      "id": "a018",
+      "speaker": "daniel",
+      "text": "Let me start again. It's 07723 418590.",
+      "pauseAfterMs": 500,
+      "direction": "Slower and more careful than before. Digit by digit: oh-seven-seven-two-three, four-one-eight-five-nine-oh."
+    },
+    {
+      "id": "a019",
+      "speaker": "joanna",
+      "text": "Thanks. Now, the pottery course runs on two different evenings. The Tuesday group still has one or two places left.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a020",
+      "speaker": "daniel",
+      "text": "Tuesday's tricky for me, I'm afraid. I've got football training that night.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a021",
+      "speaker": "joanna",
+      "text": "That's no problem. The other group meets on Thursday evenings, from seven till nine.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a022",
+      "speaker": "daniel",
+      "text": "Perfect, that works much better for me.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a023",
+      "speaker": "joanna",
+      "text": "The course was originally going to start on the 30th of October.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a024",
+      "speaker": "daniel",
+      "text": "Oh, so that would be next week, then?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a025",
+      "speaker": "joanna",
+      "text": "Well, no. The tutor's away that week, so the first class has been moved to the 6th of November.",
+      "pauseAfterMs": 1000
+    },
+    {
+      "id": "a026",
+      "speaker": "narrator",
+      "text": "Before you hear the rest of the conversation, you have some time to look at questions 6 to 10.",
+      "pauseAfterMs": 30000
+    },
+    {
+      "id": "a027",
+      "speaker": "narrator",
+      "text": "Now listen and answer questions 6 to 10.",
+      "pauseAfterMs": 1500
+    },
+    {
+      "id": "a028",
+      "speaker": "daniel",
+      "text": "So, how much does the course cost?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a029",
+      "speaker": "joanna",
+      "text": "The full price for the ten weeks is 120 pounds.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a030",
+      "speaker": "daniel",
+      "text": "Ouch. Is there any kind of discount?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a031",
+      "speaker": "joanna",
+      "text": "Do you live in the borough?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a032",
+      "speaker": "daniel",
+      "text": "Yes, I'm on Mill Lane, just round the corner from you.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a033",
+      "speaker": "joanna",
+      "text": "Then you qualify for the residents' rate, which brings it down to 96 pounds. That includes all the clay and the firing.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a034",
+      "speaker": "daniel",
+      "text": "Great. And do I need to buy any tools or anything?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a035",
+      "speaker": "joanna",
+      "text": "No, the tools are all provided, and there are plenty of glazes to choose from.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a036",
+      "speaker": "daniel",
+      "text": "What about gloves? I imagine it gets pretty messy.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a037",
+      "speaker": "joanna",
+      "text": "We have gloves here for anyone who wants them. The only thing you need to bring yourself is an apron.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a038",
+      "speaker": "daniel",
+      "text": "Right. And is there anywhere to park? I usually drive.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a039",
+      "speaker": "joanna",
+      "text": "Please don't use the supermarket car park next door. They give fines after an hour.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a040",
+      "speaker": "joanna",
+      "text": "There's a free car park behind the library, though, and it's only a two-minute walk from here.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a041",
+      "speaker": "daniel",
+      "text": "Good to know, thanks.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a042",
+      "speaker": "joanna",
+      "text": "Just for our records, can I ask how you heard about the course?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a043",
+      "speaker": "daniel",
+      "text": "Hmm, I picked up one of your leaflets at the doctor's surgery a while ago, and a neighbour mentioned it too.",
+      "pauseAfterMs": 400
+    },
+    {
+      "id": "a044",
+      "speaker": "daniel",
+      "text": "But what actually made me ring was an advert on the radio last week.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a045",
+      "speaker": "joanna",
+      "text": "Thanks. And one last thing. Do you have any allergies the tutor should know about?",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a046",
+      "speaker": "daniel",
+      "text": "Nothing food-related, but I do react quite badly to latex.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a047",
+      "speaker": "joanna",
+      "text": "OK, I'll make a note of that for the tutor. Right, you're all booked. You'll get a confirmation email later today.",
+      "pauseAfterMs": 500
+    },
+    {
+      "id": "a048",
+      "speaker": "daniel",
+      "text": "Brilliant. Thanks so much for your help. Bye.",
+      "pauseAfterMs": 1000
+    },
+    {
+      "id": "a049",
+      "speaker": "narrator",
+      "text": "That is the end of Part 1. You now have one minute to check your answers to Part 1.",
+      "pauseAfterMs": 0
+    }
+  ]
+}

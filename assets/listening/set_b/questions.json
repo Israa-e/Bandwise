@@ -1,0 +1,340 @@
+{
+  "setId": "set_b",
+  "part": 3,
+  "groups": [
+    {
+      "from": 21,
+      "to": 25,
+      "instructions": "Choose the correct letter, A, B or C.",
+      "heading": "Food waste research project"
+    },
+    {
+      "from": 26,
+      "to": 30,
+      "instructions": "What do the students decide to do with each source of data? Choose FIVE answers from the box and write the correct letter, A–F, next to questions 26–30.",
+      "heading": "Sources of data"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q21",
+      "number": 21,
+      "type": "multipleChoice",
+      "prompt": "Why did the students choose food waste as their topic?",
+      "options": [
+        {
+          "key": "A",
+          "text": "A lecturer suggested it to them."
+        },
+        {
+          "key": "B",
+          "text": "They had seen the problem for themselves."
+        },
+        {
+          "key": "C",
+          "text": "A lot of research had already been published on it."
+        }
+      ],
+      "answer": "B",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "Professor Hanley mentioned it after they had decided, and there is little research on universities. They chose it because they saw the waste themselves while working in the dining hall.",
+      "evidence": "we both work part-time in the dining hall",
+      "evidenceLineId": "b008"
+    },
+    {
+      "id": "q22",
+      "number": 22,
+      "type": "multipleChoice",
+      "prompt": "What was the main problem with the first survey?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Too few students replied to it."
+        },
+        {
+          "key": "B",
+          "text": "Students understood a question in different ways."
+        },
+        {
+          "key": "C",
+          "text": "It was sent out at a bad time."
+        }
+      ],
+      "answer": "B",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "They had over two hundred replies and the timing was fine. The problem was that people read the question about how much they leave in different ways.",
+      "evidence": "nobody knew if we meant at each meal or across the whole week",
+      "evidenceLineId": "b012"
+    },
+    {
+      "id": "q23",
+      "number": 23,
+      "type": "multipleChoice",
+      "prompt": "What is Dr Price's concern about weighing the bins?",
+      "options": [
+        {
+          "key": "A",
+          "text": "It will take up too much of the students' time."
+        },
+        {
+          "key": "B",
+          "text": "The catering manager may not allow it."
+        },
+        {
+          "key": "C",
+          "text": "The results may not show student waste accurately."
+        }
+      ],
+      "answer": "C",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "Time and permission are not problems. Dr Price worries that kitchen waste in the same bins will give a misleading picture.",
+      "evidence": "could give you a misleading picture of what students actually throw away",
+      "evidenceLineId": "b016"
+    },
+    {
+      "id": "q24",
+      "number": 24,
+      "type": "multipleChoice",
+      "prompt": "What surprised the students most?",
+      "options": [
+        {
+          "key": "A",
+          "text": "the amount of waste on Fridays"
+        },
+        {
+          "key": "B",
+          "text": "the proportion of waste that comes from side dishes"
+        },
+        {
+          "key": "C",
+          "text": "the amount of waste from the salad bar"
+        }
+      ],
+      "answer": "B",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "Fridays were not worse than other days, and there is not enough data on the salad bar yet. Nearly half the waste comes from side dishes.",
+      "evidence": "Nearly half of it is side dishes",
+      "evidenceLineId": "b020"
+    },
+    {
+      "id": "q25",
+      "number": 25,
+      "type": "multipleChoice",
+      "prompt": "What will the students recommend?",
+      "options": [
+        {
+          "key": "A",
+          "text": "serving meals on smaller plates"
+        },
+        {
+          "key": "B",
+          "text": "charging separately for side dishes"
+        },
+        {
+          "key": "C",
+          "text": "letting students decide whether to have a side dish"
+        }
+      ],
+      "answer": "C",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "Smaller plates mainly work in buffets, and charging extra would be unpopular. They suggest that students ask for a side dish only if they want one.",
+      "evidence": "Students would just ask for one at the counter if they actually want it",
+      "evidenceLineId": "b026"
+    },
+    {
+      "id": "q26",
+      "number": 26,
+      "type": "matching",
+      "prompt": "the nightly bin weights",
+      "options": [
+        {
+          "key": "A",
+          "text": "use it as the main evidence"
+        },
+        {
+          "key": "B",
+          "text": "mention it only as background"
+        },
+        {
+          "key": "C",
+          "text": "check it with the catering manager"
+        },
+        {
+          "key": "D",
+          "text": "leave it out of the report"
+        },
+        {
+          "key": "E",
+          "text": "repeat it with a larger group"
+        },
+        {
+          "key": "F",
+          "text": "put it in an appendix"
+        }
+      ],
+      "answer": "A",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "The bin weights are their most reliable data, so the whole argument will be built on them.",
+      "evidence": "the whole argument is going to be built on them",
+      "evidenceLineId": "b030"
+    },
+    {
+      "id": "q27",
+      "number": 27,
+      "type": "matching",
+      "prompt": "the first online survey",
+      "options": [
+        {
+          "key": "A",
+          "text": "use it as the main evidence"
+        },
+        {
+          "key": "B",
+          "text": "mention it only as background"
+        },
+        {
+          "key": "C",
+          "text": "check it with the catering manager"
+        },
+        {
+          "key": "D",
+          "text": "leave it out of the report"
+        },
+        {
+          "key": "E",
+          "text": "repeat it with a larger group"
+        },
+        {
+          "key": "F",
+          "text": "put it in an appendix"
+        }
+      ],
+      "answer": "D",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "They thought about repeating it with more people (E), but decided it will not go in the report at all.",
+      "evidence": "it isn't going in the report at all",
+      "evidenceLineId": "b033"
+    },
+    {
+      "id": "q28",
+      "number": 28,
+      "type": "matching",
+      "prompt": "the photographs of trays",
+      "options": [
+        {
+          "key": "A",
+          "text": "use it as the main evidence"
+        },
+        {
+          "key": "B",
+          "text": "mention it only as background"
+        },
+        {
+          "key": "C",
+          "text": "check it with the catering manager"
+        },
+        {
+          "key": "D",
+          "text": "leave it out of the report"
+        },
+        {
+          "key": "E",
+          "text": "repeat it with a larger group"
+        },
+        {
+          "key": "F",
+          "text": "put it in an appendix"
+        }
+      ],
+      "answer": "F",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "Liam wanted them in the main text, but they will go together at the very end, after the references.",
+      "evidence": "at the very end, after the references",
+      "evidenceLineId": "b036"
+    },
+    {
+      "id": "q29",
+      "number": 29,
+      "type": "matching",
+      "prompt": "the interviews with kitchen staff",
+      "options": [
+        {
+          "key": "A",
+          "text": "use it as the main evidence"
+        },
+        {
+          "key": "B",
+          "text": "mention it only as background"
+        },
+        {
+          "key": "C",
+          "text": "check it with the catering manager"
+        },
+        {
+          "key": "D",
+          "text": "leave it out of the report"
+        },
+        {
+          "key": "E",
+          "text": "repeat it with a larger group"
+        },
+        {
+          "key": "F",
+          "text": "put it in an appendix"
+        }
+      ],
+      "answer": "C",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "Dr Price doubts the claim about bread, so they will go through the figures with the catering manager first.",
+      "evidence": "go through those figures with the catering manager",
+      "evidenceLineId": "b040"
+    },
+    {
+      "id": "q30",
+      "number": 30,
+      "type": "matching",
+      "prompt": "last year's student report",
+      "options": [
+        {
+          "key": "A",
+          "text": "use it as the main evidence"
+        },
+        {
+          "key": "B",
+          "text": "mention it only as background"
+        },
+        {
+          "key": "C",
+          "text": "check it with the catering manager"
+        },
+        {
+          "key": "D",
+          "text": "leave it out of the report"
+        },
+        {
+          "key": "E",
+          "text": "repeat it with a larger group"
+        },
+        {
+          "key": "F",
+          "text": "put it in an appendix"
+        }
+      ],
+      "answer": "B",
+      "acceptedVariants": [],
+      "wordLimit": null,
+      "explanation": "A direct comparison would not be fair, so the report will only be mentioned in the introduction.",
+      "evidence": "just get a mention in the introduction",
+      "evidenceLineId": "b043"
+    }
+  ]
+}

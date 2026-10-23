@@ -49,3 +49,6 @@ app.*.map.json
 
 # Supabase keys for --dart-define-from-file (copy env.example.json)
 env.json
+
+# Listening voice recordings (source for tool/build_listening_audio.dart)
+assets/listening/*/audio/
