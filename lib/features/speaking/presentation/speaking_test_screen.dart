@@ -51,10 +51,13 @@ class _Say extends _Step {
 
 /// The examiner asks; recording starts when the question ends.
 class _Ask extends _Step {
-  const _Ask(super.part, this.question, this.limit);
+  const _Ask(super.part, this.question, this.limit, {this.position});
 
   final SpeakingQuestion question;
   final Duration limit;
+
+  /// "Question 2 of 4" within its topic, for Parts 1 and 3.
+  final (int, int)? position;
 }
 
 /// One minute to prepare the long turn, with notes.
@@ -76,8 +79,13 @@ List<_Step> _plan(SpeakingContent c, CueCard card) => [
   _Say(SpeakingPart.part1, c.line('ex_intro')),
   for (final t in c.part1) ...[
     _Say(SpeakingPart.part1, t.intro),
-    for (final q in t.questions)
-      _Ask(SpeakingPart.part1, q, TestTimings.part1Answer),
+    for (final (i, q) in t.questions.indexed)
+      _Ask(
+        SpeakingPart.part1,
+        q,
+        TestTimings.part1Answer,
+        position: (i + 1, t.questions.length),
+      ),
   ],
   _Say(SpeakingPart.part2, c.line('ex_part2_intro')),
   _Say(SpeakingPart.part2, card.topic),
@@ -85,8 +93,13 @@ List<_Step> _plan(SpeakingContent c, CueCard card) => [
   _LongTurn(card),
   _Ask(SpeakingPart.part2, card.roundingOff, TestTimings.roundingOffAnswer),
   _Say(SpeakingPart.part3, card.part3Intro),
-  for (final q in card.part3Questions)
-    _Ask(SpeakingPart.part3, q, TestTimings.part3Answer),
+  for (final (i, q) in card.part3Questions.indexed)
+    _Ask(
+      SpeakingPart.part3,
+      q,
+      TestTimings.part3Answer,
+      position: (i + 1, card.part3Questions.length),
+    ),
   // Not in a part's time box: always said.
   _Say(SpeakingPart.part2, c.line('ex_end')),
 ];
@@ -624,8 +637,27 @@ class _TestSessionState extends ConsumerState<_TestSession>
                 'You have one minute to think about what to say. Notes '
                 'are optional.',
           ),
-          _Phase.recording => Center(
-            child: RecordingIndicator(elapsed: _capture.elapsed),
+          _Phase.recording => Column(
+            children: [
+              RecordingIndicator(elapsed: _capture.elapsed),
+              // Where the learner is, never the question's text: in the
+              // real test it is only heard.
+              if (step case _Ask(
+                :final part,
+                position: (final number, final count),
+              )) ...[
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  '${part.label} · Question $number of $count — Listen to '
+                  'the examiner and answer',
+                  key: const ValueKey('questionPosition'),
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMd.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ],
           ),
           _Phase.interrupted => _Status(
             key: const ValueKey('interrupted'),

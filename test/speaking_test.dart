@@ -729,6 +729,17 @@ void main() {
       await tester.pump();
       expect(_recorder.isRecording, isTrue, reason: 'starts by itself');
       expect(find.text('Recording'), findsOneWidget);
+      // Where the learner is, but not the question itself.
+      expect(
+        find.text(
+          'Part 1 · Question 1 of 4 — Listen to the examiner and answer',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(_content.part1.first.questions.first.text),
+        findsNothing,
+      );
 
       await _tap(tester, find.byKey(const ValueKey('repeatQuestion')));
       expect(_recorder.cancels, 1);
@@ -751,6 +762,12 @@ void main() {
       examiner.complete();
       await tester.pump();
       await tester.pump();
+      expect(
+        find.text(
+          'Part 1 · Question 2 of 4 — Listen to the examiner and answer',
+        ),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey('repeatQuestion')), findsOneWidget);
     });
 
@@ -810,6 +827,10 @@ void main() {
       expect(examiner.current, _asset('ex_part2_stop'));
       await examinerDone();
       expect(examiner.current, _asset('p2_skill_follow'));
+      // The rounding-off question has no position line.
+      await examinerDone();
+      expect(_recorder.isRecording, isTrue);
+      expect(find.byKey(const ValueKey('questionPosition')), findsNothing);
     });
 
     testWidgets('the whole test saves a session worth 20 XP', (tester) async {

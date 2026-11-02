@@ -2,14 +2,15 @@
 
     <python> tool/generate_listening_voices.py [set ...] [--redo id,id]
 
-<python> needs kittentts, faster-whisper, soundfile and numpy. VoiceStudio's
+<python> needs sherpa-onnx, faster-whisper, soundfile and numpy. VoiceStudio's
 bundled environment has them all:
 
     ~/.config/VoiceStudio/runtime/project/.venv/bin/python
 
-- Engine: KittenTTS (KittenML/kitten-tts-mini-0.8, Apache-2.0) with its
-  built-in preset voices, run locally. Each speaker's preset and speed are in
-  script.json ("voice"). No voice is cloned.
+- Engine: Kokoro-82M (hexgrad, Apache-2.0), run locally with sherpa-onnx
+  (Apache-2.0) from the "kokoro-en-v0_19" model package, which is downloaded
+  to build/tts_models/ if missing. Each speaker's built-in voice and speed
+  are in script.json ("voice"). No voice is cloned.
 - Lines are spoken as their `direction` asks: spelled words letter by letter,
   phone numbers digit by digit.
 - Every take is transcribed (faster-whisper large-v3, MIT) and checked: the
@@ -25,7 +26,9 @@ bundled environment has them all:
 import json
 import re
 import sys
+import tarfile
 import time
+import urllib.request
 from pathlib import Path
 
 import numpy as np
@@ -33,9 +36,17 @@ import soundfile as sf
 
 ROOT = Path("assets/listening")
 WORK = Path("build/listening_voices")
-SAMPLE_RATE = 24000
-MODEL = "KittenML/kitten-tts-mini-0.8"
+MODELS = Path("build/tts_models")
+MODEL = "kokoro-en-v0_19"
+MODEL_URL = ("https://github.com/k2-fsa/sherpa-onnx/releases/download/"
+             f"tts-models/{MODEL}.tar.bz2")
 WHISPER = "large-v3"
+
+# Kokoro speaker ids in kokoro-en-v0_19 (sherpa-onnx's documented order).
+# "a" voices are American, "b" voices British.
+VOICES = {"af": 0, "af_bella": 1, "af_nicole": 2, "af_sarah": 3,
+          "af_sky": 4, "am_adam": 5, "am_michael": 6, "bf_emma": 7,
+          "bf_isabella": 8, "bm_george": 9, "bm_lewis": 10}
 
 # Speed multipliers per attempt: a retry speaks a little slower.
 ATTEMPT_SPEEDS = [1.0, 0.94, 0.88]
@@ -49,6 +60,44 @@ DIGIT_WORDS = ["oh", "one", "two", "three", "four", "five", "six", "seven",
 
 def log(message):
     print(message, flush=True)
+
+
+# ---------------------------------------------------------------- kokoro
+
+
+def model_dir():
+    folder = MODELS / MODEL
+    if not (folder / "model.onnx").exists():
+        MODELS.mkdir(parents=True, exist_ok=True)
+        archive = MODELS / f"{MODEL}.tar.bz2"
+        log(f"Downloading {MODEL_URL}…")
+        urllib.request.urlretrieve(MODEL_URL, archive)
+        with tarfile.open(archive) as tar:
+            tar.extractall(MODELS, filter="data")
+    return folder
+
+
+def load_kokoro():
+    import sherpa_onnx
+
+    folder = model_dir()
+    return sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(
+        model=sherpa_onnx.OfflineTtsModelConfig(
+            kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
+                model=str(folder / "model.onnx"),
+                voices=str(folder / "voices.bin"),
+                tokens=str(folder / "tokens.txt"),
+                data_dir=str(folder / "espeak-ng-data"),
+            ),
+            num_threads=4,
+        )))
+
+
+def write_take(tts, text, voice, speed, path):
+    """Speaks [text] with the Kokoro [voice] and saves it to [path]."""
+    audio = tts.generate(text, sid=VOICES[voice], speed=speed)
+    sf.write(path, np.asarray(audio.samples, dtype=np.float32),
+             audio.sample_rate, subtype="PCM_16")
 
 
 # ---------------------------------------------------------------- text
@@ -71,7 +120,8 @@ def spoken_text(text):
 NUMBER_WORDS = {
     "zero": "0", "oh": "0", "one": "1", "two": "2", "three": "3",
     "four": "4", "five": "5", "six": "6", "seven": "7", "eight": "8",
-    "nine": "9", "sixth": "6th", "ninety": "90", "hundred": "00",
+    "nine": "9", "ten": "10", "sixth": "6th", "ninety": "90",
+    "hundred": "00",
 }
 
 
@@ -81,6 +131,8 @@ def words(text, o_is_zero=False):
     however the recogniser writes them. With [o_is_zero], a lone "o" is 0
     (as in "O seven seven"); otherwise it's the letter (as in a spelling)."""
     raw = re.sub(r"[’']", "", text.lower())
+    # "£120" and "120 pounds" compare the same.
+    raw = re.sub(r"£(\d+)", r"\1 pounds", raw)
     raw = re.sub(r"[^a-z0-9£]+", " ", raw).split()
     out = []
     i = 0
@@ -168,12 +220,8 @@ def generate_set(set_id, redo, tts, asr):
         for attempt, factor in enumerate(ATTEMPT_SPEEDS, 1):
             speed = round(voice["speed"] * factor, 3)
             started = time.time()
-            audio = np.asarray(
-                tts.generate(spoken, voice=voice["preset"], speed=speed),
-                dtype=np.float32,
-            )
             take = takes / f"{line_id}.{attempt}.wav"
-            sf.write(take, audio, SAMPLE_RATE, subtype="PCM_16")
+            write_take(tts, spoken, voice["preset"], speed, take)
             segments, _ = asr.transcribe(str(take), language="en",
                                          beam_size=5)
             heard = " ".join(s.text.strip() for s in segments)
@@ -237,10 +285,9 @@ def main(args):
             recheck(set_id)
         return
     from faster_whisper import WhisperModel
-    from kittentts import KittenTTS
 
-    log(f"Loading {MODEL} and faster-whisper {WHISPER}…")
-    tts = KittenTTS(MODEL)
+    log(f"Loading Kokoro ({MODEL}) and faster-whisper {WHISPER}…")
+    tts = load_kokoro()
     asr = WhisperModel(WHISPER, device="cpu", compute_type="int8")
     WORK.mkdir(parents=True, exist_ok=True)
     for set_id in sets or ["set_a", "set_b"]:

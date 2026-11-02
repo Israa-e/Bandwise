@@ -14,10 +14,10 @@
         "tone": "Neutral, measured, unhurried; no emotion."
       },
       "voice": {
-        "engine": "kittentts",
-        "model": "KittenML/kitten-tts-mini-0.8",
-        "preset": "expr-voice-3-m",
-        "speed": 1.0
+        "engine": "kokoro",
+        "model": "kokoro-en-v0_19",
+        "preset": "bm_george",
+        "speed": 0.95
       }
     },
     {
@@ -30,9 +30,9 @@
         "tone": "Calm, warm and thoughtful; asks probing questions."
       },
       "voice": {
-        "engine": "kittentts",
-        "model": "KittenML/kitten-tts-mini-0.8",
-        "preset": "expr-voice-3-f",
+        "engine": "kokoro",
+        "model": "kokoro-en-v0_19",
+        "preset": "bf_isabella",
         "speed": 1.0
       }
     },
@@ -46,25 +46,25 @@
         "tone": "Energetic and confident; speaks a little faster."
       },
       "voice": {
-        "engine": "kittentts",
-        "model": "KittenML/kitten-tts-mini-0.8",
-        "preset": "expr-voice-5-f",
-        "speed": 1.0
+        "engine": "kokoro",
+        "model": "kokoro-en-v0_19",
+        "preset": "af_bella",
+        "speed": 1.05
       }
     },
     {
       "id": "liam",
       "name": "Liam",
       "role": "Student",
-      "accent": "Australian",
+      "accent": "British",
       "voiceNotes": {
         "age": "early 20s",
         "tone": "Thoughtful and relaxed; slightly lower energy than Maya."
       },
       "voice": {
-        "engine": "kittentts",
-        "model": "KittenML/kitten-tts-mini-0.8",
-        "preset": "expr-voice-4-m",
+        "engine": "kokoro",
+        "model": "kokoro-en-v0_19",
+        "preset": "bm_lewis",
         "speed": 1.0
       }
     }

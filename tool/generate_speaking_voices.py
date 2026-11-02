@@ -23,27 +23,17 @@ The same pipeline as Listening (tool/generate_listening_voices.py):
 
 import json
 import sys
-import tarfile
 import time
-import urllib.request
 from pathlib import Path
 
-import numpy as np
-import soundfile as sf
-
 sys.path.insert(0, str(Path(__file__).parent))
-from generate_listening_voices import ATTEMPT_SPEEDS, MIN_MATCH, WHISPER, log, match  # noqa: E402
+from generate_listening_voices import (  # noqa: E402
+    ATTEMPT_SPEEDS, MIN_MATCH, MODEL, WHISPER, load_kokoro, log, match,
+    write_take)
 
 CONTENT = Path("assets/speaking/content.json")
 OUT = Path("assets/speaking/audio")
 WORK = Path("build/speaking_voices")
-MODELS = Path("build/tts_models")
-MODEL = "kokoro-en-v0_19"
-MODEL_URL = ("https://github.com/k2-fsa/sherpa-onnx/releases/download/"
-             f"tts-models/{MODEL}.tar.bz2")
-
-# Kokoro speaker ids in kokoro-en-v0_19 (sherpa-onnx's documented order).
-VOICES = {"bf_emma": 7, "bf_isabella": 8, "bm_george": 9, "bm_lewis": 10}
 EXAMINER_VOICE = "bm_george"
 EXAMINER_SPEED = 0.95
 
@@ -57,18 +47,6 @@ def lines(content):
         out += [card["topic"], card["roundingOff"], card["part3"]["intro"],
                 *card["part3"]["questions"]]
     return out
-
-
-def model_dir():
-    folder = MODELS / MODEL
-    if not (folder / "model.onnx").exists():
-        MODELS.mkdir(parents=True, exist_ok=True)
-        archive = MODELS / f"{MODEL}.tar.bz2"
-        log(f"Downloading {MODEL_URL}…")
-        urllib.request.urlretrieve(MODEL_URL, archive)
-        with tarfile.open(archive) as tar:
-            tar.extractall(MODELS, filter="data")
-    return folder
 
 
 def main(args):
@@ -87,21 +65,10 @@ def main(args):
             s["ok"] = s["match"] >= MIN_MATCH
         status_file.write_text(json.dumps(status, indent=2) + "\n")
     else:
-        import sherpa_onnx
         from faster_whisper import WhisperModel
 
-        folder = model_dir()
         log(f"Loading Kokoro ({MODEL}) and faster-whisper {WHISPER}…")
-        tts = sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(
-            model=sherpa_onnx.OfflineTtsModelConfig(
-                kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(
-                    model=str(folder / "model.onnx"),
-                    voices=str(folder / "voices.bin"),
-                    tokens=str(folder / "tokens.txt"),
-                    data_dir=str(folder / "espeak-ng-data"),
-                ),
-                num_threads=4,
-            )))
+        tts = load_kokoro()
         asr = WhisperModel(WHISPER, device="cpu", compute_type="int8")
         OUT.mkdir(parents=True, exist_ok=True)
         takes = WORK / "takes"
@@ -116,11 +83,8 @@ def main(args):
             for attempt, factor in enumerate(ATTEMPT_SPEEDS, 1):
                 speed = round(EXAMINER_SPEED * factor, 3)
                 started = time.time()
-                audio = tts.generate(text, sid=VOICES[EXAMINER_VOICE],
-                                     speed=speed)
                 take = takes / f"{line_id}.{attempt}.wav"
-                sf.write(take, np.asarray(audio.samples, dtype=np.float32),
-                         audio.sample_rate, subtype="PCM_16")
+                write_take(tts, text, EXAMINER_VOICE, speed, take)
                 segments, _ = asr.transcribe(str(take), language="en",
                                              beam_size=5)
                 heard = " ".join(s.text.strip() for s in segments)

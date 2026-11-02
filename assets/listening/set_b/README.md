@@ -6,14 +6,14 @@ Original practice material written for Bandwise. It is not an IELTS recording or
 
 ## Voices
 
-One built-in voice per speaker (no voice is cloned), used for every line by that speaker. `tool/generate_listening_voices.py` generates the lines with these voices; see ../README.md for the engine and licence. "Written as" is the accent the script was written for; the built-in voices sound North American.
+One built-in voice per speaker (no voice is cloned), used for every line by that speaker. `tool/generate_listening_voices.py` generates the lines with these voices; see ../README.md for the engine and licence. "Written as" is the accent the script was written for. Kokoro has only British and American English voices, so a speaker written as Australian has a British voice.
 
-| Speaker id | Name | Role | Written as | Age | Tone | Voice (speed) |
-| --- | --- | --- | --- | --- | --- | --- |
-| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. | kittentts `expr-voice-3-m` (1.0) |
-| `price` | Dr Price | Tutor | British | 50s | Calm, warm and thoughtful; asks probing questions. | kittentts `expr-voice-3-f` (1.0) |
-| `maya` | Maya | Student | North American | early 20s | Energetic and confident; speaks a little faster. | kittentts `expr-voice-5-f` (1.0) |
-| `liam` | Liam | Student | Australian | early 20s | Thoughtful and relaxed; slightly lower energy than Maya. | kittentts `expr-voice-4-m` (1.0) |
+| Speaker id | Name | Role | Written as | Age | Tone | Voice (speed) | Voice accent |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. | kokoro `bm_george` (0.95) | British |
+| `price` | Dr Price | Tutor | British | 50s | Calm, warm and thoughtful; asks probing questions. | kokoro `bf_isabella` (1.0) | British |
+| `maya` | Maya | Student | North American | early 20s | Energetic and confident; speaks a little faster. | kokoro `af_bella` (1.05) | North American |
+| `liam` | Liam | Student | British | early 20s | Thoughtful and relaxed; slightly lower energy than Maya. | kokoro `bm_lewis` (1.0) | British |
 
 ## Files to generate, in this order
 

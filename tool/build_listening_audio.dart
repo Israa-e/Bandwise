@@ -257,6 +257,13 @@ Future<String> _silence(String tmp, int ms) async {
 
 // ---------------------------------------------------------------- README
 
+/// Kokoro voice names start with the accent: "a" American, "b" British.
+String _voiceAccent(String? preset) => switch (preset?[0]) {
+  'a' => 'North American',
+  'b' => 'British',
+  _ => '',
+};
+
 String _readme(String setId, Map<String, dynamic> script) {
   final speakers = {
     for (final s in (script['speakers'] as List).cast<Map<String, dynamic>>())
@@ -283,21 +290,24 @@ String _readme(String setId, Map<String, dynamic> script) {
       'One built-in voice per speaker (no voice is cloned), used for every '
       'line by that speaker. `tool/generate_listening_voices.py` generates '
       'the lines with these voices; see ../README.md for the engine and '
-      'licence. "Written as" is the accent the script was written for; the '
-      'built-in voices sound North American.',
+      'licence. "Written as" is the accent the script was written for. '
+      'Kokoro has only British and American English voices, so a speaker '
+      'written as Australian has a British voice.',
     )
     ..writeln()
     ..writeln(
-      '| Speaker id | Name | Role | Written as | Age | Tone | Voice (speed) |',
+      '| Speaker id | Name | Role | Written as | Age | Tone '
+      '| Voice (speed) | Voice accent |',
     )
-    ..writeln('| --- | --- | --- | --- | --- | --- | --- |');
+    ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- |');
   for (final s in speakers.values) {
     final notes = s['voiceNotes'] as Map<String, dynamic>;
     final voice = s['voice'] as Map<String, dynamic>?;
     b.writeln(
       '| `${s['id']}` | ${s['name']} | ${s['role']} | ${s['accent']} '
       '| ${notes['age']} | ${notes['tone']} '
-      '| ${voice == null ? '' : '${voice['engine']} `${voice['preset']}` (${voice['speed']})'} |',
+      '| ${voice == null ? '' : '${voice['engine']} `${voice['preset']}` (${voice['speed']})'} '
+      '| ${_voiceAccent(voice?['preset'] as String?)} |',
     );
   }
   b

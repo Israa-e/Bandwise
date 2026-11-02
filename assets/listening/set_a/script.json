@@ -14,10 +14,10 @@
         "tone": "Neutral, measured, unhurried; no emotion."
       },
       "voice": {
-        "engine": "kittentts",
-        "model": "KittenML/kitten-tts-mini-0.8",
-        "preset": "expr-voice-3-m",
-        "speed": 1.0
+        "engine": "kokoro",
+        "model": "kokoro-en-v0_19",
+        "preset": "bm_george",
+        "speed": 0.95
       }
     },
     {
@@ -30,9 +30,9 @@
         "tone": "Friendly, efficient and professional; clear on details."
       },
       "voice": {
-        "engine": "kittentts",
-        "model": "KittenML/kitten-tts-mini-0.8",
-        "preset": "expr-voice-4-f",
+        "engine": "kokoro",
+        "model": "kokoro-en-v0_19",
+        "preset": "bf_emma",
         "speed": 1.0
       }
     },
@@ -46,9 +46,9 @@
         "tone": "Relaxed and chatty; slightly unsure when giving his number."
       },
       "voice": {
-        "engine": "kittentts",
-        "model": "KittenML/kitten-tts-mini-0.8",
-        "preset": "expr-voice-2-m",
+        "engine": "kokoro",
+        "model": "kokoro-en-v0_19",
+        "preset": "bm_lewis",
         "speed": 1.0
       }
     }

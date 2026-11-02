@@ -6,13 +6,13 @@ Original practice material written for Bandwise. It is not an IELTS recording or
 
 ## Voices
 
-One built-in voice per speaker (no voice is cloned), used for every line by that speaker. `tool/generate_listening_voices.py` generates the lines with these voices; see ../README.md for the engine and licence. "Written as" is the accent the script was written for; the built-in voices sound North American.
+One built-in voice per speaker (no voice is cloned), used for every line by that speaker. `tool/generate_listening_voices.py` generates the lines with these voices; see ../README.md for the engine and licence. "Written as" is the accent the script was written for. Kokoro has only British and American English voices, so a speaker written as Australian has a British voice.
 
-| Speaker id | Name | Role | Written as | Age | Tone | Voice (speed) |
-| --- | --- | --- | --- | --- | --- | --- |
-| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. | kittentts `expr-voice-3-m` (1.0) |
-| `joanna` | Joanna | Receptionist at Riverside Community Centre | British | 30s | Friendly, efficient and professional; clear on details. | kittentts `expr-voice-4-f` (1.0) |
-| `daniel` | Daniel Halloran | Caller booking a course | Australian | late 20s | Relaxed and chatty; slightly unsure when giving his number. | kittentts `expr-voice-2-m` (1.0) |
+| Speaker id | Name | Role | Written as | Age | Tone | Voice (speed) | Voice accent |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. | kokoro `bm_george` (0.95) | British |
+| `joanna` | Joanna | Receptionist at Riverside Community Centre | British | 30s | Friendly, efficient and professional; clear on details. | kokoro `bf_emma` (1.0) | British |
+| `daniel` | Daniel Halloran | Caller booking a course | Australian | late 20s | Relaxed and chatty; slightly unsure when giving his number. | kokoro `bm_lewis` (1.0) | British |
 
 ## Files to generate, in this order
 
