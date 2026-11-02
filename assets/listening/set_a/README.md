@@ -12,7 +12,7 @@ One built-in voice per speaker (no voice is cloned), used for every line by that
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `narrator` | Narrator | Test announcer | British | 40s | Neutral, measured, unhurried; no emotion. | kokoro `bm_george` (0.95) | British |
 | `joanna` | Joanna | Receptionist at Riverside Community Centre | British | 30s | Friendly, efficient and professional; clear on details. | kokoro `bf_emma` (1.0) | British |
-| `daniel` | Daniel Halloran | Caller booking a course | Australian | late 20s | Relaxed and chatty; slightly unsure when giving his number. | kokoro `bm_lewis` (1.0) | British |
+| `daniel` | Daniel Halloran | Caller booking a course | British | late 20s | Relaxed and chatty; slightly unsure when giving his number. | kokoro `bm_lewis` (1.0) | British |
 
 ## Files to generate, in this order
 

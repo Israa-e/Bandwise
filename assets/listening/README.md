@@ -29,8 +29,7 @@ CPU. Audio from it should not ship in the app, so it was not used.
 The real test has British, Australian and North American speakers. Kokoro
 has British (`bf_`, `bm_`) and American (`af_`, `am_`) English voices but
 no Australian one, so every speaker has a British voice except Maya, who is
-North American. Daniel (set A) was written as Australian and is voiced
-British. Each set's README lists the accent each speaker was written for
+North American. Each set's README lists the accent each speaker was written for
 next to the voice used. The app reads only `listening.mp3` and
 `timestamps.json`, so replacing a voice later only needs new
 `audio/<lineId>.wav` files and a rebuild.
