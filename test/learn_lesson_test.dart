@@ -150,7 +150,10 @@ Future<void> _play(
     }
     await _tap(tester, find.widgetWithText(AppButton, 'Continue'));
   }
-  expect(find.text('Lesson complete'), findsOneWidget);
+  expect(
+    find.text(lesson.isCheckpoint ? 'Checkpoint complete' : 'Lesson complete'),
+    findsOneWidget,
+  );
   onStep?.call();
 }
 
@@ -203,15 +206,208 @@ void main() {
       expect(find.text('Audio coming soon'), findsOneWidget);
     });
 
-    testWidgets('a lesson without content shows "Content coming soon"', (
+    for (final lesson in course.lessons) {
+      testWidgets('${lesson.id} plays end to end', (tester) async {
+        expect(lesson.isPlayable, isTrue);
+        // Everything else is done, so nothing is locked.
+        var progress = const ProgressState();
+        for (final other in course.lessons) {
+          if (other.id == lesson.id) continue;
+          progress = progress.withCompletedLesson(
+            LessonCompletion(
+              lessonId: other.id,
+              date: _today,
+              correctFirstTry: other.questionCount,
+              questionCount: other.questionCount,
+              minutes: 5,
+              mistakes: const [],
+            ),
+          );
+        }
+        await _launchApp(
+          tester,
+          level: EnglishLevel.advanced,
+          progress: progress,
+        );
+        await _push(tester, '/lesson/${lesson.id}');
+        expect(find.text(lesson.title), findsOneWidget);
+        await _play(tester, lesson);
+        final q = lesson.questionCount;
+        expect(find.text('+${XpRules.forLesson(q)}'), findsOneWidget);
+        expect(find.text('No mistakes this time'), findsOneWidget);
+        expect(
+          find.text(
+            lesson.isCheckpoint ? 'Checkpoint complete' : 'Lesson complete',
+          ),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  group('checkpoints', () {
+    ProgressState allDoneExceptCheckpoint(int unit) {
+      var progress = const ProgressState();
+      for (final lesson in course.unit(unit).lessons) {
+        if (lesson.isCheckpoint) continue;
+        progress = progress.withCompletedLesson(
+          LessonCompletion(
+            lessonId: lesson.id,
+            date: _today,
+            correctFirstTry: lesson.questionCount,
+            questionCount: lesson.questionCount,
+            minutes: 5,
+            mistakes: const [],
+          ),
+        );
+      }
+      return progress;
+    }
+
+    testWidgets('a checkpoint is locked until Lesson 5 is done', (
       tester,
     ) async {
-      await _launchApp(tester, level: EnglishLevel.advanced);
-      await _push(tester, '/lesson/u1-l3');
-      expect(find.text('Content coming soon'), findsOneWidget);
-      await _tap(tester, find.widgetWithText(AppButton, 'Go back'));
-      expect(find.byType(HomeScreen), findsOneWidget);
+      await _launchApp(tester, level: EnglishLevel.beginner);
+      await _push(tester, '/lesson/u1-checkpoint');
+      expect(find.text('This lesson is locked'), findsOneWidget);
+      expect(find.text('Unlocks after Lesson 5.'), findsOneWidget);
     });
+
+    for (final (wrong, mastered) in [
+      (const <int>{}, true),
+      // 8/10 is the mastery line.
+      (const {0, 9}, true),
+      // Mistakes from Lesson 1 (twice) and Lesson 3.
+      (const {0, 1, 4}, false),
+    ]) {
+      testWidgets(
+        '${10 - wrong.length}/10 ${mastered ? 'masters' : 'does not master'} '
+        'the unit',
+        (tester) async {
+          await _launchApp(
+            tester,
+            level: EnglishLevel.advanced,
+            progress: allDoneExceptCheckpoint(1),
+          );
+          final checkpoint = _lesson('u1-checkpoint');
+          expect(checkpoint.questionCount, 10);
+          await _push(tester, '/lesson/u1-checkpoint');
+          await _play(tester, checkpoint, wrongAt: wrong);
+          final correct = 10 - wrong.length;
+
+          expect(find.text('Checkpoint complete'), findsOneWidget);
+          expect(find.text('+${10 + 2 * correct}'), findsOneWidget);
+          _expectNoBands(tester);
+          final saved = (await _savedProgress())!;
+          expect(saved.results['u1-checkpoint']!.correct, correct);
+          expect(saved.mistakesFor('u1-checkpoint'), hasLength(wrong.length));
+
+          if (mastered) {
+            expect(find.byKey(const ValueKey('mastered')), findsOneWidget);
+            expect(find.text('Review these lessons'), findsNothing);
+          } else {
+            expect(find.byKey(const ValueKey('mastered')), findsNothing);
+            expect(find.text('Review these lessons'), findsOneWidget);
+            expect(find.byKey(const ValueKey('review-u1-l1')), findsOneWidget);
+            expect(find.byKey(const ValueKey('review-u1-l3')), findsOneWidget);
+            expect(find.byKey(const ValueKey('review-u1-l2')), findsNothing);
+
+            // The link opens the lesson.
+            await _tap(tester, find.byKey(const ValueKey('review-u1-l3')));
+            expect(find.text('Nouns for ideas and evidence'), findsOneWidget);
+            expect(find.widgetWithText(AppButton, 'Start'), findsOneWidget);
+          }
+
+          final path = LearningPath(
+            course: course,
+            progress: saved,
+            startUnit: 1,
+          );
+          expect(path.isMastered(course.unit(1)), mastered);
+          expect(path.statsFor(course.unit(1)).mastered, mastered);
+        },
+      );
+    }
+
+    testWidgets('Learn and Progress show a mastered unit', (tester) async {
+      final progress = allDoneExceptCheckpoint(1).withCompletedLesson(
+        LessonCompletion(
+          lessonId: 'u1-checkpoint',
+          date: _today,
+          correctFirstTry: 9,
+          questionCount: 10,
+          minutes: 8,
+          mistakes: [],
+        ),
+      );
+      await _launchApp(
+        tester,
+        level: EnglishLevel.beginner,
+        progress: progress,
+      );
+      await _tapTab(tester, 'Learn');
+      expect(find.byKey(const ValueKey('unitMastered')), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('node-u1-checkpoint')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Mastered'), findsWidgets);
+      _expectNoBands(tester);
+
+      await _tapTab(tester, 'Progress');
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('unit-1-mastered')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byKey(const ValueKey('unit-1-mastered')), findsOneWidget);
+      expect(find.byKey(const ValueKey('unit-2-mastered')), findsNothing);
+    });
+
+    test('mastery needs the latest checkpoint result to reach 8', () {
+      LessonCompletion result(int correct) => LessonCompletion(
+        lessonId: 'u2-checkpoint',
+        date: _today,
+        correctFirstTry: correct,
+        questionCount: 10,
+        minutes: 8,
+        mistakes: const [],
+      );
+      LearningPath on(ProgressState p) =>
+          LearningPath(course: course, progress: p, startUnit: 2);
+      final unit = course.unit(2);
+      expect(on(const ProgressState()).isMastered(unit), isFalse);
+      expect(
+        on(
+          const ProgressState().withCompletedLesson(result(7)),
+        ).isMastered(unit),
+        isFalse,
+      );
+      expect(
+        on(
+          const ProgressState().withCompletedLesson(result(8)),
+        ).isMastered(unit),
+        isTrue,
+      );
+    });
+
+    test(
+      'every checkpoint question maps back to one of its unit\'s lessons',
+      () {
+        for (final unit in course.units) {
+          final checkpoint = unit.lessons.last;
+          for (final q in checkpoint.exercises) {
+            final source = course.sourceLessonOf(q.id);
+            expect(source, isNotNull, reason: q.id);
+            expect(source!.unit, unit.number);
+            expect(source.isCheckpoint, isFalse);
+          }
+        }
+        expect(course.sourceLessonOf('u1-l2-e1'), isNull);
+      },
+    );
   });
 
   group('progress', () {
@@ -313,10 +509,11 @@ void main() {
       await _tap(tester, find.byKey(const ValueKey('node-u2-l1')));
       await _play(tester, _lesson('u2-l1'));
 
-      // Continue goes to Lesson 2, which is open now (no content yet).
+      // Continue goes to Lesson 2, which is open now.
       await _tap(tester, find.widgetWithText(AppButton, 'Continue'));
-      expect(find.text('Content coming soon'), findsOneWidget);
-      await _tap(tester, find.widgetWithText(AppButton, 'Go back'));
+      expect(find.text('Relative clauses'), findsOneWidget);
+      expect(find.widgetWithText(AppButton, 'Start'), findsOneWidget);
+      await _tap(tester, find.byTooltip('Close lesson'));
 
       expect(find.byType(LearnScreen), findsOneWidget);
       expect(find.text('Unlocks after Lesson 1'), findsNothing);

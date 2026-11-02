@@ -241,19 +241,36 @@ class _UnitProgressCard extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Flexible(
-                child: AppPill(
-                  label: accuracy == null
-                      ? 'No answers yet'
-                      : 'Accuracy $accuracy%',
-                  icon: accuracy == null ? null : Icons.verified_rounded,
-                  iconColor: AppColors.success,
-                  background: accuracy == null
-                      ? AppColors.background
-                      : AppColors.successTint,
-                  foreground: accuracy == null
-                      ? AppColors.textMuted
-                      : AppColors.text,
-                  size: AppPillSize.small,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (stats.mastered) ...[
+                      const AppPill(
+                        key: ValueKey('unitMastered'),
+                        label: 'Mastered',
+                        icon: Icons.workspace_premium_rounded,
+                        iconColor: AppColors.success,
+                        background: AppColors.successTint,
+                        foreground: AppColors.text,
+                        size: AppPillSize.small,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                    ],
+                    AppPill(
+                      label: accuracy == null
+                          ? 'No answers yet'
+                          : 'Accuracy $accuracy%',
+                      icon: accuracy == null ? null : Icons.verified_rounded,
+                      iconColor: AppColors.success,
+                      background: accuracy == null
+                          ? AppColors.background
+                          : AppColors.successTint,
+                      foreground: accuracy == null
+                          ? AppColors.textMuted
+                          : AppColors.text,
+                      size: AppPillSize.small,
+                    ),
+                  ],
                 ),
               ),
             ],

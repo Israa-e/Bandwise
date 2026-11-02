@@ -861,8 +861,8 @@ class _LessonsCard extends ConsumerWidget {
                 return Semantics(
                   button: true,
                   label:
-                      '${unit.fullTitle}, ${stats.percentComplete}% complete. '
-                      'Open in Learn',
+                      '${unit.fullTitle}, ${stats.percentComplete}% complete'
+                      '${stats.mastered ? ', mastered' : ''}. Open in Learn',
                   excludeSemantics: true,
                   child: InkWell(
                     key: ValueKey('unit-${unit.number}'),
@@ -889,6 +889,18 @@ class _LessonsCard extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: AppSpacing.sm),
+                              if (stats.mastered) ...[
+                                AppPill(
+                                  key: ValueKey('unit-${unit.number}-mastered'),
+                                  label: 'Mastered',
+                                  icon: Icons.workspace_premium_rounded,
+                                  iconColor: AppColors.success,
+                                  background: AppColors.successTint,
+                                  foreground: AppColors.text,
+                                  size: AppPillSize.small,
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                              ],
                               Text(
                                 '${stats.percentComplete}% complete',
                                 style: AppTextStyles.tabular(

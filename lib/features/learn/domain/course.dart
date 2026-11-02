@@ -13,6 +13,25 @@ class Course {
   Iterable<Lesson> get lessons => units.expand((u) => u.lessons);
 
   Lesson? lessonById(String id) => lessons.where((l) => l.id == id).firstOrNull;
+
+  /// The lesson a checkpoint question draws on, from its id
+  /// ("u1-checkpoint-l2-e1" is from Unit 1, Lesson 2), or null if [id] is
+  /// not a checkpoint question.
+  Lesson? sourceLessonOf(String exerciseId) {
+    final match = _checkpointQuestionId.firstMatch(exerciseId);
+    if (match == null) return null;
+    final unitNumber = int.parse(match.group(1)!);
+    final lessonNumber = int.parse(match.group(2)!);
+    return units
+        .where((u) => u.number == unitNumber)
+        .expand((u) => u.lessons)
+        .where((l) => !l.isCheckpoint && l.number == lessonNumber)
+        .firstOrNull;
+  }
+
+  static final _checkpointQuestionId = RegExp(
+    r'^u(\d+)-checkpoint-l(\d+)-e\d+$',
+  );
 }
 
 @immutable
@@ -66,6 +85,10 @@ class Lesson {
   /// Empty until the lesson's content is written ("Content coming soon").
   final List<Exercise> exercises;
   final bool isCheckpoint;
+
+  /// Correct answers (out of a checkpoint's ten) that mark its unit
+  /// "Mastered".
+  static const masteryScore = 8;
 
   String get id => isCheckpoint ? 'u$unit-checkpoint' : 'u$unit-l$number';
 

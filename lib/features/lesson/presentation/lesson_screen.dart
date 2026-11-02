@@ -330,6 +330,16 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
     );
   }
 
+  /// The lessons behind this checkpoint attempt's mistakes, in path order.
+  List<Lesson> _lessonsToReview(Course course) {
+    final numbers = <int, Lesson>{};
+    for (final m in _completion!.mistakes) {
+      final source = course.sourceLessonOf(m.itemId);
+      if (source != null) numbers[source.number] = source;
+    }
+    return [for (final n in numbers.keys.toList()..sort()) numbers[n]!];
+  }
+
   Widget _complete() {
     final today = ref.watch(todayProvider);
     final minutes =
@@ -338,13 +348,20 @@ class _LessonFlowState extends ConsumerState<_LessonFlow> {
         ref.watch(onboardingControllerProvider).value?.dailyMinutes ??
         OnboardingState.defaultDailyMinutes;
     final following = widget.following;
+    final lesson = widget.lesson;
+    final course = ref.watch(learningPathProvider).value?.course;
     return Scaffold(
       body: SafeArea(
         child: LessonCompleteView(
-          lessonTitle: widget.lesson.title,
+          lessonTitle: lesson.title,
           completion: _completion!,
           minutesToday: minutes,
           dailyGoal: goal,
+          isCheckpoint: lesson.isCheckpoint,
+          reviewLessons: lesson.isCheckpoint && course != null
+              ? _lessonsToReview(course)
+              : const [],
+          onOpenLesson: (l) => context.push(AppRoutes.lessonPath(l.id)),
         ),
       ),
       bottomNavigationBar: StickyActionBar(

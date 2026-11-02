@@ -40,6 +40,10 @@ class LessonNode {
   final String? lockedReason;
 
   bool get isLocked => status == LessonStatus.locked;
+
+  /// A checkpoint finished with [Lesson.masteryScore] or more correct.
+  bool get isMastered =>
+      lesson.isCheckpoint && (result?.correct ?? 0) >= Lesson.masteryScore;
 }
 
 /// Completion and accuracy for one unit. Never a band.
@@ -50,12 +54,16 @@ class UnitStats {
     required this.total,
     required this.correct,
     required this.answered,
+    this.mastered = false,
   });
 
   final int completed;
   final int total;
   final int correct;
   final int answered;
+
+  /// The unit's checkpoint was passed with [Lesson.masteryScore] or more.
+  final bool mastered;
 
   double get fraction => total == 0 ? 0 : completed / total;
   int get percentComplete => (fraction * 100).round();
@@ -136,6 +144,14 @@ class LearningPath {
     for (final lesson in unit.lessons) nodeFor(lesson),
   ];
 
+  /// Whether the unit's latest checkpoint result reaches
+  /// [Lesson.masteryScore].
+  bool isMastered(Unit unit) {
+    final checkpoint = unit.lessons.where((l) => l.isCheckpoint).firstOrNull;
+    final result = checkpoint == null ? null : progress.results[checkpoint.id];
+    return result != null && result.correct >= Lesson.masteryScore;
+  }
+
   UnitStats statsFor(Unit unit) {
     var completed = 0, correct = 0, answered = 0;
     for (final lesson in unit.lessons) {
@@ -150,6 +166,7 @@ class LearningPath {
       total: unit.lessons.length,
       correct: correct,
       answered: answered,
+      mastered: isMastered(unit),
     );
   }
 }

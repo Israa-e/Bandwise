@@ -591,7 +591,14 @@ void main() {
       expect(ids.toSet(), hasLength(ids.length));
       for (final lesson in course.lessons) {
         for (final e in lesson.exercises) {
-          expect(e.id, startsWith('${lesson.id}-e'));
+          // Checkpoint questions also name the lesson they draw on:
+          // "u1-checkpoint-l2-e1".
+          expect(
+            e.id,
+            lesson.isCheckpoint
+                ? matches(RegExp('^${lesson.id}-l[1-5]-e[12]\$'))
+                : startsWith('${lesson.id}-e'),
+          );
         }
       }
     });

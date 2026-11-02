@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../domain/course.dart';
 import '../../domain/learning_path.dart';
 
 const _nodeSize = 56.0;
@@ -258,10 +259,22 @@ class _LessonCard extends StatelessWidget {
       IconData? tagIcon,
       Color tagIconColor,
     ) = switch (node.status) {
+      LessonStatus.completed when node.isMastered => (
+        'Mastered',
+        AppColors.successTint,
+        Icons.workspace_premium_rounded,
+        AppColors.success,
+      ),
       LessonStatus.completed => (
         'Completed',
         AppColors.successTint,
         Icons.check_circle_rounded,
+        AppColors.success,
+      ),
+      LessonStatus.reviewNeeded when node.isMastered => (
+        'Mastered',
+        AppColors.successTint,
+        Icons.workspace_premium_rounded,
         AppColors.success,
       ),
       LessonStatus.reviewNeeded => (
@@ -282,6 +295,10 @@ class _LessonCard extends StatelessWidget {
 
     final detail = switch (node.status) {
       LessonStatus.locked => node.lockedReason!,
+      LessonStatus.completed
+          when lesson.isCheckpoint && result != null && !node.isMastered =>
+        '${result.correct}/${result.total} correct · '
+            '${Lesson.masteryScore} needed to master',
       LessonStatus.reviewNeeded =>
         '${node.mistakeCount} '
             '${node.mistakeCount == 1 ? 'mistake' : 'mistakes'} to review',
@@ -291,6 +308,7 @@ class _LessonCard extends StatelessWidget {
     };
 
     final statusWord = switch (node.status) {
+      LessonStatus.completed when node.isMastered => 'mastered',
       LessonStatus.completed => 'completed',
       LessonStatus.reviewNeeded => 'needs review',
       LessonStatus.current => 'up next',
