@@ -44,6 +44,8 @@ flutter:
     # source WAVs in audio/ are not bundled.
     - assets/speaking/content.json
     - assets/speaking/mp3/
+    # Word pronunciation: one mp3 per flashcard word (see its README).
+    - assets/audio/words/
 
   fonts:
     - family: Inter

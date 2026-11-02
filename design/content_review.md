@@ -31,6 +31,12 @@ questions) was re-solved before shipping. The Lesson 1s predate this review.
 | `u3-l4-e4` | One distractor ("wonder that") was merely odd, not clearly wrong. | Replaced by *regret*, which is grammatical but contradicts the argument. |
 | all new questions | Correct answers sat at position A only 3 times in 95. | Options re-ordered; now evenly spread. |
 
+## Changed for pronunciation audio
+
+| Id | Change |
+| --- | --- |
+| `u1-l2-e1` | The flashcard word *assert* became *maintain* (same reporting-verb purpose, same `that` pattern). The speech check could not confirm any take of "assert" (the recogniser heard "A 30" or "assertive" every time, alone or after a carrier phrase) and an unchecked recording should not ship. |
+
 ## Kept, but worth knowing
 
 These have exactly one best answer, but a learner can reach the wrong one for a

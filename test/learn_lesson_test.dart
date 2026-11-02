@@ -196,16 +196,6 @@ void main() {
       });
     }
 
-    testWidgets('flashcard pronunciation says audio is coming soon', (
-      tester,
-    ) async {
-      await _launchApp(tester);
-      await _push(tester, '/lesson/u2-l1');
-      await _tap(tester, find.widgetWithText(AppButton, 'Start'));
-      await _tap(tester, find.byTooltip('Pronunciation'));
-      expect(find.text('Audio coming soon'), findsOneWidget);
-    });
-
     for (final lesson in course.lessons) {
       testWidgets('${lesson.id} plays end to end', (tester) async {
         expect(lesson.isPlayable, isTrue);

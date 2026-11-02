@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../learn/domain/course.dart';
+import '../../domain/word_audio.dart';
+import '../word_audio_providers.dart';
 
 /// Front of a flashcard, and the meaning and example once revealed.
 class FlashcardView extends StatelessWidget {
@@ -33,8 +36,7 @@ class FlashcardView extends StatelessWidget {
                   Expanded(
                     child: Text(exercise.word, style: AppTextStyles.headlineXl),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  const _PronunciationButton(),
+                  _PronunciationButton(word: exercise.word),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
@@ -81,20 +83,33 @@ class FlashcardView extends StatelessWidget {
   }
 }
 
-class _PronunciationButton extends StatelessWidget {
-  const _PronunciationButton();
+/// Plays the word's recording. Hidden while the bundled files load, and
+/// when this word has none.
+class _PronunciationButton extends ConsumerWidget {
+  const _PronunciationButton({required this.word});
+
+  final String word;
 
   @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: 'Pronunciation',
-      onPressed: () => ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Audio coming soon'))),
-      icon: const Icon(Icons.volume_up_rounded, color: AppColors.primary),
-      style: IconButton.styleFrom(
-        backgroundColor: AppColors.primaryTint,
-        minimumSize: const Size.square(48),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asset = wordAudioAsset(word);
+    final available = ref.watch(wordAudioAssetsProvider).value ?? const {};
+    if (!available.contains(asset)) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: AppSpacing.sm),
+      child: IconButton(
+        tooltip: 'Pronunciation',
+        onPressed: () async {
+          // A recording that can't be played is not worth an error message.
+          try {
+            await ref.read(wordAudioPlayerProvider).play(asset);
+          } catch (_) {}
+        },
+        icon: const Icon(Icons.volume_up_rounded, color: AppColors.primary),
+        style: IconButton.styleFrom(
+          backgroundColor: AppColors.primaryTint,
+          minimumSize: const Size.square(48),
+        ),
       ),
     );
   }

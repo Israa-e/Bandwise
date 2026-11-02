@@ -102,16 +102,17 @@ const unit1 = Unit(
       exercises: [
         FlashcardExercise(
           id: 'u1-l2-e1',
-          word: 'assert',
+          word: 'maintain',
           partOfSpeech: 'verb',
-          meaning: 'to state something firmly as a fact',
+          meaning:
+              'to keep saying that something is true, even if others disagree',
           example:
-              'The author asserts that green spaces improve concentration, but '
-              'she offers little data to support the claim.',
+              'The author maintains that green spaces improve concentration, '
+              'but she offers little data to support the claim.',
           explanation:
-              '"Assert" is stronger than "say": the writer presents the idea as '
-              'certain, whether or not the evidence is strong. The pattern is '
-              '"assert that" plus a clause.',
+              '"Maintain" is stronger than "say": the writer holds a position '
+              'firmly, whether or not the evidence is strong. The pattern is '
+              '"maintain that" plus a clause.',
         ),
         FlashcardExercise(
           id: 'u1-l2-e2',
